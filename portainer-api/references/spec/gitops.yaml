@@ -1,0 +1,828 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Operate git repository
+    name: gitops
+    x-displayName: GitOps
+servers:
+  - url: /api
+paths:
+  /gitops/repo/file/preview:
+    post:
+      description: |-
+        Retrieve the compose file content based on git repository configuration
+        **Access policy**: authenticated
+      operationId: GitOperationRepoFilePreview
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/gitops.repositoryFilePreviewPayload'
+        description: Template details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gitops.fileResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: preview the content of target file in the git repository
+      tags:
+        - gitops
+  /gitops/repo/files/search:
+    post:
+      description: |-
+        Search the file path from the git repository based on partial or completed filename
+        **Access policy**: authenticated
+      operationId: GitOperationRepoFilesSearch
+      parameters:
+        - description: list the results without using cache
+          in: query
+          name: force
+          schema:
+            type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/gitops.repositoryFileSearchPayload'
+        description: details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                items:
+                  type: string
+                type: array
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Search the file path from a git repository files with specified extensions
+      tags:
+        - gitops
+  /gitops/repo/helm/values:
+    post:
+      description: |-
+        Load and merge multiple Helm values files from a Git repository, mimicking Helm CLI behavior
+        **Access policy**: authenticated
+      operationId: GitOperationRepoHelmValues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/gitops.helmValuesPreviewPayload'
+        description: Helm values preview request
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gitops.helmValuesPreviewResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Preview merged Helm values files from git repository
+      tags:
+        - gitops
+  /gitops/repo/refs:
+    post:
+      description: |-
+        List all the refs of a git repository
+        Will return all refs of a git repository
+        **Access policy**: authenticated
+      operationId: GitOperationRepoRefs
+      parameters:
+        - description: list the results without using cache
+          in: query
+          name: force
+          schema:
+            type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/gitops.repositoryReferenceListPayload'
+        description: details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                items:
+                  type: string
+                type: array
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List the refs of a git repository
+      tags:
+        - gitops
+  /gitops/sources:
+    get:
+      description: |-
+        Returns a deduplicated list of git repositories used across all GitOps workflows.
+        **Access policy**: admin
+      operationId: GitOpsSourcesList
+      parameters:
+        - description: Search term (matches URL)
+          in: query
+          name: search
+          schema:
+            type: string
+        - description: 'Sort field: name | status | type'
+          in: query
+          name: sort
+          schema:
+            type: string
+        - description: 'Sort order: asc or desc'
+          in: query
+          name: order
+          schema:
+            type: string
+        - description: Pagination start index
+          in: query
+          name: start
+          schema:
+            type: integer
+        - description: Pagination limit (0 = unlimited)
+          in: query
+          name: limit
+          schema:
+            type: integer
+        - description: 'Filter by status: healthy | syncing | error | paused | unknown'
+          in: query
+          name: status
+          schema:
+            type: string
+        - description: 'Filter by source type: git | oci | helm'
+          in: query
+          name: type
+          schema:
+            type: string
+            enum:
+              - git
+              - helm
+              - oci
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/sources.Source'
+                type: array
+        '400':
+          description: Invalid status parameter
+        '403':
+          description: Access denied
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List all GitOps sources
+      tags:
+        - gitops
+  /gitops/sources/{id}:
+    get:
+      description: |-
+        Returns a single GitOps source with its connection settings and linked workflows.
+        **Access policy**: admin
+      operationId: GitOpsSourceGet
+      parameters:
+        - description: Source ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/sources.SourceDetail'
+        '403':
+          description: Access denied
+        '404':
+          description: Source not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get a GitOps source by ID
+      tags:
+        - gitops
+  /gitops/sources/summary:
+    get:
+      description: |-
+        Returns a count of sources per status.
+        **Access policy**: admin
+      operationId: GitOpsSourcesSummary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/workflows.StatusSummary'
+        '403':
+          description: Access denied
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Summarize GitOps source status counts
+      tags:
+        - gitops
+  /gitops/workflows:
+    get:
+      description: |-
+        Returns a unified list of all stacks and edge stacks that have GitOps (GitConfig) configured.
+        **Access policy**: authenticated
+      operationId: GitOpsWorkflowsList
+      parameters:
+        - description: Search term (matches name or repository URL)
+          in: query
+          name: search
+          schema:
+            type: string
+        - description: 'Sort field: name | type | status | platform | creationDate | lastSyncDate'
+          in: query
+          name: sort
+          schema:
+            type: string
+        - description: 'Sort order: asc or desc'
+          in: query
+          name: order
+          schema:
+            type: string
+        - description: Pagination start index
+          in: query
+          name: start
+          schema:
+            type: integer
+        - description: Pagination limit (0 = unlimited)
+          in: query
+          name: limit
+          schema:
+            type: integer
+        - description: Filter by environment IDs (e.g. endpointIds[]=1&endpointIds[]=2)
+          in: query
+          name: endpointIds
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+        - description: 'Filter by status: healthy | syncing | error | paused | unknown'
+          in: query
+          name: status
+          schema:
+            type: string
+        - description: 'Filter by type: stack | edgeStack'
+          in: query
+          name: type
+          schema:
+            type: string
+        - description: 'Filter by platform: dockerStandalone | dockerSwarm | kubernetes'
+          in: query
+          name: platform
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/workflows.Workflow'
+                type: array
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List all GitOps workflows
+      tags:
+        - gitops
+  /gitops/workflows/summary:
+    get:
+      description: |-
+        Returns a count of workflows per status for workflows accessible to the requesting user.
+        **Access policy**: authenticated
+      operationId: GitOpsWorkflowsSummary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/workflows.StatusSummary'
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Summarize GitOps workflow status counts
+      tags:
+        - gitops
+components:
+  schemas:
+    workflows.StatusSummary:
+      properties:
+        error:
+          type: integer
+        healthy:
+          type: integer
+        paused:
+          type: integer
+        syncing:
+          type: integer
+        unknown:
+          type: integer
+      type: object
+    workflows.Workflow:
+      properties:
+        autoUpdate:
+          $ref: '#/components/schemas/portainer.AutoUpdateSettings'
+        creationDate:
+          type: integer
+        gitConfig:
+          $ref: '#/components/schemas/github_com_portainer_portainer_api_git_types.RepoConfig'
+        id:
+          type: integer
+        lastSyncDate:
+          type: integer
+        name:
+          type: string
+        platform:
+          $ref: '#/components/schemas/workflows.DeploymentPlatform'
+        status:
+          $ref: '#/components/schemas/workflows.WorkflowStatusObject'
+        target:
+          $ref: '#/components/schemas/workflows.Target'
+        type:
+          $ref: '#/components/schemas/workflows.Type'
+      type: object
+    sources.SourceDetail:
+      properties:
+        authentication:
+          $ref: '#/components/schemas/sources.gitAuthInfo'
+        autoUpdate:
+          $ref: '#/components/schemas/sources.autoUpdateInfo'
+        connection:
+          $ref: '#/components/schemas/sources.connectionInfo'
+        environments:
+          type: integer
+        error:
+          type: string
+        id:
+          type: string
+        lastSync:
+          type: integer
+        name:
+          type: string
+        provider:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+        status:
+          $ref: '#/components/schemas/workflows.Status'
+        type:
+          type: string
+        url:
+          type: string
+        usedBy:
+          type: integer
+        workflows:
+          items:
+            $ref: '#/components/schemas/workflows.Workflow'
+          type: array
+      type: object
+    sources.Source:
+      properties:
+        environments:
+          type: integer
+        error:
+          type: string
+        id:
+          type: string
+        lastSync:
+          type: integer
+        name:
+          type: string
+        provider:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+        status:
+          $ref: '#/components/schemas/workflows.Status'
+        type:
+          type: string
+        url:
+          type: string
+        usedBy:
+          type: integer
+      type: object
+    gitops.repositoryReferenceListPayload:
+      properties:
+        TLSSkipVerify:
+          description: TLSSkipVerify skips SSL verification when cloning the Git repository
+          example: false
+          type: boolean
+        authorizationType:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+          example: 0
+        createdFromCustomTemplateID:
+          description: CreatedFromCustomTemplateID will fetch refs based on this custom template settings
+          type: integer
+        fromEdgeStack:
+          type: boolean
+        gitCredentialID:
+          type: integer
+        password:
+          type: string
+        provider:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+          example: 0
+        repository:
+          type: string
+        stackID:
+          description: StackID will fetch refs based on this stack settings (edge stack if FromEdgeStack is true)
+          type: integer
+        username:
+          type: string
+      required:
+        - repository
+      type: object
+    gitops.helmValuesPreviewResponse:
+      properties:
+        commitHash:
+          type: string
+        filesProcessed:
+          items:
+            type: string
+          type: array
+        mergedValues:
+          type: string
+      type: object
+    gitops.helmValuesPreviewPayload:
+      properties:
+        authorizationType:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+          example: 0
+        gitCredentialID:
+          example: 0
+          type: integer
+        password:
+          example: myGitPassword
+          type: string
+        provider:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+          example: 0
+        reference:
+          example: refs/heads/main
+          type: string
+        repository:
+          example: https://github.com/example/charts
+          type: string
+        tlsSkipVerify:
+          example: false
+          type: boolean
+        username:
+          example: myGitUsername
+          type: string
+        valuesFiles:
+          description: ValuesFiles is an array of paths to Helm values files (matches Stack.HelmValuesFiles)
+          example:
+            - '["values/base.yaml"'
+            - '"values/prod.yaml"]'
+          items:
+            type: string
+          type: array
+      required:
+        - repository
+        - valuesFiles
+      type: object
+    gitops.repositoryFileSearchPayload:
+      properties:
+        TLSSkipVerify:
+          description: TLSSkipVerify skips SSL verification when cloning the Git repository
+          example: false
+          type: boolean
+        authorizationType:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+          example: 0
+        createdFromCustomTemplateID:
+          type: integer
+        dirOnly:
+          description: DirOnly List directories only
+          example: false
+          type: boolean
+        fromEdgeStack:
+          type: boolean
+        gitCredentialID:
+          type: integer
+        include:
+          description: Allow to provide specific file extension as the search result. If empty, the file extensions yml,yaml,hcl,json will be set by default
+          example: json,yml
+          type: string
+        keyword:
+          description: Partial or completed file name. If empty, all filenames with included extensions will be returned
+          example: docker-compose
+          type: string
+        password:
+          type: string
+        provider:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+          example: 0
+        reference:
+          description: Specific Git repository reference. If empty, the reference ref/heads/main will be set by default
+          example: refs/heads/develop
+          type: string
+        repository:
+          type: string
+        stackID:
+          type: integer
+        username:
+          type: string
+      required:
+        - repository
+      type: object
+    gitops.fileResponse:
+      properties:
+        FileContent:
+          type: string
+      type: object
+    gitops.repositoryFilePreviewPayload:
+      properties:
+        TLSSkipVerify:
+          description: TLSSkipVerify skips SSL verification when cloning the Git repository
+          example: false
+          type: boolean
+        authorizationType:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+          example: 0
+        gitCredentialID:
+          example: 0
+          type: integer
+        password:
+          example: myGitPassword
+          type: string
+        provider:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+          example: 0
+        reference:
+          example: refs/heads/master
+          type: string
+        repository:
+          example: https://github.com/openfaas/faas
+          type: string
+        targetFile:
+          description: Path to file whose content will be read
+          example: docker-compose.yml
+          type: string
+        username:
+          example: myGitUsername
+          type: string
+      required:
+        - repository
+      type: object
+    workflows.Type:
+      enum:
+        - stack
+        - edgeStack
+      type: string
+      x-enum-varnames:
+        - TypeStack
+        - TypeEdgeStack
+    workflows.Target:
+      properties:
+        edgeGroupIds:
+          items:
+            type: integer
+          type: array
+        endpointId:
+          type: integer
+        groupStatus:
+          additionalProperties:
+            $ref: '#/components/schemas/workflows.Status'
+          type: object
+        namespace:
+          type: string
+        resolvedEndpointIds:
+          items:
+            type: integer
+          type: array
+      type: object
+    workflows.WorkflowStatusObject:
+      properties:
+        artifact:
+          $ref: '#/components/schemas/workflows.WorkflowPhaseStatus'
+        source:
+          $ref: '#/components/schemas/workflows.WorkflowPhaseStatus'
+        target:
+          $ref: '#/components/schemas/workflows.WorkflowPhaseStatus'
+      type: object
+    workflows.DeploymentPlatform:
+      enum:
+        - dockerStandalone
+        - dockerSwarm
+        - kubernetes
+      type: string
+      x-enum-varnames:
+        - DeploymentPlatformDockerStandalone
+        - DeploymentPlatformDockerSwarm
+        - DeploymentPlatformKubernetes
+    github_com_portainer_portainer_api_git_types.RepoConfig:
+      properties:
+        Authentication:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer_api_git_types.GitAuthentication'
+          description: Git credentials
+        ConfigFilePath:
+          description: |-
+            ConfigFilePath is the path to the config file within the repository.
+            NOTE: For stacks, this mirrors Stack.EntryPoint and the two are kept in sync by stackUpdateGit.
+          example: docker-compose.yml
+          type: string
+        ConfigHash:
+          description: Repository hash
+          example: bc4c183d756879ea4d173315338110b31004b8e0
+          type: string
+        ReferenceName:
+          description: The reference name
+          example: refs/heads/branch_name
+          type: string
+        TLSSkipVerify:
+          description: TLSSkipVerify skips SSL verification when cloning the Git repository
+          example: false
+          type: boolean
+        URL:
+          description: The repo url
+          example: https://github.com/portainer/portainer.git
+          type: string
+      type: object
+    portainer.AutoUpdateSettings:
+      properties:
+        ForcePullImage:
+          description: Pull latest image
+          example: false
+          type: boolean
+        ForceUpdate:
+          description: Force update ignores repo changes
+          example: false
+          type: boolean
+        Interval:
+          description: Auto update interval
+          example: 1m30s
+          type: string
+        JobID:
+          description: Autoupdate job id
+          example: '15'
+          type: string
+        Webhook:
+          description: A UUID generated from client
+          example: 05de31a2-79fa-4644-9c12-faa67e5c49f0
+          type: string
+      type: object
+    workflows.Status:
+      enum:
+        - healthy
+        - syncing
+        - error
+        - paused
+        - unknown
+      type: string
+      x-enum-varnames:
+        - StatusHealthy
+        - StatusSyncing
+        - StatusError
+        - StatusPaused
+        - StatusUnknown
+    github_com_portainer_portainer-ee_api_git_types.GitProvider:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+      type: integer
+      x-enum-varnames:
+        - GitProviderCustom
+        - GitProviderGitHub
+        - GitProviderGitLab
+        - GitProviderBitbucketCloud
+        - GitProviderBitbucketDataCenter
+        - GitProviderAzureDevOps
+        - GitProviderGiteaForgejo
+    sources.connectionInfo:
+      properties:
+        configFilePath:
+          type: string
+        referenceName:
+          type: string
+        tlsSkipVerify:
+          type: boolean
+      type: object
+    sources.autoUpdateInfo:
+      properties:
+        fetchInterval:
+          type: string
+        mechanism:
+          type: string
+      type: object
+    sources.gitAuthInfo:
+      properties:
+        provider:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+        type:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+      type: object
+    github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType:
+      enum:
+        - 0
+        - 1
+      type: integer
+      x-enum-varnames:
+        - GitCredentialAuthType_Basic
+        - GitCredentialAuthType_Token
+    workflows.WorkflowPhaseStatus:
+      properties:
+        error:
+          type: string
+        status:
+          $ref: '#/components/schemas/workflows.Status'
+      type: object
+    github_com_portainer_portainer_api_git_types.GitAuthentication:
+      properties:
+        AuthorizationType:
+          type: integer
+        GitCredentialID:
+          description: |-
+            Git credentials identifier when the value is not 0
+            When the value is 0, Username and Password are set without using saved credential
+            This is introduced since 2.15.0
+          example: 0
+          type: integer
+        Password:
+          type: string
+        Provider:
+          type: integer
+        Username:
+          type: string
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

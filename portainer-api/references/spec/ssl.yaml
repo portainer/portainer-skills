@@ -1,0 +1,103 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: View and update SSL settings
+    name: ssl
+    x-displayName: SSL
+servers:
+  - url: /api
+paths:
+  /ssl:
+    get:
+      description: |-
+        Retrieve the ssl settings.
+        **Access policy**: administrator
+      operationId: SSLInspect
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.SSLSettings'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied to access settings
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect the ssl settings
+      tags:
+        - ssl
+    put:
+      description: |-
+        Update the ssl settings.
+        **Access policy**: administrator
+      operationId: SSLUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ssl.sslUpdatePayload'
+        description: SSL Settings
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied to access settings
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update the ssl settings
+      tags:
+        - ssl
+components:
+  schemas:
+    ssl.sslUpdatePayload:
+      properties:
+        Cert:
+          description: SSL Certificates
+          type: string
+        HTTPEnabled:
+          type: boolean
+        Key:
+          type: string
+        clientCert:
+          description: SSL Client Certificates
+          type: string
+      type: object
+    portaineree.SSLSettings:
+      properties:
+        caCertPath:
+          type: string
+        certPath:
+          type: string
+        httpEnabled:
+          type: boolean
+        keyPath:
+          type: string
+        selfSigned:
+          type: boolean
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

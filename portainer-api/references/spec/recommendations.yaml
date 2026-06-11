@@ -1,0 +1,134 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Retrieve your recommendations
+    name: recommendations
+    x-displayName: Recommendations
+servers:
+  - url: /api
+paths:
+  /recommendations:
+    get:
+      description: Computes and returns all active recommendations. Returns an error if any provider fails. Admin-only.
+      operationId: RecommendationList
+      parameters:
+        - description: Filter by category
+          in: query
+          name: category
+          schema:
+            type: string
+            enum:
+              - governance
+              - security
+              - operations
+        - description: Filter by severity
+          in: query
+          name: severity
+          schema:
+            type: string
+            enum:
+              - error
+              - warning
+              - info
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/recommendations.recommendationResponse'
+                type: array
+        '500':
+          description: Unable to compute recommendations
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: List recommendations
+      tags:
+        - recommendations
+  /recommendations/summary:
+    get:
+      description: Returns counts by severity and category for sidebar badge. Admin-only.
+      operationId: RecommendationSummary
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/recommendations.summaryResponse'
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get recommendation summary
+      tags:
+        - recommendations
+components:
+  schemas:
+    recommendations.summaryResponse:
+      properties:
+        categoryCounts:
+          additionalProperties:
+            type: integer
+          type: object
+        severityCounts:
+          additionalProperties:
+            type: integer
+          type: object
+        total:
+          type: integer
+        totalTypes:
+          type: integer
+      type: object
+    recommendations.recommendationResponse:
+      properties:
+        actionLabel:
+          type: string
+        actionUrl:
+          type: string
+        category:
+          $ref: '#/components/schemas/portaineree.RecommendationCategory'
+        description:
+          type: string
+        severity:
+          $ref: '#/components/schemas/portaineree.RecommendationSeverity'
+        title:
+          type: string
+        typeId:
+          type: string
+      type: object
+    portaineree.RecommendationSeverity:
+      enum:
+        - error
+        - warning
+        - info
+      type: string
+      x-enum-varnames:
+        - RecommendationSeverityError
+        - RecommendationSeverityWarning
+        - RecommendationSeverityInfo
+    portaineree.RecommendationCategory:
+      enum:
+        - governance
+        - security
+        - operations
+      type: string
+      x-enum-varnames:
+        - RecommendationCategoryGovernance
+        - RecommendationCategorySecurity
+        - RecommendationCategoryOperations
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

@@ -1,0 +1,173 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Create exec sessions using websockets
+    name: websocket
+    x-displayName: Websocket
+servers:
+  - url: /api
+paths:
+  /websocket/attach:
+    get:
+      description: |-
+        If the nodeName query parameter is present, the request will be proxied to the underlying agent environment(endpoint).
+        If the nodeName query parameter is not specified, the request will be upgraded to the websocket protocol and
+        an AttachStart operation HTTP request will be created and hijacked.
+        **Access policy**: authenticated
+      parameters:
+        - description: environment(endpoint) ID of the environment(endpoint) where the resource is located
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+        - description: node name
+          in: query
+          name: nodeName
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Attach a websocket
+      tags:
+        - websocket
+  /websocket/exec:
+    get:
+      description: |-
+        If the nodeName query parameter is present, the request will be proxied to the underlying agent environment(endpoint).
+        If the nodeName query parameter is not specified, the request will be upgraded to the websocket protocol and
+        an ExecStart operation HTTP request will be created and hijacked.
+      parameters:
+        - description: environment(endpoint) ID of the environment(endpoint) where the resource is located
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+        - description: node name
+          in: query
+          name: nodeName
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '409':
+          description: Conflict
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Execute a websocket
+      tags:
+        - websocket
+  /websocket/kubernetes-shell:
+    get:
+      description: |-
+        The request will be upgraded to the websocket protocol. The request will proxy input from the client to the pod via long-lived websocket connection.
+        **Access policy**: authenticated
+      parameters:
+        - description: environment(endpoint) ID of the environment(endpoint) where the resource is located
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Execute a websocket on kubectl shell pod
+      tags:
+        - websocket
+  /websocket/pod:
+    get:
+      description: |-
+        The request will be upgraded to the websocket protocol.
+        **Access policy**: authenticated
+      parameters:
+        - description: environment(endpoint) ID of the environment(endpoint) where the resource is located
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+        - description: namespace where the container is located
+          in: query
+          name: namespace
+          required: true
+          schema:
+            type: string
+        - description: name of the pod containing the container
+          in: query
+          name: podName
+          required: true
+          schema:
+            type: string
+        - description: name of the container
+          in: query
+          name: containerName
+          required: true
+          schema:
+            type: string
+        - description: command to execute in the container
+          in: query
+          name: command
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Execute a websocket on pod
+      tags:
+        - websocket
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

@@ -1,0 +1,59 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Fetch the message of the day
+    name: motd
+    x-displayName: Message of the day
+servers:
+  - url: /api
+paths:
+  /motd:
+    get:
+      description: '**Access policy**: restricted'
+      operationId: MOTD
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/motd.Motd'
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: fetches the message of the day
+      tags:
+        - motd
+components:
+  schemas:
+    motd.Motd:
+      properties:
+        ContentLayout:
+          additionalProperties:
+            type: string
+          type: object
+        Hash:
+          items:
+            type: integer
+          type: array
+        Message:
+          type: string
+        Style:
+          type: string
+        Title:
+          type: string
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

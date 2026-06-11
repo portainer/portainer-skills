@@ -1,0 +1,359 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage Docker resources
+    name: docker
+    x-displayName: Docker resources
+servers:
+  - url: /api
+paths:
+  /docker/{environmentId}/containers/{containerId}/gpus:
+    get:
+      description: '**Access policy**:'
+      operationId: dockerContainerGpusInspect
+      parameters:
+        - description: Environment identifier
+          in: path
+          name: environmentId
+          required: true
+          schema:
+            type: integer
+        - description: Container identifier
+          in: path
+          name: containerId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/containers.containerGpusResponse'
+        '400':
+          description: Bad request
+        '404':
+          description: Environment or container not found
+        '500':
+          description: Internal server error
+      security:
+        - jwt: []
+      summary: Fetch container gpus data
+      tags:
+        - docker
+  /docker/{environmentId}/containers/{containerId}/image_status:
+    get:
+      description: '**Access policy**:'
+      operationId: containerImageStatus
+      parameters:
+        - description: Environment identifier
+          in: path
+          name: environmentId
+          required: true
+          schema:
+            type: integer
+        - description: Container identifier
+          in: path
+          name: containerId
+          required: true
+          schema:
+            type: integer
+        - description: Refresh will force a refresh of the image status cache
+          in: query
+          name: refresh
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/images.StatusResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+      security:
+        - jwt: []
+      summary: Fetch image status for container
+      tags:
+        - docker
+  /docker/{environmentId}/containers/image_status/clear:
+    post:
+      description: |-
+        Clear the image status cache for all containers in the environment
+        **Access policy**:
+      operationId: containersImageStatusClear
+      parameters:
+        - description: Environment identifier
+          in: path
+          name: environmentId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+      security:
+        - jwt: []
+      summary: Clear container image status cache
+      tags:
+        - docker
+  /docker/{environmentId}/dashboard:
+    get:
+      description: '**Access policy**: restricted'
+      operationId: dockerDashboard
+      parameters:
+        - description: Environment identifier
+          in: path
+          name: environmentId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/docker.dashboardResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+      security:
+        - jwt: []
+      summary: Get counters for the dashboard
+      tags:
+        - docker
+  /docker/{environmentId}/images:
+    get:
+      description: '**Access policy**:'
+      operationId: dockerImagesList
+      parameters:
+        - description: Environment identifier
+          in: path
+          name: environmentId
+          required: true
+          schema:
+            type: integer
+        - description: Include image usage information
+          in: query
+          name: withUsage
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/images.ImageResponse'
+                type: array
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+      security:
+        - jwt: []
+      summary: Fetch images
+      tags:
+        - docker
+  /docker/{environmentId}/services/{serviceId}/image_status:
+    get:
+      description: '**Access policy**:'
+      operationId: ServiceImageStatus
+      parameters:
+        - description: Environment identifier
+          in: path
+          name: environmentId
+          required: true
+          schema:
+            type: integer
+        - description: Service identifier
+          in: path
+          name: serviceId
+          required: true
+          schema:
+            type: integer
+        - description: Refresh will force a refresh of the image status cache
+          in: query
+          name: refresh
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/images.StatusResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+      security:
+        - jwt: []
+      summary: Fetch image status for service
+      tags:
+        - docker
+  /docker/{environmentId}/services/image_status/clear:
+    post:
+      description: |-
+        Clear the image status cache for all services in the environment
+        **Access policy**:
+      operationId: serviceImageStatusClear
+      parameters:
+        - description: Environment identifier
+          in: path
+          name: environmentId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+      security:
+        - jwt: []
+      summary: Clear service image status cache
+      tags:
+        - docker
+  /stacks/image_status/clear:
+    post:
+      description: |-
+        Clear the image status cache for all stacks in the environment
+        **Access policy**:
+      operationId: stacksImageStatusClear
+      parameters:
+        - description: Identifier of the environment(endpoint) that will be used to filter the stacks to clear the image status cache for
+          in: query
+          name: environmentId
+          schema:
+            type: integer
+        - description: Identifier of the swarm cluster that will be used to filter the stacks to clear the image status cache for
+          in: query
+          name: swarmId
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+      security:
+        - jwt: []
+      summary: Clear stack image status cache
+      tags:
+        - docker
+components:
+  schemas:
+    images.StatusResponse:
+      properties:
+        Message:
+          type: string
+        Status:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_docker_images.Status'
+      type: object
+    images.ImageResponse:
+      properties:
+        created:
+          type: integer
+        id:
+          type: string
+        nodeName:
+          type: string
+        size:
+          type: integer
+        tags:
+          items:
+            type: string
+          type: array
+        used:
+          description: |-
+            Used is true if the image is used by at least one container
+            supplied only when withUsage is true
+          type: boolean
+      type: object
+    docker.dashboardResponse:
+      properties:
+        containers:
+          $ref: '#/components/schemas/stats.ContainerStats'
+        images:
+          $ref: '#/components/schemas/docker.imagesCounters'
+        networks:
+          type: integer
+        services:
+          type: integer
+        stacks:
+          type: integer
+        volumes:
+          type: integer
+      type: object
+    containers.containerGpusResponse:
+      properties:
+        gpus:
+          type: string
+      type: object
+    github_com_portainer_portainer-ee_api_docker_images.Status:
+      enum:
+        - processing
+        - outdated
+        - updated
+        - skipped
+        - preparing
+        - error
+      type: string
+      x-enum-varnames:
+        - Processing
+        - Outdated
+        - Updated
+        - Skipped
+        - Preparing
+        - Error
+    docker.imagesCounters:
+      properties:
+        size:
+          type: integer
+        total:
+          type: integer
+      type: object
+    stats.ContainerStats:
+      properties:
+        healthy:
+          type: integer
+        running:
+          type: integer
+        stopped:
+          type: integer
+        total:
+          type: integer
+        unhealthy:
+          type: integer
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

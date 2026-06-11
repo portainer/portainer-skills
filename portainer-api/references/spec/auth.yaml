@@ -1,0 +1,128 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Authenticate against Portainer HTTP API
+    name: auth
+    x-displayName: Authentication
+servers:
+  - url: /api
+paths:
+  /auth:
+    post:
+      description: |-
+        **Access policy**: public
+        Use this environment(endpoint) to authenticate against Portainer using a username and password.
+      operationId: AuthenticateUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/auth.authenticatePayload'
+        description: Credentials used for authentication
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/auth.authenticateResponse'
+        '400':
+          description: Invalid request
+        '422':
+          description: Invalid Credentials
+        '500':
+          description: Server error
+      summary: Authenticate
+      tags:
+        - auth
+  /auth/logout:
+    post:
+      description: '**Access policy**: public'
+      operationId: Logout
+      responses:
+        '204':
+          description: Success
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Logout
+      tags:
+        - auth
+  /auth/oauth/validate:
+    post:
+      description: '**Access policy**: public'
+      operationId: ValidateOAuth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/auth.oauthPayload'
+        description: OAuth Credentials used for authentication
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/auth.authenticateResponse'
+        '400':
+          description: Invalid request
+        '422':
+          description: Invalid Credentials
+        '500':
+          description: Server error
+      summary: Authenticate with OAuth
+      tags:
+        - auth
+components:
+  schemas:
+    auth.authenticateResponse:
+      properties:
+        jwt:
+          description: JWT token used to authenticate against the API
+          example: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzAB
+          type: string
+      type: object
+    auth.oauthPayload:
+      properties:
+        Code:
+          description: OAuth code returned from OAuth Provided
+          type: string
+      type: object
+    auth.authenticatePayload:
+      properties:
+        apiKey:
+          description: API Key
+          example: '1234567890'
+          type: string
+        password:
+          description: Password
+          example: mypassword
+          type: string
+        username:
+          description: Username
+          example: admin
+          type: string
+      required:
+        - apiKey
+        - password
+        - username
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

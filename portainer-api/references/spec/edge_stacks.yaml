@@ -1,0 +1,1870 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage Edge Stacks
+    name: edge_stacks
+    x-displayName: Edge stacks
+servers:
+  - url: /api
+paths:
+  /edge_stacks:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackList
+      parameters:
+        - description: when true summarize the edge stack statuses in the StatusSummary field and void the Status field.
+          in: query
+          name: summarizeStatuses
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_edgestacks.edgeStackListResponseItem'
+                type: array
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetches the list of EdgeStacks
+      tags:
+        - edge_stacks
+  /edge_stacks/{id}:
+    delete:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackDelete
+      parameters:
+        - description: EdgeStack Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Delete an EdgeStack
+      tags:
+        - edge_stacks
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackInspect
+      parameters:
+        - description: EdgeStack Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeStack'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect an EdgeStack
+      tags:
+        - edge_stacks
+    put:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackUpdate
+      parameters:
+        - description: EdgeStack Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_edgestacks.updateEdgeStackPayload'
+        description: EdgeStack data
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeStack'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update an EdgeStack
+      tags:
+        - edge_stacks
+  /edge_stacks/{id}/file:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackFile
+      parameters:
+        - description: EdgeStack Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Stack file version maintained by Portainer. If both version and commitHash are provided, the commitHash will be used
+          in: query
+          name: version
+          schema:
+            type: integer
+        - description: Git repository commit hash. If both version and commitHash are provided, the commitHash will be used
+          in: query
+          name: commitHash
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_edgestacks.stackFileResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetches the stack file for an EdgeStack
+      tags:
+        - edge_stacks
+  /edge_stacks/{id}/git:
+    put:
+      description: '**Access policy**: authenticated'
+      operationId: edgeStackUpdateFromGit
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/edgestacks.stackGitUpdatePayload'
+        description: Git configurations
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update git configuration and pulls the repository
+      tags:
+        - edge_stacks
+  /edge_stacks/{id}/helmRepo:
+    put:
+      description: '**Access policy**: administrator'
+      operationId: edgeStackUpdateHelmRepository
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/edgestacks.updateEdgeStackHelmRepositoryPayload'
+        description: Helm repository update configuration
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeStack'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update an EdgeStack from a Helm repository
+      tags:
+        - edge_stacks
+  /edge_stacks/{id}/logs/{endpoint_id}:
+    delete:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackLogsDelete
+      parameters:
+        - description: EdgeStack Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Endpoint Id
+          in: path
+          name: endpoint_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Deletes the available logs for a given edge stack and endpoint
+      tags:
+        - edge_stacks
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackLogsStatusGet
+      parameters:
+        - description: EdgeStack Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Environment Id
+          in: path
+          name: endpoint_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Gets the status of the log collection for a given edgestack and environment
+      tags:
+        - edge_stacks
+    put:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackLogsCollect
+      parameters:
+        - description: EdgeStack Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Environment Id
+          in: path
+          name: endpoint_id
+          required: true
+          schema:
+            type: integer
+        - description: Number of lines to request for the logs
+          in: query
+          name: tail
+          schema:
+            type: integer
+        - description: Container Id
+          in: query
+          name: container_id
+          schema:
+            type: string
+        - description: Start time to request for the logs
+          in: query
+          name: since
+          schema:
+            type: string
+        - description: End time to request for the logs
+          in: query
+          name: until
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Schedule the collection of logs for a given endpoint and edge stack
+      tags:
+        - edge_stacks
+  /edge_stacks/{id}/logs/{endpoint_id}/file:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackLogsDownload
+      parameters:
+        - description: EdgeStack Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Endpoint Id
+          in: path
+          name: endpoint_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Downloads the available logs for a given edge stack and endpoint
+      tags:
+        - edge_stacks
+  /edge_stacks/{id}/stagger/status:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackStaggerStatusInspect
+      parameters:
+        - description: EdgeStack Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/edgestacks.edgeStackStaggerStatusResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect an EdgeStack's parallel update status
+      tags:
+        - edge_stacks
+  /edge_stacks/{id}/status:
+    put:
+      description: Authorized only if the request is done by an Edge Environment(Endpoint)
+      operationId: EdgeStackStatusUpdate
+      parameters:
+        - description: EdgeStack Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_edgestacks.updateStatusPayload'
+        description: EdgeStack status payload
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeStack'
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      summary: Update an EdgeStack status
+      tags:
+        - edge_stacks
+  /edge_stacks/create/file:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackCreateFile
+      parameters:
+        - description: if true, will not create an edge stack, but just will check the settings and return a non-persisted edge stack object
+          in: query
+          name: dryrun
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                Name:
+                  description: Name of the stack. it must only consist of lowercase alphanumeric characters, hyphens, or underscores as well as start with a letter or number
+                  type: string
+                file:
+                  description: Content of the Stack file
+                  type: string
+                  format: binary
+                EdgeGroups:
+                  description: JSON stringified array of Edge Groups ids
+                  type: string
+                DeploymentType:
+                  description: deploy type 0 - 'compose', 1 - 'kubernetes'
+                  type: integer
+                Registries:
+                  description: JSON stringified array of Registry ids to use for this stack
+                  type: string
+                UseManifestNamespaces:
+                  description: Uses the manifest's namespaces instead of the default one, relevant only for kube environments
+                  type: boolean
+                PrePullImage:
+                  description: Pre Pull image
+                  type: boolean
+                RetryDeploy:
+                  description: Retry deploy
+                  type: boolean
+                RetryPeriod:
+                  description: Duration, in seconds, for which the agent should continue attempting to deploy the stack after a failure
+                  type: integer
+                Webhook:
+                  description: unique webhook id
+                  type: string
+                EnvVars:
+                  description: JSON stringified array of environment variables {name, value}
+                  type: string
+                StaggerConfig:
+                  description: JSON stringified object of stagger config
+                  type: string
+              required:
+                - Name
+                - file
+                - EdgeGroups
+                - DeploymentType
+                - Webhook
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeStack'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create an EdgeStack from file
+      tags:
+        - edge_stacks
+  /edge_stacks/create/helmRepo:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackCreateHelmRepository
+      parameters:
+        - description: if true, will not create an edge stack, but just will check the settings and return a non-persisted edge stack object
+          in: query
+          name: dryrun
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/edgestacks.edgeStackFromHelmRepositoryPayload'
+        description: stack config
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeStack'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create an EdgeStack from a Helm repository
+      tags:
+        - edge_stacks
+  /edge_stacks/create/repository:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackCreateRepository
+      parameters:
+        - description: if true, will not create an edge stack, but just will check the settings and return a non-persisted edge stack object
+          in: query
+          name: dryrun
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_edgestacks.edgeStackFromGitRepositoryPayload'
+        description: stack config
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeStack'
+        '400':
+          description: Bad request
+        '409':
+          description: Webhook ID already exists
+        '500':
+          description: Internal server error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create an EdgeStack from a git repository
+      tags:
+        - edge_stacks
+  /edge_stacks/create/string:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: EdgeStackCreateString
+      parameters:
+        - description: if true, will not create an edge stack, but just will check the settings and return a non-persisted edge stack object
+          in: query
+          name: dryrun
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_edgestacks.edgeStackFromStringPayload'
+        description: stack config
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeStack'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create an EdgeStack from a text
+      tags:
+        - edge_stacks
+  /edge_stacks/parse_registries:
+    post:
+      description: '**Access policy**: authenticated'
+      operationId: EdgeStackParseRegistries
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  description: stack file
+                  type: string
+                  format: binary
+              required:
+                - file
+        required: true
+      responses:
+        '200':
+          description: List of registries IDs
+          content:
+            application/json:
+              schema:
+                items:
+                  type: integer
+                type: array
+        '400':
+          description: Invalid request payload
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Parse registries from a stack file
+      tags:
+        - edge_stacks
+components:
+  schemas:
+    portaineree.EdgeStack:
+      properties:
+        AlwaysCloneGitRepoForRelativePath:
+          description: Whether the edge stack always clones the git repository for relative path
+          example: false
+          type: boolean
+        AutoUpdate:
+          allOf:
+            - $ref: '#/components/schemas/portainer.AutoUpdateSettings'
+          description: The GitOps update settings of a git stack
+        CreatedBy:
+          description: The username which created this stack
+          example: admin
+          type: string
+        CreatedByUserId:
+          description: The username id which created this stack
+          example: '1'
+          type: string
+        CreationDate:
+          description: StatusArray    map[EndpointID][]EdgeStackStatus `json:"StatusArray"`
+          type: integer
+        DeployerOptions:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EdgeStackDeployerOptions'
+          description: Options to control the Deployer behaviour
+        DeploymentType:
+          $ref: '#/components/schemas/portainer.EdgeStackDeploymentType'
+        EdgeGroups:
+          items:
+            type: integer
+          type: array
+        EdgeUpdateID:
+          description: EdgeUpdateID represents the parent update ID, will be zero if this stack is not part of an update
+          type: integer
+        EntryPoint:
+          type: string
+        EnvVars:
+          description: EnvVars is a list of environment variables to inject into the stack
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        FilesystemPath:
+          description: Local filesystem path
+          example: /tmp
+          type: string
+        GitConfig:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.RepoConfig'
+          description: The git configuration of a git stack
+        HelmConfig:
+          allOf:
+            - $ref: '#/components/schemas/portainer.HelmConfig'
+          description: HelmConfig is the configuration for a Helm based deployment of an edge stack (Helm Chart)
+        Id:
+          description: EdgeStack Identifier
+          example: 1
+          type: integer
+        ManifestPath:
+          type: string
+        Name:
+          type: string
+        NumDeployments:
+          type: integer
+        PerDeviceConfigsGroupMatchType:
+          allOf:
+            - $ref: '#/components/schemas/portainer.PerDevConfigsFilterType'
+          description: Per device configs group match type
+          enum:
+            - file
+            - ' dir'
+          example: file
+        PerDeviceConfigsMatchType:
+          allOf:
+            - $ref: '#/components/schemas/portainer.PerDevConfigsFilterType'
+          description: Per device configs match type
+          enum:
+            - file
+            - ' dir'
+          example: file
+        PerDeviceConfigsPath:
+          description: Per device configs path
+          example: configs
+          type: string
+        PrePullImage:
+          description: Pre Pull Image
+          type: boolean
+        PreviousDeploymentInfo:
+          allOf:
+            - $ref: '#/components/schemas/portainer.StackDeploymentInfo'
+          description: PreviousDeploymentInfo represents the previous deployment info of the stack
+        ProjectPath:
+          type: string
+        RePullImage:
+          description: |-
+            Deprecated(2.36): keep it for backward compatibility. To remove in future versions (2.44+)
+            Re-Pull Image
+          type: boolean
+        Registries:
+          items:
+            type: integer
+          type: array
+        RetryDeploy:
+          description: Retry deploy
+          example: false
+          type: boolean
+        RetryPeriod:
+          description: RetryPeriod specifies the duration, in seconds, for which the agent should continue attempting to deploy the stack after a failure
+          type: integer
+        ScheduledTime:
+          description: Schedule represents the schedule of the Edge stack (optional, format - 'YYYY-MM-DD HH:mm:ss')
+          example: '2020-11-13 14:53:00'
+          type: string
+        StackFileVersion:
+          description: StackFileVersion represents the version of the stack file, such yaml, hcl, manifest file
+          example: 1
+          type: integer
+        StaggerConfig:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EdgeStaggerConfig'
+          description: StaggerConfig is the configuration for staggered update
+        Status:
+          additionalProperties:
+            $ref: '#/components/schemas/portainer.EdgeStackStatus'
+          type: object
+        SupportPerDeviceConfigs:
+          description: Whether the edge stack supports per device configs
+          example: false
+          type: boolean
+        SupportRelativePath:
+          description: Whether the stack supports relative path volume
+          example: false
+          type: boolean
+        UseManifestNamespaces:
+          description: Uses the manifest's namespaces instead of the default one
+          type: boolean
+        Version:
+          type: integer
+        Webhook:
+          description: A UUID to identify a webhook. The stack will be force updated and pull the latest image when the webhook was invoked.
+          example: c11fdf23-183e-428a-9bb6-16db01032174
+          type: string
+      type: object
+    github_com_portainer_portainer-ee_api_http_handler_edgestacks.edgeStackFromStringPayload:
+      properties:
+        DeploymentType:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EdgeStackDeploymentType'
+          description: |-
+            Deployment type to deploy this stack
+            Valid values are: 0 - 'compose', 1 - 'kubernetes'
+            compose is enabled only for docker environments
+            kubernetes is enabled only for kubernetes environments
+          enum:
+            - 0
+            - 1
+          example: 0
+        EdgeGroups:
+          description: List of identifiers of EdgeGroups
+          example:
+            - 1
+          items:
+            type: integer
+          type: array
+        EnvVars:
+          description: List of environment variables
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        Name:
+          description: |-
+            Name of the stack
+            Max length: 255
+            Name must only contains lowercase characters, numbers, hyphens, or underscores
+            Name must start with a lowercase character or number
+            Example: stack-name or stack_123 or stackName
+          example: stack-name
+          type: string
+        PrePullImage:
+          description: Pre Pull image
+          example: false
+          type: boolean
+        Registries:
+          description: List of Registries to use for this stack
+          items:
+            type: integer
+          type: array
+        RetryDeploy:
+          description: Retry deploy
+          example: false
+          type: boolean
+        RetryPeriod:
+          description: Retry period specifies the duration, in seconds, for which the agent should continue attempting to deploy the stack after a failure
+          type: integer
+        StackFileContent:
+          description: Content of the Stack file
+          example: |-
+            version: 3
+             services:
+             web:
+             image:nginx
+          type: string
+        StaggerConfig:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EdgeStaggerConfig'
+          description: Configuration for stagger updates
+        UseManifestNamespaces:
+          description: Uses the manifest's namespaces instead of the default one
+          type: boolean
+        Webhook:
+          description: Optional webhook configuration
+          example: c11fdf23-183e-428a-9bb6-16db01032174
+          type: string
+      required:
+        - Name
+        - StackFileContent
+      type: object
+    github_com_portainer_portainer-ee_api_http_handler_edgestacks.edgeStackFromGitRepositoryPayload:
+      properties:
+        AlwaysCloneGitRepoForRelativePath:
+          description: Whether the edge stack always clones the git repository for relative path
+          example: false
+          type: boolean
+        AutoUpdate:
+          allOf:
+            - $ref: '#/components/schemas/portainer.AutoUpdateSettings'
+          description: Optional GitOps update configuration
+        CreatedFromCustomTemplateID:
+          description: CreatedFromCustomTemplateID used to determine whether the edge stack is created from a custom template
+          type: integer
+        DeploymentType:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EdgeStackDeploymentType'
+          description: |-
+            Deployment type to deploy this stack
+            Valid values are: 0 - 'compose', 1 - 'kubernetes'
+            compose is enabled only for docker environments
+            kubernetes is enabled only for kubernetes environments
+          enum:
+            - 0
+            - 1
+          example: 0
+        EdgeGroups:
+          description: List of identifiers of EdgeGroups
+          example:
+            - 1
+          items:
+            type: integer
+          type: array
+        EnvVars:
+          description: List of environment variables
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        FilePathInRepository:
+          default: docker-compose.yml
+          description: Path to the Stack file inside the Git repository
+          example: docker-compose.yml
+          type: string
+        FilesystemPath:
+          description: Local filesystem path
+          example: /mnt
+          type: string
+        HelmConfig:
+          allOf:
+            - $ref: '#/components/schemas/edgestacks.gitHelmConfig'
+          description: |-
+            HelmConfig is the optional Helm configuration for deploying a chart from within the git repository.
+            Omit this field for non-Helm git stacks.
+        Name:
+          description: |-
+            Name of the stack
+            Max length: 255
+            Name must only contains lowercase characters, numbers, hyphens, or underscores
+            Name must start with a lowercase character or number
+            Example: stack-name or stack_123 or stackName
+          example: stack-name
+          type: string
+        PerDeviceConfigsGroupMatchType:
+          allOf:
+            - $ref: '#/components/schemas/portainer.PerDevConfigsFilterType'
+          description: Per device configs group match type
+          enum:
+            - file
+            - ' dir'
+          example: file
+        PerDeviceConfigsMatchType:
+          allOf:
+            - $ref: '#/components/schemas/portainer.PerDevConfigsFilterType'
+          description: Per device configs match type
+          enum:
+            - file
+            - ' dir'
+          example: file
+        PerDeviceConfigsPath:
+          description: Per device configs path
+          example: configs
+          type: string
+        PrePullImage:
+          description: Pre Pull image
+          example: false
+          type: boolean
+        Registries:
+          description: List of Registries to use for this stack
+          items:
+            type: integer
+          type: array
+        RepositoryAuthentication:
+          description: Use basic authentication to clone the Git repository
+          example: true
+          type: boolean
+        RepositoryAuthorizationType:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+          description: RepositoryAuthorizationType is the authorization type to use
+          example: 0
+        RepositoryGitCredentialID:
+          description: GitCredentialID used to identify the binded git credential
+          example: 0
+          type: integer
+        RepositoryPassword:
+          description: Password used in basic authentication. Required when RepositoryAuthentication is true.
+          example: myGitPassword
+          type: string
+        RepositoryProvider:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+          description: RepositoryProvider is the provider to use
+          example: 0
+        RepositoryReferenceName:
+          description: Reference name of a Git repository hosting the Stack file
+          example: refs/heads/master
+          type: string
+        RepositoryURL:
+          description: URL of a Git repository hosting the Stack file
+          example: https://github.com/openfaas/faas
+          type: string
+        RepositoryUsername:
+          description: Username used in basic authentication. Required when RepositoryAuthentication is true.
+          example: myGitUsername
+          type: string
+        RetryDeploy:
+          description: Retry deploy
+          example: false
+          type: boolean
+        RetryPeriod:
+          description: Retry period specifies the duration, in seconds, for which the agent should continue attempting to deploy the stack after a failure
+          type: integer
+        StaggerConfig:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EdgeStaggerConfig'
+          description: Configuration for stagger updates
+        SupportPerDeviceConfigs:
+          description: Whether the edge stack supports per device configs
+          example: false
+          type: boolean
+        SupportRelativePath:
+          description: Whether the stack supports relative path volume
+          example: false
+          type: boolean
+        TLSSkipVerify:
+          description: TLSSkipVerify skips SSL verification when cloning the Git repository
+          example: false
+          type: boolean
+        UseManifestNamespaces:
+          description: Uses the manifest's namespaces instead of the default one
+          type: boolean
+      required:
+        - EdgeGroups
+        - Name
+        - RepositoryURL
+      type: object
+    edgestacks.edgeStackFromHelmRepositoryPayload:
+      properties:
+        EdgeGroups:
+          description: List of identifiers of EdgeGroups
+          example:
+            - 1
+          items:
+            type: integer
+          type: array
+        HelmConfig:
+          allOf:
+            - $ref: '#/components/schemas/edgestacks.helmRepositoryConfig'
+          description: Helm repository configuration. ChartURL and ChartName are required.
+        Name:
+          description: |-
+            Name of the stack
+            Max length: 255
+            Name must only contains lowercase characters, numbers, hyphens, or underscores
+            Name must start with a lowercase character or number
+            Example: stack-name or stack_123 or stack123_name
+          example: stack-name
+          type: string
+        StaggerConfig:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EdgeStaggerConfig'
+          description: Configuration for stagger updates
+      required:
+        - Name
+      type: object
+    github_com_portainer_portainer-ee_api_http_handler_edgestacks.updateStatusPayload:
+      properties:
+        EndpointID:
+          type: integer
+        Error:
+          type: string
+        RollbackTo:
+          description: RollbackTo specifies the stack file version to rollback to (only support to rollback to the last version currently)
+          type: integer
+        Status:
+          $ref: '#/components/schemas/portainer.EdgeStackStatusType'
+        Time:
+          format: int64
+          type: integer
+        Version:
+          type: integer
+      type: object
+    edgestacks.edgeStackStaggerStatusResponse:
+      properties:
+        status:
+          type: string
+      type: object
+    edgestacks.updateEdgeStackHelmRepositoryPayload:
+      properties:
+        EdgeGroups:
+          description: List of identifiers of EdgeGroups
+          items:
+            type: integer
+          type: array
+        HelmConfig:
+          allOf:
+            - $ref: '#/components/schemas/edgestacks.helmRepositoryConfig'
+          description: Helm repository configuration to update. ChartURL and ChartName are required.
+        StaggerConfig:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EdgeStaggerConfig'
+          description: Configuration for stagger updates
+      type: object
+    edgestacks.stackGitUpdatePayload:
+      properties:
+        Authentication:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitAuthentication'
+        AutoUpdate:
+          $ref: '#/components/schemas/portainer.AutoUpdateSettings'
+        DeployerOptions:
+          allOf:
+            - $ref: '#/components/schemas/edgestacks.deployerOptionsPayload'
+          description: Options to control the deployer behaviour
+        DeploymentType:
+          $ref: '#/components/schemas/portainer.EdgeStackDeploymentType'
+        EnvVars:
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        GroupIds:
+          items:
+            type: integer
+          type: array
+        HelmConfig:
+          allOf:
+            - $ref: '#/components/schemas/edgestacks.gitHelmConfig'
+          description: HelmConfig contains Helm-specific update options. Only applies to Helm git deployments.
+        PrePullImage:
+          type: boolean
+        RePullImage:
+          description: |-
+            Deprecated(2.36): to be removed in future versions (2.44+)
+            Use RepullImageAndRedeploy instead
+          type: boolean
+        RefName:
+          type: string
+        Registries:
+          description: List of Registries to use for this stack
+          items:
+            type: integer
+          type: array
+        RepullImageAndRedeploy:
+          description: RepullImageAndRedeploy indicates whether the edge stack is manually forced to redeploy
+          type: boolean
+        RetryDeploy:
+          type: boolean
+        RetryPeriod:
+          description: RetryPeriod specifies the duration, in seconds, for which the agent should continue attempting to deploy the stack after a failure
+          type: integer
+        StaggerConfig:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EdgeStaggerConfig'
+          description: Configuration for stagger updates
+        UpdateVersion:
+          description: |-
+            Update the stack file content from the git repository
+            If this is set to true, it indicates that the stack is being redeployed (Pull and update stack),
+            if it is false, it indicates that the stack is being updated (Update settings)
+          type: boolean
+      type: object
+    github_com_portainer_portainer-ee_api_http_handler_edgestacks.stackFileResponse:
+      properties:
+        StackFileContent:
+          type: string
+      type: object
+    github_com_portainer_portainer-ee_api_http_handler_edgestacks.updateEdgeStackPayload:
+      properties:
+        DeployerOptions:
+          allOf:
+            - $ref: '#/components/schemas/edgestacks.deployerOptionsPayload'
+          description: Options to control the deployer behaviour
+        DeploymentType:
+          $ref: '#/components/schemas/portainer.EdgeStackDeploymentType'
+        EdgeGroups:
+          items:
+            type: integer
+          type: array
+        EnvVars:
+          description: Environment variables to inject into the stack
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        PrePullImage:
+          type: boolean
+        RePullImage:
+          description: 'Deprecated(2.36): use RepullImageAndRedeploy instead'
+          type: boolean
+        Registries:
+          items:
+            type: integer
+          type: array
+        RepullImageAndRedeploy:
+          description: RepullImageAndRedeploy indicates whether the edge stack is manually forced to redeploy
+          type: boolean
+        RetryDeploy:
+          type: boolean
+        RetryPeriod:
+          description: RetryPeriod specifies the duration, in seconds, for which the agent should continue attempting to deploy the stack after a failure
+          type: integer
+        RollbackTo:
+          description: RollbackTo specifies the stack file version to rollback to (only support to rollback to the last version currently)
+          type: integer
+        StackFileContent:
+          type: string
+        StaggerConfig:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EdgeStaggerConfig'
+          description: Configuration for stagger updates
+        UpdateVersion:
+          type: boolean
+        UseManifestNamespaces:
+          description: Uses the manifest's namespaces instead of the default one
+          type: boolean
+        Webhook:
+          description: Optional webhook configuration
+          example: c11fdf23-183e-428a-9bb6-16db01032174
+          type: string
+      type: object
+    github_com_portainer_portainer-ee_api_http_handler_edgestacks.edgeStackListResponseItem:
+      properties:
+        AlwaysCloneGitRepoForRelativePath:
+          description: Whether the edge stack always clones the git repository for relative path
+          example: false
+          type: boolean
+        AutoUpdate:
+          allOf:
+            - $ref: '#/components/schemas/portainer.AutoUpdateSettings'
+          description: The GitOps update settings of a git stack
+        CreatedBy:
+          description: The username which created this stack
+          example: admin
+          type: string
+        CreatedByUserId:
+          description: The username id which created this stack
+          example: '1'
+          type: string
+        CreationDate:
+          description: StatusArray    map[EndpointID][]EdgeStackStatus `json:"StatusArray"`
+          type: integer
+        DeployerOptions:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EdgeStackDeployerOptions'
+          description: Options to control the Deployer behaviour
+        DeploymentType:
+          $ref: '#/components/schemas/portainer.EdgeStackDeploymentType'
+        EdgeGroups:
+          items:
+            type: integer
+          type: array
+        EdgeUpdateID:
+          description: EdgeUpdateID represents the parent update ID, will be zero if this stack is not part of an update
+          type: integer
+        EntryPoint:
+          type: string
+        EnvVars:
+          description: EnvVars is a list of environment variables to inject into the stack
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        FilesystemPath:
+          description: Local filesystem path
+          example: /tmp
+          type: string
+        GitConfig:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.RepoConfig'
+          description: The git configuration of a git stack
+        HelmConfig:
+          allOf:
+            - $ref: '#/components/schemas/portainer.HelmConfig'
+          description: HelmConfig is the configuration for a Helm based deployment of an edge stack (Helm Chart)
+        Id:
+          description: EdgeStack Identifier
+          example: 1
+          type: integer
+        ManifestPath:
+          type: string
+        Name:
+          type: string
+        NumDeployments:
+          type: integer
+        PerDeviceConfigsGroupMatchType:
+          allOf:
+            - $ref: '#/components/schemas/portainer.PerDevConfigsFilterType'
+          description: Per device configs group match type
+          enum:
+            - file
+            - ' dir'
+          example: file
+        PerDeviceConfigsMatchType:
+          allOf:
+            - $ref: '#/components/schemas/portainer.PerDevConfigsFilterType'
+          description: Per device configs match type
+          enum:
+            - file
+            - ' dir'
+          example: file
+        PerDeviceConfigsPath:
+          description: Per device configs path
+          example: configs
+          type: string
+        PrePullImage:
+          description: Pre Pull Image
+          type: boolean
+        PreviousDeploymentInfo:
+          allOf:
+            - $ref: '#/components/schemas/portainer.StackDeploymentInfo'
+          description: PreviousDeploymentInfo represents the previous deployment info of the stack
+        ProjectPath:
+          type: string
+        RePullImage:
+          description: |-
+            Deprecated(2.36): keep it for backward compatibility. To remove in future versions (2.44+)
+            Re-Pull Image
+          type: boolean
+        Registries:
+          items:
+            type: integer
+          type: array
+        RetryDeploy:
+          description: Retry deploy
+          example: false
+          type: boolean
+        RetryPeriod:
+          description: RetryPeriod specifies the duration, in seconds, for which the agent should continue attempting to deploy the stack after a failure
+          type: integer
+        ScheduledTime:
+          description: Schedule represents the schedule of the Edge stack (optional, format - 'YYYY-MM-DD HH:mm:ss')
+          example: '2020-11-13 14:53:00'
+          type: string
+        StackFileVersion:
+          description: StackFileVersion represents the version of the stack file, such yaml, hcl, manifest file
+          example: 1
+          type: integer
+        StaggerConfig:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EdgeStaggerConfig'
+          description: StaggerConfig is the configuration for staggered update
+        Status:
+          additionalProperties:
+            $ref: '#/components/schemas/portainer.EdgeStackStatus'
+          type: object
+        StatusSummary:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_edgestacks.edgeStackStatusSummary'
+        SupportPerDeviceConfigs:
+          description: Whether the edge stack supports per device configs
+          example: false
+          type: boolean
+        SupportRelativePath:
+          description: Whether the stack supports relative path volume
+          example: false
+          type: boolean
+        UseManifestNamespaces:
+          description: Uses the manifest's namespaces instead of the default one
+          type: boolean
+        Version:
+          type: integer
+        Webhook:
+          description: A UUID to identify a webhook. The stack will be force updated and pull the latest image when the webhook was invoked.
+          example: c11fdf23-183e-428a-9bb6-16db01032174
+          type: string
+      type: object
+    portainer.EdgeStackStatus:
+      properties:
+        DeploymentInfo:
+          allOf:
+            - $ref: '#/components/schemas/portainer.StackDeploymentInfo'
+          description: EE only feature
+        Details:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EdgeStackStatusDetails'
+          description: Deprecated
+        EndpointID:
+          type: integer
+        Error:
+          description: Deprecated
+          type: string
+        ReadyRePullImage:
+          description: ReadyRePullImage is a flag to indicate whether the auto update is trigger to re-pull image
+          type: boolean
+        Status:
+          items:
+            $ref: '#/components/schemas/portainer.EdgeStackDeploymentStatus'
+          type: array
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EdgeStackStatusType'
+          description: Deprecated
+      type: object
+    portaineree.EdgeStaggerConfig:
+      properties:
+        DeviceNumber:
+          type: integer
+        DeviceNumberIncrementBy:
+          type: integer
+        DeviceNumberStartFrom:
+          type: integer
+        StaggerOption:
+          $ref: '#/components/schemas/portaineree.EdgeStaggerOption'
+        StaggerParallelOption:
+          $ref: '#/components/schemas/portaineree.EdgeStaggerParallelOption'
+        Timeout:
+          description: Timeout unit is minute
+          example: '5'
+          type: string
+        UpdateDelay:
+          description: UpdateDelay unit is minute
+          example: '5'
+          type: string
+        UpdateFailureAction:
+          $ref: '#/components/schemas/portaineree.EdgeUpdateFailureAction'
+      type: object
+    portainer.StackDeploymentInfo:
+      properties:
+        AdditionalFiles:
+          description: AdditionalFiles are the additional files used for deploying the stack
+          items:
+            type: string
+          type: array
+        ConfigFilePath:
+          description: ConfigFilePath is the path to the config file in the git repository used for deploying the stack
+          type: string
+        ConfigHash:
+          description: ConfigHash is the commit hash of the git repository used for deploying the stack
+          type: string
+        FileVersion:
+          description: FileVersion is the version of the stack file, used to detect changes
+          type: integer
+        ReferenceName:
+          description: ReferenceName is the git reference (branch/tag) used for deploying the stack
+          type: string
+        RepositoryURL:
+          description: RepositoryURL is the git repository URL used for deploying the stack
+          type: string
+        Version:
+          description: Version is the version of the stack and also is the deployed version in edge agent
+          type: integer
+      type: object
+    portainer.PerDevConfigsFilterType:
+      enum:
+        - file
+        - dir
+      type: string
+      x-enum-varnames:
+        - PerDevConfigsTypeFile
+        - PerDevConfigsTypeDir
+    portainer.HelmConfig:
+      properties:
+        Atomic:
+          description: |-
+            Atomic enables automatic rollback on deployment failure (equivalent to helm --atomic).
+            Used by both git repo and Helm repository deployments.
+          example: true
+          type: boolean
+        ChartName:
+          description: |-
+            ChartName is the name of the Helm chart within the repository.
+            Required for Helm repository deployments.
+          example: nginx
+          type: string
+        ChartPath:
+          description: |-
+            ChartPath is the path to a Helm chart folder within the cloned git repository.
+            Used exclusively for git repo helm deployments. Mutually exclusive with ChartURL.
+          example: charts/my-app
+          type: string
+        ChartURL:
+          description: |-
+            ChartURL is the URL of a Helm chart repository.
+            Used exclusively for Helm repository deployments. Mutually exclusive with ChartPath.
+          example: https://charts.bitnami.com/bitnami
+          type: string
+        ChartVersion:
+          description: |-
+            ChartVersion is the version of the Helm chart to deploy. Empty means latest.
+            Used exclusively for Helm repository deployments.
+          example: 15.0.0
+          type: string
+        Namespace:
+          description: |-
+            Namespace is the Kubernetes namespace to deploy the Helm chart into.
+            Used by both git repo and Helm repository deployments.
+          example: default
+          type: string
+        Timeout:
+          description: |-
+            Timeout sets the deadline for Helm operations (equivalent to helm --timeout, e.g. "5m0s").
+            Used by both git repo and Helm repository deployments.
+          example: 5m0s
+          type: string
+        ValuesFiles:
+          description: |-
+            ValuesFiles is a list of relative paths to Helm values YAML files within the cloned git repository.
+            Used exclusively for git repo helm deployments.
+          example:
+            - '[''values/prod.yaml'''
+            - ' ''values/secrets.yaml'']'
+          items:
+            type: string
+          type: array
+        ValuesInline:
+          description: |-
+            ValuesInline is the inline YAML string of Helm values.
+            Used exclusively for Helm repository deployments.
+          example: 'replicaCount: 2'
+          type: string
+      type: object
+    github_com_portainer_portainer-ee_api_git_types.RepoConfig:
+      properties:
+        Authentication:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer_api_git_types.GitAuthentication'
+          description: Git credentials
+        ConfigFilePath:
+          description: |-
+            ConfigFilePath is the path to the config file within the repository.
+            NOTE: For stacks, this mirrors Stack.EntryPoint and the two are kept in sync by stackUpdateGit.
+          example: docker-compose.yml
+          type: string
+        ConfigHash:
+          description: Repository hash
+          example: bc4c183d756879ea4d173315338110b31004b8e0
+          type: string
+        ReferenceName:
+          description: The reference name
+          example: refs/heads/branch_name
+          type: string
+        TLSSkipVerify:
+          description: TLSSkipVerify skips SSL verification when cloning the Git repository
+          example: false
+          type: boolean
+        URL:
+          description: The repo url
+          example: https://github.com/portainer/portainer.git
+          type: string
+      type: object
+    portainer.Pair:
+      properties:
+        name:
+          example: name
+          type: string
+        value:
+          example: value
+          type: string
+      type: object
+    portainer.EdgeStackDeploymentType:
+      enum:
+        - 0
+        - 1
+      type: integer
+      x-enum-varnames:
+        - EdgeStackDeploymentCompose
+        - EdgeStackDeploymentKubernetes
+    portaineree.EdgeStackDeployerOptions:
+      properties:
+        Prune:
+          description: Drives `compose up --remove-orphans` and `stack up --prune` options
+          type: boolean
+        RemoveVolumes:
+          description: Drives `compose down --volumes` option
+          type: boolean
+      type: object
+    portainer.AutoUpdateSettings:
+      properties:
+        ForcePullImage:
+          description: Pull latest image
+          example: false
+          type: boolean
+        ForceUpdate:
+          description: Force update ignores repo changes
+          example: false
+          type: boolean
+        Interval:
+          description: Auto update interval
+          example: 1m30s
+          type: string
+        JobID:
+          description: Autoupdate job id
+          example: '15'
+          type: string
+        Webhook:
+          description: A UUID generated from client
+          example: 05de31a2-79fa-4644-9c12-faa67e5c49f0
+          type: string
+      type: object
+    github_com_portainer_portainer-ee_api_git_types.GitProvider:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+      type: integer
+      x-enum-varnames:
+        - GitProviderCustom
+        - GitProviderGitHub
+        - GitProviderGitLab
+        - GitProviderBitbucketCloud
+        - GitProviderBitbucketDataCenter
+        - GitProviderAzureDevOps
+        - GitProviderGiteaForgejo
+    github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType:
+      enum:
+        - 0
+        - 1
+      type: integer
+      x-enum-varnames:
+        - GitCredentialAuthType_Basic
+        - GitCredentialAuthType_Token
+    edgestacks.gitHelmConfig:
+      properties:
+        Atomic:
+          description: Atomic enables automatic rollback on deployment failure (equivalent to helm --atomic).
+          example: true
+          type: boolean
+        ChartPath:
+          description: ChartPath is the path to the Helm chart folder within the cloned git repository. Required.
+          example: charts/my-app
+          type: string
+        Namespace:
+          description: Namespace is the Kubernetes namespace to deploy the Helm chart into.
+          example: default
+          type: string
+        Timeout:
+          description: Timeout sets the deadline for Helm operations (equivalent to helm --timeout, e.g. "5m0s").
+          example: 5m0s
+          type: string
+        ValuesFiles:
+          description: ValuesFiles is a list of relative paths to Helm values YAML files within the cloned git repository.
+          example:
+            - '[''values/prod.yaml'''
+            - ' ''values/secrets.yaml'']'
+          items:
+            type: string
+          type: array
+      type: object
+    edgestacks.helmRepositoryConfig:
+      properties:
+        Atomic:
+          description: Atomic enables automatic rollback on deployment failure (equivalent to helm --atomic).
+          example: true
+          type: boolean
+        ChartName:
+          description: ChartName is the name of the Helm chart within the repository. Required.
+          example: nginx
+          type: string
+        ChartURL:
+          description: ChartURL is the URL of the Helm chart repository. Required.
+          example: https://charts.bitnami.com/bitnami
+          type: string
+        ChartVersion:
+          description: ChartVersion is the version of the Helm chart to deploy. Empty means latest.
+          example: 15.0.0
+          type: string
+        Namespace:
+          description: Namespace is the Kubernetes namespace to deploy the Helm chart into.
+          example: default
+          type: string
+        Timeout:
+          description: Timeout sets the deadline for Helm operations (equivalent to helm --timeout, e.g. "5m0s").
+          example: 5m0s
+          type: string
+        ValuesInline:
+          description: ValuesInline is an inline YAML string of Helm values to apply.
+          example: 'replicaCount: 2'
+          type: string
+      type: object
+    portainer.EdgeStackStatusType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+        - 10
+        - 11
+        - 12
+        - 13
+      type: integer
+      x-enum-varnames:
+        - EdgeStackStatusPending
+        - EdgeStackStatusDeploymentReceived
+        - EdgeStackStatusError
+        - EdgeStackStatusAcknowledged
+        - EdgeStackStatusRemoved
+        - EdgeStackStatusRemoteUpdateSuccess
+        - EdgeStackStatusImagesPulled
+        - EdgeStackStatusRunning
+        - EdgeStackStatusDeploying
+        - EdgeStackStatusRemoving
+        - EdgeStackStatusPausedDeploying
+        - EdgeStackStatusRollingBack
+        - EdgeStackStatusRolledBack
+        - EdgeStackStatusCompleted
+    edgestacks.deployerOptionsPayload:
+      properties:
+        Prune:
+          type: boolean
+        RemoveVolumes:
+          type: boolean
+      type: object
+    github_com_portainer_portainer-ee_api_git_types.GitAuthentication:
+      properties:
+        AuthorizationType:
+          type: integer
+        GitCredentialID:
+          description: |-
+            Git credentials identifier when the value is not 0
+            When the value is 0, Username and Password are set without using saved credential
+            This is introduced since 2.15.0
+          example: 0
+          type: integer
+        Password:
+          type: string
+        Provider:
+          type: integer
+        Username:
+          type: string
+      type: object
+    github_com_portainer_portainer-ee_api_http_handler_edgestacks.edgeStackStatusSummary:
+      properties:
+        AggregatedStatus:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_edgestacks.aggregatedStatusesMap'
+        Reason:
+          type: string
+        Status:
+          $ref: '#/components/schemas/edgestacks.SummarizedStatus'
+      type: object
+    portainer.EdgeStackDeploymentStatus:
+      properties:
+        Error:
+          type: string
+        RollbackTo:
+          description: EE only feature
+          type: integer
+        Time:
+          format: int64
+          type: integer
+        Type:
+          $ref: '#/components/schemas/portainer.EdgeStackStatusType'
+        Version:
+          type: integer
+      type: object
+    portainer.EdgeStackStatusDetails:
+      properties:
+        Acknowledged:
+          type: boolean
+        Error:
+          type: boolean
+        ImagesPulled:
+          type: boolean
+        Ok:
+          type: boolean
+        Pending:
+          type: boolean
+        RemoteUpdateSuccess:
+          type: boolean
+        Remove:
+          type: boolean
+      type: object
+    portaineree.EdgeUpdateFailureAction:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+      type: integer
+      x-enum-varnames:
+        - _
+        - EdgeUpdateFailureActionContinue
+        - EdgeUpdateFailureActionPause
+        - EdgeUpdateFailureActionRollback
+    portaineree.EdgeStaggerParallelOption:
+      enum:
+        - 0
+        - 1
+        - 2
+      type: integer
+      x-enum-varnames:
+        - _
+        - EdgeStaggerParallelOptionFixed
+        - EdgeStaggerParallelOptionIncremental
+    portaineree.EdgeStaggerOption:
+      enum:
+        - 0
+        - 1
+        - 2
+      type: integer
+      x-enum-varnames:
+        - _
+        - EdgeStaggerOptionAllAtOnce
+        - EdgeStaggerOptionParallel
+    github_com_portainer_portainer_api_git_types.GitAuthentication:
+      properties:
+        AuthorizationType:
+          type: integer
+        GitCredentialID:
+          description: |-
+            Git credentials identifier when the value is not 0
+            When the value is 0, Username and Password are set without using saved credential
+            This is introduced since 2.15.0
+          example: 0
+          type: integer
+        Password:
+          type: string
+        Provider:
+          type: integer
+        Username:
+          type: string
+      type: object
+    edgestacks.SummarizedStatus:
+      enum:
+        - Unavailable
+        - Deploying
+        - Failed
+        - Paused
+        - PartiallyRunning
+        - Completed
+        - Running
+      type: string
+      x-enum-varnames:
+        - sumStatusUnavailable
+        - sumStatusDeploying
+        - sumStatusFailed
+        - sumStatusPaused
+        - sumStatusPartiallyRunning
+        - sumStatusCompleted
+        - sumStatusRunning
+    github_com_portainer_portainer-ee_api_http_handler_edgestacks.aggregatedStatusesMap:
+      additionalProperties:
+        type: integer
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

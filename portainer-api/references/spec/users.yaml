@@ -1,0 +1,1171 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage users
+    name: users
+    x-displayName: Users
+servers:
+  - url: /api
+paths:
+  /users:
+    get:
+      description: |-
+        List Portainer users.
+        Non-administrator users only receive non-administrator accounts.
+        Passwords are never included in any response.
+        **Access policy**: authenticated
+      operationId: UserList
+      parameters:
+        - description: Identifier of the environment(endpoint) that will be used to filter the authorized users
+          in: query
+          name: environmentId
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/users.User'
+                type: array
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List users
+      tags:
+        - users
+    post:
+      description: |-
+        Create a new Portainer user.
+        Only administrators can create users.
+        **Access policy**: restricted
+      operationId: UserCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users.userCreatePayload'
+        description: User details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.User'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '409':
+          description: User already exists
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create a new user
+      tags:
+        - users
+  /users/{id}:
+    delete:
+      description: |-
+        Remove a user.
+        **Access policy**: administrator
+      operationId: UserDelete
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Remove a user
+      tags:
+        - users
+    get:
+      description: |-
+        Retrieve details about a user.
+        User passwords are filtered out, and should never be accessible.
+        **Access policy**: authenticated
+      operationId: UserInspect
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.User'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect a user
+      tags:
+        - users
+    put:
+      description: |-
+        Update user details. A regular user account can only update his details.
+        A regular user account cannot change their username or role.
+        **Access policy**: authenticated
+      operationId: UserUpdate
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users.userUpdatePayload'
+        description: User details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.User'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: User not found
+        '409':
+          description: Username already exist or Edge Compute features are not enabled
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update a user
+      tags:
+        - users
+  /users/{id}/effective-access:
+    get:
+      description: |-
+        Returns the resolved role for each environment the user can access,
+        following the policy precedence used by the access viewer
+        (edge-admin override, RBAC policy, user-endpoint, user-group,
+        team-endpoint, team-group). Environments where the user has no
+        role are omitted.
+        **Access policy**: authenticated
+      operationId: UserEffectiveAccessInspect
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/users.EffectiveAccessEntry'
+                type: array
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Inspect a user's effective access on every environment
+      tags:
+        - users
+  /users/{id}/gitcredentials:
+    get:
+      description: |-
+        Gets all saved git credentials for a user.
+        Only the calling user can retrieve git credentials
+        **Access policy**: authenticated
+      operationId: UserGetGitCredentials
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/portaineree.GitCredential'
+                type: array
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get all saved git credentials for a user
+      tags:
+        - users
+    post:
+      description: |-
+        Store a Git Credential for a user.
+        Only the calling user can store a git credential for themselves.
+        **Access policy**: restricted
+      operationId: UserCreateGitCredential
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users.userGitCredentialCreatePayload'
+        description: details
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/users.gitCredentialResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Permission denied
+        '500':
+          description: Server error
+      security:
+        - jwt: []
+      summary: Store a Git Credential for a user
+      tags:
+        - users
+  /users/{id}/gitcredentials/{credentialID}:
+    delete:
+      description: |-
+        Remove a git-credential associated to a user..
+        Only the calling user can remove git-credential
+        **Access policy**: authenticated
+      operationId: UserRemoveGitCredential
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Git Credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Remove a git-credential associated to a user
+      tags:
+        - users
+    get:
+      description: |-
+        Gets the specific saved git credential for a user.
+        Only the calling user can retrieve git credential
+        **Access policy**: authenticated
+      operationId: UserGetGitCredential
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Git Credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.GitCredential'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get the specific saved git credential for a user
+      tags:
+        - users
+    put:
+      description: |-
+        Update a git-credential associated to a user..
+        Only the calling user can update git-credential
+        **Access policy**: authenticated
+      operationId: UserUpdateGitCredential
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Git Credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update a git-credential associated to a user
+      tags:
+        - users
+  /users/{id}/memberships:
+    get:
+      description: |-
+        Inspect a user memberships.
+        **Access policy**: restricted
+      operationId: UserMembershipsInspect
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.TeamMembership'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect a user memberships
+      tags:
+        - users
+  /users/{id}/namespaces:
+    get:
+      description: |-
+        Retrieves user's role authorizations of all namespaces in all k8s environments(endpoints)
+        **Access policy**: restricted
+      operationId: UserNamespaces
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/users.namespaceMapping'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Retrieves all k8s namespaces for an user
+      tags:
+        - users
+  /users/{id}/passwd:
+    put:
+      description: |-
+        Update password for the specified user.
+        **Access policy**: authenticated
+      operationId: UserUpdatePassword
+      parameters:
+        - description: identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users.userUpdatePasswordPayload'
+        description: details
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update password for a user
+      tags:
+        - users
+  /users/{id}/tokens:
+    get:
+      description: |-
+        Gets all API keys for a user.
+        Only the calling user or admin can retrieve api-keys.
+        **Access policy**: authenticated
+      operationId: UserGetAPIKeys
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/portainer.APIKey'
+                type: array
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get all API keys for a user
+      tags:
+        - users
+    post:
+      description: |-
+        Generates an API key for a user.
+        Only the calling user can generate a token for themselves.
+        Password is required only for internal authentication.
+        **Access policy**: restricted
+      operationId: UserGenerateAPIKey
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users.userAccessTokenCreatePayload'
+        description: details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/users.accessTokenResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Permission denied
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+      security:
+        - jwt: []
+      summary: Generate an API key for a user
+      tags:
+        - users
+  /users/{id}/tokens/{keyID}:
+    delete:
+      description: |-
+        Remove an api-key associated to a user..
+        Only the calling user or admin can remove api-key.
+        **Access policy**: authenticated
+      operationId: UserRemoveAPIKey
+      parameters:
+        - description: User identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Api Key identifier
+          in: path
+          name: keyID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Remove an api-key associated to a user
+      tags:
+        - users
+  /users/admin/check:
+    get:
+      description: |-
+        Check if an administrator account exists in the database.
+        **Access policy**: public
+      operationId: UserAdminCheck
+      responses:
+        '204':
+          description: Success
+        '404':
+          description: User not found
+      summary: Check administrator account existence
+      tags:
+        - users
+  /users/admin/init:
+    post:
+      description: |-
+        Initialize the 'admin' user account.
+        **Access policy**: public
+      operationId: UserAdminInit
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users.adminInitPayload'
+        description: User details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.User'
+        '400':
+          description: Invalid request
+        '409':
+          description: Admin user already initialized
+        '500':
+          description: Server error
+      summary: Initialize administrator account
+      tags:
+        - users
+  /users/me:
+    get:
+      description: |-
+        Retrieve details about the current user.
+        User passwords are filtered out, and should never be accessible.
+        **Access policy**: authenticated
+      operationId: CurrentUserInspect
+      parameters:
+        - description: Set to true to avoid including the environment authorizations in the response
+          in: query
+          name: noEndpointAuthorizations
+          required: true
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.User'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect the current user
+      tags:
+        - users
+  /users/me/auth/{endpointID}:
+    get:
+      description: |-
+        Retrieve environment authorizations for the current  user.
+        **Access policy**: authenticated
+      operationId: CurrentUserEndpointAuthorizationsInspect
+      parameters:
+        - description: Environment identifier
+          in: path
+          name: endpointID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/users.CurrentUserEndpointAuthResponse'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect environment authorizations for the current user
+      tags:
+        - users
+components:
+  schemas:
+    users.CurrentUserEndpointAuthResponse:
+      properties:
+        Authorizations:
+          $ref: '#/components/schemas/portainer.Authorizations'
+      type: object
+    portaineree.User:
+      properties:
+        EndpointAuthorizations:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EndpointAuthorizations'
+          description: 'Deprecated: in 2.32, no longer populated - see separate dataservice for UserEndpointAuthorizations'
+        Id:
+          description: User Identifier
+          example: 1
+          type: integer
+        PortainerAuthorizations:
+          $ref: '#/components/schemas/portainer.Authorizations'
+        Role:
+          allOf:
+            - $ref: '#/components/schemas/portainer.UserRole'
+          description: User role (1 for administrator account and 2 for regular account)
+          example: 1
+        ThemeSettings:
+          $ref: '#/components/schemas/portaineree.UserThemeSettings'
+        TokenIssueAt:
+          example: 1639408208
+          type: integer
+        UseCache:
+          example: true
+          type: boolean
+        UserTheme:
+          description: 'Deprecated: xxxx'
+          example: dark
+          type: string
+        Username:
+          example: bob
+          type: string
+      type: object
+    users.adminInitPayload:
+      properties:
+        Password:
+          description: Password for the admin user
+          example: admin-password
+          type: string
+        Username:
+          description: Username for the admin user
+          example: admin
+          type: string
+      required:
+        - Password
+        - Username
+      type: object
+    users.accessTokenResponse:
+      properties:
+        apiKey:
+          $ref: '#/components/schemas/portainer.APIKey'
+        rawAPIKey:
+          type: string
+      type: object
+    users.userAccessTokenCreatePayload:
+      properties:
+        description:
+          example: github-api-key
+          type: string
+        password:
+          example: password
+          type: string
+      required:
+        - description
+        - password
+      type: object
+    portainer.APIKey:
+      properties:
+        dateCreated:
+          description: Unix timestamp (UTC) when the API key was created
+          type: integer
+        description:
+          example: portainer-api-key
+          type: string
+        digest:
+          description: Digest represents SHA256 hash of the raw API key
+          type: string
+        id:
+          example: 1
+          type: integer
+        lastUsed:
+          description: Unix timestamp (UTC) when the API key was last used
+          type: integer
+        prefix:
+          description: API key identifier (7 char prefix)
+          type: string
+        userId:
+          example: 1
+          type: integer
+      type: object
+    users.userUpdatePasswordPayload:
+      properties:
+        NewPassword:
+          description: New Password
+          example: new_passwd
+          type: string
+        Password:
+          description: Current Password
+          example: passwd
+          type: string
+      required:
+        - NewPassword
+        - Password
+      type: object
+    users.namespaceMapping:
+      additionalProperties:
+        additionalProperties:
+          $ref: '#/components/schemas/portainer.Authorizations'
+        type: object
+      type: object
+    portainer.TeamMembership:
+      properties:
+        Id:
+          description: Membership Identifier
+          example: 1
+          type: integer
+        Role:
+          allOf:
+            - $ref: '#/components/schemas/portainer.MembershipRole'
+          description: Team role (1 for team leader and 2 for team member)
+          example: 1
+        TeamID:
+          description: Team identifier
+          example: 1
+          type: integer
+        UserID:
+          description: User identifier
+          example: 1
+          type: integer
+      type: object
+    portaineree.GitCredential:
+      properties:
+        authorizationType:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+          example: 0
+        creationDate:
+          example: 1587399600
+          type: integer
+        id:
+          example: 1
+          type: integer
+        name:
+          type: string
+        password:
+          type: string
+        provider:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+          example: 0
+        userId:
+          example: 1
+          type: integer
+        username:
+          type: string
+      type: object
+    users.gitCredentialResponse:
+      properties:
+        gitCredential:
+          $ref: '#/components/schemas/users.shadowedGitCredential'
+      type: object
+    users.userGitCredentialCreatePayload:
+      properties:
+        authorizationType:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+        name:
+          example: my-credential
+          type: string
+        password:
+          type: string
+        provider:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+        username:
+          type: string
+      required:
+        - authorizationType
+        - name
+        - password
+        - provider
+        - username
+      type: object
+    users.EffectiveAccessEntry:
+      properties:
+        accessLocation:
+          $ref: '#/components/schemas/users.AccessLocation'
+        endpointId:
+          type: integer
+        endpointName:
+          type: string
+        groupId:
+          type: integer
+        groupName:
+          type: string
+        policyId:
+          type: integer
+        policyName:
+          type: string
+        roleId:
+          type: integer
+        roleName:
+          type: string
+        rolePriority:
+          type: integer
+        teamId:
+          type: integer
+        teamName:
+          type: string
+      type: object
+    users.userUpdatePayload:
+      properties:
+        NewPassword:
+          example: asfj2emv
+          type: string
+        Password:
+          example: cg9Wgky3
+          type: string
+        Role:
+          allOf:
+            - $ref: '#/components/schemas/portainer.UserRole'
+          description: |-
+            User role
+            1 = administrator account
+            2 = regular account
+            3 = edge administrator account
+          enum:
+            - 1
+            - 2
+            - 3
+          example: 2
+        Theme:
+          $ref: '#/components/schemas/users.themePayload'
+        UseCache:
+          example: true
+          type: boolean
+        Username:
+          example: bob
+          type: string
+      required:
+        - NewPassword
+        - Password
+        - Role
+        - UseCache
+        - Username
+      type: object
+    users.userCreatePayload:
+      properties:
+        Password:
+          example: cg9Wgky3
+          type: string
+        Role:
+          allOf:
+            - $ref: '#/components/schemas/portainer.UserRole'
+          description: |-
+            User role
+            1 = administrator account
+            2 = regular account
+          enum:
+            - 1
+            - 2
+          example: 1
+        Username:
+          example: bob
+          type: string
+      required:
+        - Password
+        - Role
+        - Username
+      type: object
+    users.User:
+      properties:
+        Id:
+          example: 1
+          type: integer
+        Role:
+          allOf:
+            - $ref: '#/components/schemas/portainer.UserRole'
+          description: User role (1 for administrator account and 2 for regular account)
+          example: 1
+        Username:
+          example: bob
+          type: string
+      type: object
+    portainer.Authorizations:
+      additionalProperties:
+        type: boolean
+      type: object
+    portaineree.UserThemeSettings:
+      properties:
+        color:
+          description: Color represents the color theme of the UI
+          enum:
+            - dark
+            - light
+            - highcontrast
+            - auto
+          example: dark
+          type: string
+        subtleUpgradeButton:
+          description: SubtleUpgradeButton indicates if the upgrade banner should be displayed in a subtle way
+          type: boolean
+      type: object
+    portainer.UserRole:
+      enum:
+        - 0
+        - 1
+        - 2
+      type: integer
+      x-enum-varnames:
+        - _
+        - AdministratorRole
+        - StandardUserRole
+    portainer.EndpointAuthorizations:
+      additionalProperties:
+        $ref: '#/components/schemas/portainer.Authorizations'
+      type: object
+    portainer.MembershipRole:
+      enum:
+        - 0
+        - 1
+        - 2
+      type: integer
+      x-enum-varnames:
+        - _
+        - TeamLeader
+        - TeamMember
+    github_com_portainer_portainer-ee_api_git_types.GitProvider:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+      type: integer
+      x-enum-varnames:
+        - GitProviderCustom
+        - GitProviderGitHub
+        - GitProviderGitLab
+        - GitProviderBitbucketCloud
+        - GitProviderBitbucketDataCenter
+        - GitProviderAzureDevOps
+        - GitProviderGiteaForgejo
+    github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType:
+      enum:
+        - 0
+        - 1
+      type: integer
+      x-enum-varnames:
+        - GitCredentialAuthType_Basic
+        - GitCredentialAuthType_Token
+    users.shadowedGitCredential:
+      properties:
+        authorizationType:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+          description: Shadow to include the AuthType even if it's empty
+          example: 0
+        creationDate:
+          example: 1587399600
+          type: integer
+        id:
+          example: 1
+          type: integer
+        name:
+          type: string
+        password:
+          type: string
+        provider:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+          description: Shadow to include Provider even if it's empty
+          example: 0
+        userId:
+          example: 1
+          type: integer
+        username:
+          type: string
+      type: object
+    users.AccessLocation:
+      enum:
+        - environment
+        - environmentGroup
+        - policy
+      type: string
+      x-enum-varnames:
+        - AccessLocationEnvironment
+        - AccessLocationEnvironmentGroup
+        - AccessLocationPolicy
+    users.themePayload:
+      properties:
+        color:
+          description: Color represents the color theme of the UI
+          enum:
+            - dark
+            - light
+            - highcontrast
+            - auto
+          example: dark
+          type: string
+        subtleUpgradeButton:
+          description: SubtleUpgradeButton indicates if the upgrade banner should be displayed in a subtle way
+          example: false
+          type: boolean
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

@@ -1,0 +1,74 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Automatic updates
+    name: auto_updates
+    x-displayName: Automatic updates
+servers:
+  - url: /api
+paths:
+  /auto_updates:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: AutoUpdateList
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/autoupdates.listResponse'
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List auto updates
+      tags:
+        - auto_updates
+components:
+  schemas:
+    autoupdates.listResponse:
+      properties:
+        autoUpdates:
+          items:
+            $ref: '#/components/schemas/autoupdates.autoUpdateResponseItem'
+          type: array
+      type: object
+    autoupdates.autoUpdateResponseItem:
+      properties:
+        doneAtUnix:
+          type: integer
+        startedAtUnix:
+          type: integer
+        status:
+          $ref: '#/components/schemas/portaineree.AutoUpdateStatus'
+        version:
+          type: string
+      type: object
+    portaineree.AutoUpdateStatus:
+      enum:
+        - inProgress
+        - completed
+        - failed
+      type: string
+      x-enum-varnames:
+        - AutoUpdateStatusInProgress
+        - AutoUpdateStatusCompleted
+        - AutoUpdateStatusFailed
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

@@ -1,0 +1,295 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage Edge Groups
+    name: edge_groups
+    x-displayName: Edge groups
+servers:
+  - url: /api
+paths:
+  /edge_groups:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeGroupList
+      parameters:
+        - description: will summarize the env count
+          in: query
+          name: summarize
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: EdgeGroups
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/edgegroups.decoratedEdgeGroup'
+                type: array
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: list EdgeGroups
+      tags:
+        - edge_groups
+    post:
+      description: '**Access policy**: administrator'
+      operationId: EdgeGroupCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/edgegroups.edgeGroupCreatePayload'
+        description: EdgeGroup data
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeGroup'
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create an EdgeGroup
+      tags:
+        - edge_groups
+  /edge_groups/{id}:
+    delete:
+      description: '**Access policy**: administrator'
+      operationId: EdgeGroupDelete
+      parameters:
+        - description: EdgeGroup Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '409':
+          description: Edge group is in use by an Edge stack, Edge job or Edge config
+        '500':
+          description: Server error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Deletes an EdgeGroup
+      tags:
+        - edge_groups
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeGroupInspect
+      parameters:
+        - description: EdgeGroup Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeGroup'
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspects an EdgeGroup
+      tags:
+        - edge_groups
+    put:
+      description: '**Access policy**: administrator'
+      operationId: EdgeGroupUpdate
+      parameters:
+        - description: EdgeGroup Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/edgegroups.edgeGroupUpdatePayload'
+        description: EdgeGroup data
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeGroup'
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Updates an EdgeGroup
+      tags:
+        - edge_groups
+components:
+  schemas:
+    portaineree.EdgeGroup:
+      properties:
+        Dynamic:
+          type: boolean
+        EdgeUpdateID:
+          type: integer
+        EndpointIds:
+          $ref: '#/components/schemas/roar.Roar-portainer_EndpointID'
+        Endpoints:
+          description: 'Deprecated: only used for API responses'
+          items:
+            type: integer
+          type: array
+        Id:
+          description: EdgeGroup Identifier
+          example: 1
+          type: integer
+        Name:
+          type: string
+        PartialMatch:
+          type: boolean
+        TagIds:
+          items:
+            type: integer
+          type: array
+      type: object
+    edgegroups.edgeGroupUpdatePayload:
+      properties:
+        Dynamic:
+          type: boolean
+        Endpoints:
+          items:
+            type: integer
+          type: array
+        Name:
+          type: string
+        PartialMatch:
+          type: boolean
+        TagIDs:
+          items:
+            type: integer
+          type: array
+      type: object
+    edgegroups.edgeGroupCreatePayload:
+      properties:
+        Dynamic:
+          type: boolean
+        Endpoints:
+          items:
+            type: integer
+          type: array
+        Name:
+          type: string
+        PartialMatch:
+          type: boolean
+        TagIDs:
+          items:
+            type: integer
+          type: array
+      type: object
+    edgegroups.decoratedEdgeGroup:
+      properties:
+        Dynamic:
+          type: boolean
+        EdgeUpdateID:
+          type: integer
+        EndpointIds:
+          description: Shadow to avoid exposing in the API
+          type: integer
+        EndpointTypes:
+          items:
+            $ref: '#/components/schemas/portainer.EndpointType'
+          type: array
+        Endpoints:
+          description: 'Deprecated: only used for API responses'
+          items:
+            type: integer
+          type: array
+        EndpointsCount:
+          type: integer
+        HasEdgeConfig:
+          type: boolean
+        HasEdgeJob:
+          type: boolean
+        HasEdgeStack:
+          type: boolean
+        Id:
+          description: EdgeGroup Identifier
+          example: 1
+          type: integer
+        Name:
+          type: string
+        PartialMatch:
+          type: boolean
+        TagIds:
+          items:
+            type: integer
+          type: array
+        TrustedEndpoints:
+          items:
+            type: integer
+          type: array
+        TrustedEndpointsCount:
+          type: integer
+      type: object
+    roar.Roar-portainer_EndpointID:
+      type: object
+    portainer.EndpointType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+      type: integer
+      x-enum-varnames:
+        - _
+        - DockerEnvironment
+        - AgentOnDockerEnvironment
+        - AzureEnvironment
+        - EdgeAgentOnDockerEnvironment
+        - KubernetesLocalEnvironment
+        - AgentOnKubernetesEnvironment
+        - EdgeAgentOnKubernetesEnvironment
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

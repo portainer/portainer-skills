@@ -1,0 +1,334 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage Edge configurations
+    name: edge_configs
+    x-displayName: Edge configurations
+servers:
+  - url: /api
+paths:
+  /edge_configurations:
+    get:
+      description: '**Access policy**: authenticated'
+      operationId: EdgeConfigList
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/edgeconfigs.edgeConfigCreatePayload'
+        description: body
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/portaineree.EdgeConfig'
+                type: array
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List available Edge Configurations
+      tags:
+        - edge_configs
+    post:
+      description: |-
+        Create an Edge Configuration.
+        **Access policy**: authenticated
+      operationId: EdgeConfigCreate
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                BaseDir:
+                  type: string
+                Category:
+                  type: string
+                  enum:
+                    - configuration
+                    - secret
+                  x-enum-varnames:
+                    - EdgeConfigCategoryConfig
+                    - EdgeConfigCategorySecret
+                EdgeGroupIDs:
+                  type: array
+                  items:
+                    type: integer
+                Name:
+                  type: string
+                Type:
+                  type: string
+                File:
+                  description: File
+                  type: string
+                  format: binary
+              required:
+                - File
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Invalid request
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create an Edge Configuration
+      tags:
+        - edge_configs
+  /edge_configurations/{id}:
+    delete:
+      description: |-
+        Delete an Edge configuration.
+        **Access policy**: authenticated
+      operationId: EdgeConfigDelete
+      parameters:
+        - description: Edge configuration identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '404':
+          description: Edge configuration not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Delete an Edge configuration
+      tags:
+        - edge_configs
+    get:
+      description: |-
+        Retrieve details about an Edge configuration.
+        **Access policy**: authenticated
+      operationId: EdgeConfigInspect
+      parameters:
+        - description: Edge configuration identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeConfig'
+        '400':
+          description: Invalid request
+        '404':
+          description: Edge configuration not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect an Edge configuration
+      tags:
+        - edge_configs
+    put:
+      description: |-
+        Update an Edge Configuration.
+        **Access policy**: authenticated
+      operationId: EdgeConfigUpdate
+      parameters:
+        - description: Edge configuration identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                EdgeGroupIDs:
+                  type: array
+                  items:
+                    type: integer
+                Type:
+                  type: string
+                File:
+                  description: File
+                  type: string
+                  format: binary
+              required:
+                - File
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Invalid request
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update an Edge Configuration
+      tags:
+        - edge_configs
+  /edge_configurations/{id}/{state}:
+    put:
+      description: Used by the standard edge agent to update the state of an Edge configuration.
+      operationId: EdgeConfigState
+      parameters:
+        - description: Edge configuration identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Edge configuration state
+          in: path
+          name: state
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied to access environment
+        '404':
+          description: Edge configuration not found
+        '500':
+          description: Server error
+      summary: Update the state of an Edge configuration
+      tags:
+        - edge_configs
+  /edge_configurations/{id}/files:
+    get:
+      description: Used by the standard edge agent to retrieve the files for an Edge configuration.
+      operationId: EdgeConfigFiles
+      parameters:
+        - description: Edge configuration identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                type: string
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied to access environment
+        '404':
+          description: Edge configuration not found
+        '500':
+          description: Server error
+      summary: Get the files for an Edge configuration
+      tags:
+        - edge_configs
+components:
+  schemas:
+    portaineree.EdgeConfig:
+      properties:
+        baseDir:
+          type: string
+        category:
+          $ref: '#/components/schemas/portaineree.EdgeConfigCategory'
+        created:
+          type: integer
+        createdBy:
+          type: integer
+        edgeGroupIDs:
+          items:
+            type: integer
+          type: array
+        id:
+          type: integer
+        name:
+          type: string
+        prev:
+          $ref: '#/components/schemas/portaineree.EdgeConfig'
+        progress:
+          $ref: '#/components/schemas/portaineree.EdgeConfigProgress'
+        state:
+          $ref: '#/components/schemas/portaineree.EdgeConfigStateType'
+        type:
+          type: integer
+        updated:
+          type: integer
+        updatedBy:
+          type: integer
+      type: object
+    edgeconfigs.edgeConfigCreatePayload:
+      properties:
+        BaseDir:
+          type: string
+        Category:
+          $ref: '#/components/schemas/portaineree.EdgeConfigCategory'
+        EdgeGroupIDs:
+          items:
+            type: integer
+          type: array
+        Name:
+          type: string
+        Type:
+          type: string
+      type: object
+    portaineree.EdgeConfigStateType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+      type: integer
+      x-enum-varnames:
+        - EdgeConfigIdleState
+        - EdgeConfigFailureState
+        - EdgeConfigSavingState
+        - EdgeConfigDeletingState
+        - EdgeConfigUpdatingState
+    portaineree.EdgeConfigProgress:
+      properties:
+        success:
+          type: integer
+        total:
+          type: integer
+      type: object
+    portaineree.EdgeConfigCategory:
+      enum:
+        - configuration
+        - secret
+      type: string
+      x-enum-varnames:
+        - EdgeConfigCategoryConfig
+        - EdgeConfigCategorySecret
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

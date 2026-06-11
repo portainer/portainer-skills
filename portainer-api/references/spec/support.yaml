@@ -1,0 +1,101 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Retrieve your debug logs
+    name: support
+    x-displayName: Support
+servers:
+  - url: /api
+paths:
+  /support/debug_log:
+    get:
+      description: |-
+        Checks if the global log level is enabled
+        **Access policy**: administrator
+      operationId: GetDebugLogStatus
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/support.debugLogPayload'
+        '500':
+          description: Server error occurred.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get status of the global debug log
+      tags:
+        - support
+    put:
+      description: |-
+        Enables the debug log by setting the global log level to debug or info if disabled
+        **Access policy**: administrator
+      operationId: SetDebugLogStatus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/support.debugLogPayload'
+        description: Debug log should be set to enabled or disabled
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/support.debugLogPayload'
+        '400':
+          description: Invalid request payload
+        '500':
+          description: Server error occurred.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Enables or disables the global debug log
+      tags:
+        - support
+  /support/download:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: SupportBundleDownload
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '500':
+          description: Failed to create support archive
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Download a bundle of files to help support diagnose issues
+      tags:
+        - support
+components:
+  schemas:
+    support.debugLogPayload:
+      properties:
+        debugLogEnabled:
+          type: boolean
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

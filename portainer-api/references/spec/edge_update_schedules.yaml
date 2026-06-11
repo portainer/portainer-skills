@@ -1,0 +1,592 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage Edge Update Schedules
+    name: edge_update_schedules
+    x-displayName: Edge update schedules
+servers:
+  - url: /api
+paths:
+  /edge_update_schedules:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeUpdateScheduleList
+      parameters:
+        - description: Include Edge Stacks in the response
+          in: query
+          name: includeEdgeStacks
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/edgeupdateschedules.decoratedUpdateSchedule'
+                type: array
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetches the list of Edge Update Schedules
+      tags:
+        - edge_update_schedules
+    post:
+      description: |-
+        Creates a scheduled remote update process that will update or rollback the Edge agents in the specified Edge groups.
+        **Access policy**: Administrator only.
+      operationId: EdgeUpdateScheduleCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/edgeupdateschedules.createPayload'
+        description: Schedule details
+        required: true
+      responses:
+        '200':
+          description: Remote update procedure successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/types.UpdateSchedule'
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '403':
+          description: Unauthorized access or operation not allowed.
+        '409':
+          description: Edge update schedule name already in use.
+        '500':
+          description: Server error occurred while attempting to create the remote update procedure.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Creates a scheduled remote update procedure for Edge agents
+      tags:
+        - edge_update_schedules
+  /edge_update_schedules/{id}:
+    delete:
+      description: '**Access policy**: administrator'
+      operationId: EdgeUpdateScheduleDelete
+      parameters:
+        - description: EdgeUpdate Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Deletes an Edge Update Schedule
+      tags:
+        - edge_update_schedules
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeUpdateScheduleInspect
+      parameters:
+        - description: EdgeUpdate Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/edgeupdateschedules.inspectResponse'
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Returns the Edge Update Schedule with the given ID
+      tags:
+        - edge_update_schedules
+    post:
+      description: |-
+        Creates a scheduled remote update process that will update or rollback the Edge agents in the specified Edge groups.
+        **Access policy**: Administrator only.
+      operationId: EdgeUpdateScheduleUpdate
+      parameters:
+        - description: EdgeUpdate Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/edgeupdateschedules.updatePayload'
+        description: Schedule details
+        required: true
+      responses:
+        '204':
+          description: Remote update procedure successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/types.UpdateSchedule'
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '403':
+          description: Unauthorized access or operation not allowed.
+        '404':
+          description: Unable to find an Edge Update with the specified identifier inside the database
+        '409':
+          description: Edge update schedule name already in use.
+        '500':
+          description: Server error occurred while attempting to update the remote update procedure.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Update a scheduled remote update procedure for Edge agents
+      tags:
+        - edge_update_schedules
+  /edge_update_schedules/active:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: EdgeUpdateScheduleActiveSchedulesList
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/edgeupdateschedules.activeSchedulePayload'
+        description: Active schedule query
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/types.EndpointUpdateScheduleRelation'
+                type: array
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetches the list of Active Edge Update Schedules
+      tags:
+        - edge_update_schedules
+  /edge_update_schedules/agent_versions:
+    get:
+      description: '**Access policy**: authenticated'
+      operationId: RemoteUpdatesAgentVersions
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetches the supported versions of the agent to update/rollback
+      tags:
+        - edge_update_schedules
+  /edge_update_schedules/info:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeUpdateScheduleInfo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/edgeupdateschedules.infoResponse'
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Returns informations the help create edge update schedules
+      tags:
+        - edge_update_schedules
+  /edge_update_schedules/previous_versions:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeUpdatePreviousVersions
+      parameters:
+        - description: Environment IDs
+          in: query
+          name: environmentIds
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+        - description: Edge Group IDs
+          in: query
+          name: edgeGroupIds
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetches the previous versions of updated agents
+      tags:
+        - edge_update_schedules
+components:
+  schemas:
+    edgeupdateschedules.infoResponse:
+      properties:
+        HasLocalTimeZone:
+          type: boolean
+        HasNoLocalTimeZone:
+          type: boolean
+        MinAgentVersion:
+          type: string
+        OutdatedCount:
+          type: integer
+        UpToDateCount:
+          type: integer
+      type: object
+    types.EndpointUpdateScheduleRelation:
+      properties:
+        edgeStackId:
+          type: integer
+        environmentId:
+          type: integer
+        scheduleId:
+          type: integer
+        targetVersion:
+          type: string
+      type: object
+    edgeupdateschedules.activeSchedulePayload:
+      properties:
+        EnvironmentIDs:
+          items:
+            type: integer
+          type: array
+      type: object
+    types.UpdateSchedule:
+      properties:
+        agentImage:
+          description: Name of the agent image, does not include the registry
+          example: portainer/agent:latest
+          type: string
+        created:
+          description: Created timestamp
+          example: 1564897200
+          type: integer
+        createdBy:
+          description: Created by user id
+          example: 1
+          type: integer
+        edgeGroupIds:
+          description: |-
+            EdgeGroups to be updated
+
+            There is some duplication here with EdgeStack.EdgeGroups
+            EdgeStack.EdgeGroup should have only one group which a temporary group, used only for the update
+            This field is saved only to show which groups the user chose when creating the schedule
+          example:
+            - 1
+          items:
+            type: integer
+          type: array
+        edgeStackId:
+          example: 1
+          type: integer
+        environmentsPreviousVersions:
+          additionalProperties:
+            type: string
+          description: Deprecated - use Environment.Agent.PreviousVersion instead
+          type: object
+        id:
+          description: EdgeUpdateSchedule Identifier
+          example: 1
+          type: integer
+        name:
+          description: Name of the schedule
+          example: Update Schedule
+          type: string
+        registryId:
+          description: ID of registry
+          example: 1
+          type: integer
+        type:
+          allOf:
+            - $ref: '#/components/schemas/types.UpdateScheduleType'
+          description: Type of the update (1 - update, 2 - rollback)
+          enum:
+            - 1
+            - 2
+          example: 1
+        updated:
+          description: Updated timestamp
+          example: 1564897200
+          type: integer
+        updaterImage:
+          description: Name of the updater image, does not include the registry but must include a tag
+          example: portainer/portainer-updater:latest
+          type: string
+        version:
+          description: Deprecated
+          example: 1.0.0
+          type: string
+      type: object
+    edgeupdateschedules.updatePayload:
+      properties:
+        AgentImage:
+          description: default to "" == portainer/agent:<current_server_version>
+          type: string
+        GroupIDs:
+          items:
+            type: integer
+          type: array
+        Name:
+          type: string
+        RegistryID:
+          description: default to 0 = dockerhub
+          type: integer
+        ScheduledTime:
+          type: string
+        Type:
+          $ref: '#/components/schemas/types.UpdateScheduleType'
+        UpdaterImage:
+          description: default to "" == portainer/portainer-updater:latest
+          type: string
+      type: object
+    edgeupdateschedules.inspectResponse:
+      properties:
+        agentImage:
+          description: Name of the agent image, does not include the registry
+          example: portainer/agent:latest
+          type: string
+        created:
+          description: Created timestamp
+          example: 1564897200
+          type: integer
+        createdBy:
+          description: Created by user id
+          example: 1
+          type: integer
+        edgeGroupIds:
+          description: |-
+            EdgeGroups to be updated
+
+            There is some duplication here with EdgeStack.EdgeGroups
+            EdgeStack.EdgeGroup should have only one group which a temporary group, used only for the update
+            This field is saved only to show which groups the user chose when creating the schedule
+          example:
+            - 1
+          items:
+            type: integer
+          type: array
+        edgeStackId:
+          example: 1
+          type: integer
+        environmentIds:
+          items:
+            type: integer
+          type: array
+        environmentsPreviousVersions:
+          additionalProperties:
+            type: string
+          description: Deprecated - use Environment.Agent.PreviousVersion instead
+          type: object
+        id:
+          description: EdgeUpdateSchedule Identifier
+          example: 1
+          type: integer
+        isActive:
+          type: boolean
+        name:
+          description: Name of the schedule
+          example: Update Schedule
+          type: string
+        registryId:
+          description: ID of registry
+          example: 1
+          type: integer
+        scheduledTime:
+          type: string
+        type:
+          allOf:
+            - $ref: '#/components/schemas/types.UpdateScheduleType'
+          description: Type of the update (1 - update, 2 - rollback)
+          enum:
+            - 1
+            - 2
+          example: 1
+        updated:
+          description: Updated timestamp
+          example: 1564897200
+          type: integer
+        updaterImage:
+          description: Name of the updater image, does not include the registry but must include a tag
+          example: portainer/portainer-updater:latest
+          type: string
+        version:
+          description: Deprecated
+          example: 1.0.0
+          type: string
+      type: object
+    edgeupdateschedules.createPayload:
+      properties:
+        AgentImage:
+          description: default to "" == portainer/agent:<current_server_version>
+          type: string
+        GroupIDs:
+          items:
+            type: integer
+          type: array
+        Name:
+          type: string
+        RegistryID:
+          description: default to 0 = dockerhub
+          type: integer
+        ScheduledTime:
+          type: string
+        Type:
+          $ref: '#/components/schemas/types.UpdateScheduleType'
+        UpdaterImage:
+          description: default to "" == portainer/portainer-updater:<current_server_version>
+          type: string
+      type: object
+    edgeupdateschedules.decoratedUpdateSchedule:
+      properties:
+        agentImage:
+          description: Name of the agent image, does not include the registry
+          example: portainer/agent:latest
+          type: string
+        created:
+          description: Created timestamp
+          example: 1564897200
+          type: integer
+        createdBy:
+          description: Created by user id
+          example: 1
+          type: integer
+        edgeGroupIds:
+          items:
+            type: integer
+          type: array
+        edgeStackId:
+          example: 1
+          type: integer
+        environmentsPreviousVersions:
+          additionalProperties:
+            type: string
+          description: Deprecated - use Environment.Agent.PreviousVersion instead
+          type: object
+        id:
+          description: EdgeUpdateSchedule Identifier
+          example: 1
+          type: integer
+        name:
+          description: Name of the schedule
+          example: Update Schedule
+          type: string
+        registryId:
+          description: ID of registry
+          example: 1
+          type: integer
+        scheduledTime:
+          type: string
+        status:
+          $ref: '#/components/schemas/types.UpdateScheduleStatusType'
+        statusMessage:
+          type: string
+        type:
+          allOf:
+            - $ref: '#/components/schemas/types.UpdateScheduleType'
+          description: Type of the update (1 - update, 2 - rollback)
+          enum:
+            - 1
+            - 2
+          example: 1
+        updated:
+          description: Updated timestamp
+          example: 1564897200
+          type: integer
+        updaterImage:
+          description: Name of the updater image, does not include the registry but must include a tag
+          example: portainer/portainer-updater:latest
+          type: string
+        version:
+          description: Deprecated
+          example: 1.0.0
+          type: string
+      type: object
+    types.UpdateScheduleType:
+      enum:
+        - 0
+        - 1
+        - 2
+      type: integer
+      x-enum-varnames:
+        - _
+        - UpdateScheduleUpdate
+        - UpdateScheduleRollback
+    types.UpdateScheduleStatusType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+      type: integer
+      x-enum-varnames:
+        - UpdateScheduleStatusPending
+        - UpdateScheduleStatusError
+        - UpdateScheduleStatusSuccess
+        - UpdateScheduleStatusSent
+        - UpdateScheduleStatusInProgress
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

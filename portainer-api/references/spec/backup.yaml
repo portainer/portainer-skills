@@ -1,0 +1,603 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage backups
+    name: backup
+    x-displayName: Backups
+servers:
+  - url: /api
+paths:
+  /backup:
+    post:
+      description: |-
+        Creates an archive with a system data snapshot that could be used to restore the system.
+        **Access policy**: admin
+      operationId: Backup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/backup.backupPayload'
+        description: An object contains the password to encrypt the backup with
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Creates an archive with a system data snapshot that could be used to restore the system.
+      tags:
+        - backup
+  /backup/azure/execute:
+    post:
+      description: |-
+        Creates a system snapshot archive and uploads it to the configured Azure Blob container
+        **Access policy**: administrator
+      operationId: BackupToAzureBlob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/portaineree.AzureBlobBackupSettings'
+        description: Azure Blob backup settings
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Execute an ad-hoc backup to Azure Blob Storage
+      tags:
+        - backup
+  /backup/azure/restore:
+    post:
+      description: '**Access policy**: public'
+      operationId: RestoreFromAzureBlob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/backup.restoreAzureSettings'
+        description: Azure Blob location and credentials
+        required: true
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      summary: Restore system state from an Azure Blob Storage backup
+      tags:
+        - backup
+  /backup/azure/settings:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: AzureBlobBackupSettingsFetch
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.AzureBlobBackupSettings'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetch Azure Blob Storage backup settings
+      tags:
+        - backup
+    post:
+      description: '**Access policy**: administrator'
+      operationId: UpdateAzureBlobSettings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/portaineree.AzureBlobBackupSettings'
+        description: Azure Blob backup settings
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update Azure Blob Storage backup settings and reschedule cron job
+      tags:
+        - backup
+  /backup/azure/status:
+    get:
+      description: '**Access policy**: public'
+      operationId: AzureBlobBackupStatusFetch
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/backup.azureBackupStatus'
+        '500':
+          description: Server error
+      summary: Fetch the status of the last scheduled Azure Blob backup run
+      tags:
+        - backup
+  /backup/azure/test:
+    post:
+      description: |-
+        Verifies that the supplied credentials can reach and access the target container
+        **Access policy**: administrator
+      operationId: AzureBlobTestConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/portaineree.AzureBlobBackupSettings'
+        description: Azure Blob connection settings
+        required: true
+      responses:
+        '204':
+          description: Connection successful
+        '400':
+          description: Invalid request or Azure authentication failed
+        '404':
+          description: Container not found
+        '500':
+          description: Server error
+        '502':
+          description: Network error reaching Azure storage endpoint
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Test connectivity to an Azure Blob Storage container
+      tags:
+        - backup
+  /backup/local/run:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: RunLocalBackupNow
+      responses:
+        '204':
+          description: Success
+        '409':
+          description: A backup is already in progress
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Trigger an immediate local backup outside of the cron schedule
+      tags:
+        - backup
+  /backup/local/settings:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: LocalBackupSettingsFetch
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.LocalBackupSettings'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetch local scheduled backup settings
+      tags:
+        - backup
+    post:
+      description: '**Access policy**: administrator'
+      operationId: UpdateLocalBackupSettings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/portaineree.LocalBackupSettings'
+        description: Local backup settings
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Updates local scheduled backup settings and restarts the cron job as needed
+      tags:
+        - backup
+  /backup/local/status:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: LocalBackupStatusFetch
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/backup.localBackupStatus'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetch the status of the last scheduled local backup run
+      tags:
+        - backup
+  /backup/s3/execute:
+    post:
+      description: |-
+        Creates an archive with a system data snapshot and upload it to the target S3 bucket
+        **Access policy**: administrator
+      operationId: BackupToS3
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/backup.s3BackupPayload'
+        description: S3 backup settings
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Execute backup to AWS S3 Bucket
+      tags:
+        - backup
+  /backup/s3/restore:
+    post:
+      description: |-
+        Triggers a system restore using details of s3 backup
+        **Access policy**: public
+      operationId: RestoreFromS3
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/backup.restoreS3Settings'
+        description: S3 Location Payload
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      summary: Triggers a system restore using details of s3 backup
+      tags:
+        - backup
+  /backup/s3/settings:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: BackupSettingsFetch
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.S3BackupSettings'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetch s3 backup settings/configurations
+      tags:
+        - backup
+    post:
+      description: |-
+        Updates stored s3 backup settings and updates running cron jobs as needed
+        **Access policy**: administrator
+      operationId: UpdateS3Settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/portaineree.S3BackupSettings'
+        description: S3 backup settings
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Updates stored s3 backup settings and updates running cron jobs as needed
+      tags:
+        - backup
+  /backup/s3/status:
+    get:
+      description: '**Access policy**: public'
+      operationId: BackupStatusFetch
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/backup.backupStatus'
+        '500':
+          description: Server error
+      summary: Fetch the status of the last scheduled backup run
+      tags:
+        - backup
+  /restore:
+    post:
+      description: |-
+        Triggers a system restore using provided backup file
+        **Access policy**: public
+      operationId: Restore
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/backup.restorePayload'
+        description: Restore request payload
+        required: true
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      summary: Triggers a system restore using provided backup file
+      tags:
+        - backup
+components:
+  schemas:
+    backup.restorePayload:
+      properties:
+        FileContent:
+          description: Content of the backup
+          items:
+            type: integer
+          type: array
+        FileName:
+          description: File name
+          type: string
+        Password:
+          description: Password to decrypt the backup with
+          type: string
+      required:
+        - FileContent
+        - FileName
+      type: object
+    backup.backupStatus:
+      properties:
+        Failed:
+          type: boolean
+        TimestampUTC:
+          type: string
+      type: object
+    portaineree.S3BackupSettings:
+      properties:
+        accessKeyID:
+          description: AWS access key id
+          type: string
+        bucketName:
+          description: AWS S3 bucket name
+          type: string
+        cronRule:
+          description: Crontab rule to make periodical backups
+          type: string
+        password:
+          description: Password to encrypt the backup with
+          type: string
+        region:
+          description: AWS S3 region. Default to "us-east-1"
+          example: us-east-1
+          type: string
+        s3CompatibleHost:
+          description: S3 compatible host
+          type: string
+        secretAccessKey:
+          description: AWS secret access key
+          type: string
+      type: object
+    backup.restoreS3Settings:
+      properties:
+        AccessKeyID:
+          description: AWS access key id
+          type: string
+        BucketName:
+          description: AWS S3 bucket name
+          type: string
+        Filename:
+          description: AWS S3 filename in the bucket
+          type: string
+        Password:
+          type: string
+        Region:
+          description: AWS S3 region. Default to "us-east-1"
+          example: us-east-1
+          type: string
+        S3CompatibleHost:
+          description: S3 compatible host
+          type: string
+        SecretAccessKey:
+          description: AWS secret access key
+          type: string
+      type: object
+    backup.s3BackupPayload:
+      properties:
+        accessKeyID:
+          description: AWS access key id
+          type: string
+        bucketName:
+          description: AWS S3 bucket name
+          type: string
+        cronRule:
+          description: Crontab rule to make periodical backups
+          type: string
+        password:
+          description: Password to encrypt the backup with
+          type: string
+        region:
+          description: AWS S3 region. Default to "us-east-1"
+          example: us-east-1
+          type: string
+        s3CompatibleHost:
+          description: S3 compatible host
+          type: string
+        secretAccessKey:
+          description: AWS secret access key
+          type: string
+      type: object
+    backup.localBackupStatus:
+      properties:
+        failed:
+          type: boolean
+        path:
+          type: string
+        timestampUTC:
+          type: string
+      type: object
+    portaineree.LocalBackupSettings:
+      properties:
+        cronRule:
+          description: Crontab rule to make periodical backups
+          type: string
+        retentionDays:
+          description: Number of days to retain backups (0 means keep forever)
+          type: integer
+      type: object
+    portaineree.AzureBlobBackupSettings:
+      properties:
+        authMethod:
+          $ref: '#/components/schemas/portaineree.AzureAuthMethod'
+        clientCertificate:
+          description: Service Principal — certificate (base64-encoded PEM/PFX bytes)
+          type: string
+        clientCertificatePassword:
+          type: string
+        clientId:
+          type: string
+        clientSecret:
+          description: Service Principal — secret
+          type: string
+        containerName:
+          type: string
+        cronRule:
+          type: string
+        managedIdentityClientId:
+          description: Managed Identity (empty = system-assigned; non-empty = user-assigned client ID)
+          type: string
+        password:
+          type: string
+        serviceUrl:
+          description: 'Optional: override blob service URL for sovereign clouds or Azurite testing'
+          type: string
+        storageAccountKey:
+          description: Storage account access key (base64-encoded, copied from the Azure Portal Keys blade)
+          type: string
+        storageAccountName:
+          type: string
+        tenantId:
+          description: Service Principal common
+          type: string
+      type: object
+    backup.azureBackupStatus:
+      properties:
+        Failed:
+          type: boolean
+        TimestampUTC:
+          type: string
+      type: object
+    backup.restoreAzureSettings:
+      properties:
+        AuthMethod:
+          $ref: '#/components/schemas/portaineree.AzureAuthMethod'
+        BlobName:
+          type: string
+        ClientCertificate:
+          type: string
+        ClientCertificatePassword:
+          type: string
+        ClientID:
+          type: string
+        ClientSecret:
+          type: string
+        ContainerName:
+          type: string
+        ManagedIdentityClientID:
+          type: string
+        Password:
+          type: string
+        ServiceURL:
+          type: string
+        StorageAccountKey:
+          type: string
+        StorageAccountName:
+          type: string
+        TenantID:
+          type: string
+      type: object
+    backup.backupPayload:
+      properties:
+        Password:
+          type: string
+      type: object
+    portaineree.AzureAuthMethod:
+      enum:
+        - servicePrincipalSecret
+        - servicePrincipalCertificate
+        - managedIdentity
+        - storageAccountKey
+      type: string
+      x-enum-varnames:
+        - AzureAuthServicePrincipalSecret
+        - AzureAuthServicePrincipalCertificate
+        - AzureAuthManagedIdentity
+        - AzureAuthStorageAccountKey
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

@@ -1,0 +1,795 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage Docker registries
+    name: registries
+    x-displayName: Registries
+servers:
+  - url: /api
+paths:
+  /registries:
+    get:
+      description: |-
+        List all registries.
+        Administrators and edge-admins receive the full registry record (minus passwords).
+        All other authenticated users receive a scrubbed record containing only ID, Name, and Type.
+        **Access policy**: authenticated
+      operationId: RegistryList
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/portaineree.Registry'
+                type: array
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List Registries
+      tags:
+        - registries
+    post:
+      description: |-
+        Create a new registry.
+        **Access policy**: restricted
+      operationId: RegistryCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/registries.registryCreatePayload'
+        description: Registry details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Registry'
+        '400':
+          description: Invalid request
+        '409':
+          description: Another registry with either the same name or same URL & credeintials already exists
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create a new registry
+      tags:
+        - registries
+  /registries/{id}:
+    delete:
+      description: |-
+        Remove a registry
+        **Access policy**: restricted
+      operationId: RegistryDelete
+      parameters:
+        - description: Registry identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '404':
+          description: Registry not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Remove a registry
+      tags:
+        - registries
+    get:
+      description: |-
+        Retrieve details about a registry. If endpointId is provided, applies policy overrides for that environment.
+        **Access policy**: restricted
+      operationId: RegistryInspect
+      parameters:
+        - description: Registry identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Environment identifier (applies policy overrides if provided)
+          in: query
+          name: endpointId
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Registry'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied to access registry
+        '404':
+          description: Registry not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect a registry
+      tags:
+        - registries
+    put:
+      description: |-
+        Update a registry
+        **Access policy**: restricted
+      operationId: RegistryUpdate
+      parameters:
+        - description: Registry identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/registries.registryUpdatePayload'
+        description: Registry details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Registry'
+        '400':
+          description: Invalid request
+        '404':
+          description: Registry not found
+        '409':
+          description: Another registry with either the same name or same URL & credentials already exists
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update a registry
+      tags:
+        - registries
+  /registries/{id}/configure:
+    post:
+      description: |-
+        Configures a registry.
+        **Access policy**: restricted
+      operationId: RegistryConfigure
+      parameters:
+        - description: Registry identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/registries.registryConfigurePayload'
+        description: Registry configuration
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Registry not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Configures a registry
+      tags:
+        - registries
+  /registries/{id}/ecr/repositories/{repositoryName}:
+    delete:
+      description: |-
+        Delete ECR repository.
+        **Access policy**: restricted
+      operationId: ecrDeleteRepository
+      parameters:
+        - description: Registry identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Repository name
+          in: path
+          name: repositoryName
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied to access registry
+        '404':
+          description: Registry not found
+        '500':
+          description: Server error
+      security:
+        - jwt: []
+      summary: Delete ECR repository
+      tags:
+        - registries
+  /registries/{id}/ecr/repositories/{repositoryName}/tags:
+    delete:
+      description: |-
+        Delete tags for a given ECR repository
+        **Access policy**: restricted
+      operationId: ecrDeleteTags
+      parameters:
+        - description: Registry identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Repository name
+          in: path
+          name: repositoryName
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/registries.deleteTagsPayload'
+        description: Tag Array
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied to access registry
+        '404':
+          description: Registry not found
+        '500':
+          description: Server error
+      security:
+        - jwt: []
+      summary: Delete tags
+      tags:
+        - registries
+  /registries/{id}/repositories/{repositoryName}/tags:
+    delete:
+      description: |-
+        Delete tags for a given repository
+        **Access policy**: restricted
+      operationId: RepositoryTagsDelete
+      parameters:
+        - description: Registry identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Repository name
+          in: path
+          name: repositoryName
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/registries.repositoryTagsDeletePayload'
+        description: Tags to delete
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied to access registry
+        '404':
+          description: Registry not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Delete repository tags
+      tags:
+        - registries
+  /registries/ping:
+    post:
+      description: |-
+        Test connection to a registry with provided credentials
+        **Access policy**: authenticated
+      operationId: RegistryPing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/registries.registryPingPayload'
+        description: Registry credentials to test
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/registries.registryPingResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Test registry connection
+      tags:
+        - registries
+components:
+  schemas:
+    registries.registryPingResponse:
+      properties:
+        message:
+          description: Message provides details about the connection test result
+          example: Registry connection successful
+          type: string
+        success:
+          description: Success indicates if the registry connection was successful
+          example: true
+          type: boolean
+      type: object
+    registries.registryPingPayload:
+      properties:
+        Password:
+          description: Password used to authenticate against this registry
+          example: registry_password
+          type: string
+        TLS:
+          description: Use TLS
+          example: true
+          type: boolean
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.RegistryType'
+          description: "Registry Type. Valid values are:\n\t1 (Quay.io),\n\t2 (Azure container registry),\n\t3 (custom registry),\n\t4 (Gitlab registry),\n\t5 (ProGet registry),\n\t6 (DockerHub)\n\t7 (ECR)\n\t8 (Github registry)"
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+            - 8
+          example: 6
+        URL:
+          description: URL or IP address of the Docker registry
+          example: registry-1.docker.io
+          type: string
+        Username:
+          description: Username used to authenticate against this registry
+          example: registry_user
+          type: string
+      required:
+        - Type
+        - URL
+      type: object
+    registries.repositoryTagsDeletePayload:
+      properties:
+        tags:
+          items:
+            type: string
+          type: array
+      type: object
+    registries.deleteTagsPayload:
+      properties:
+        Tags:
+          items:
+            type: string
+          type: array
+      type: object
+    registries.registryConfigurePayload:
+      properties:
+        Authentication:
+          description: Is authentication against this registry enabled
+          example: false
+          type: boolean
+        Password:
+          description: Password used to authenticate against this registry. required when Authentication is true
+          example: registry_password
+          type: string
+        Region:
+          description: ECR region
+          type: string
+        TLS:
+          description: Use TLS
+          example: true
+          type: boolean
+        TLSCACertFile:
+          description: The TLS CA certificate file
+          items:
+            format: int32
+            type: integer
+          type: array
+        TLSCertFile:
+          description: The TLS client certificate file
+          items:
+            format: int32
+            type: integer
+          type: array
+        TLSKeyFile:
+          description: The TLS client key file
+          items:
+            format: int32
+            type: integer
+          type: array
+        TLSSkipVerify:
+          description: Skip the verification of the server TLS certificate
+          example: false
+          type: boolean
+        Username:
+          description: Username used to authenticate against this registry. Required when Authentication is true
+          example: registry_user
+          type: string
+      required:
+        - Authentication
+      type: object
+    portaineree.Registry:
+      properties:
+        AccessToken:
+          description: Stores temporary access token
+          type: string
+        AccessTokenExpiry:
+          type: integer
+        Authentication:
+          description: Is authentication against this registry enabled
+          example: true
+          type: boolean
+        AuthorizedTeams:
+          description: Deprecated in DBVersion == 18
+          items:
+            type: integer
+          type: array
+        AuthorizedUsers:
+          description: Deprecated in DBVersion == 18
+          items:
+            type: integer
+          type: array
+        BaseURL:
+          description: Base URL, introduced for ProGet registry
+          example: registry.mydomain.tld:2375
+          type: string
+        Ecr:
+          $ref: '#/components/schemas/portainer.EcrData'
+        Github:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.GithubRegistryData'
+          description: |-
+            TODO: remove this in 2.34.0 https://linear.app/portainer/issue/R8S-399/
+            this data is migrated in migrateGithubRegistry_2_32_0
+        Gitlab:
+          $ref: '#/components/schemas/portainer.GitlabRegistryData'
+        Id:
+          description: Registry Identifier
+          example: 1
+          type: integer
+        ManagementConfiguration:
+          $ref: '#/components/schemas/portainer.RegistryManagementConfiguration'
+        Name:
+          description: Registry Name
+          example: my-registry
+          type: string
+        Password:
+          description: Password or SecretAccessKey used to authenticate against this registry
+          example: registry_password
+          type: string
+        Quay:
+          $ref: '#/components/schemas/portainer.QuayRegistryData'
+        RegistryAccesses:
+          $ref: '#/components/schemas/portainer.RegistryAccesses'
+        TeamAccessPolicies:
+          allOf:
+            - $ref: '#/components/schemas/portainer.TeamAccessPolicies'
+          description: Deprecated in DBVersion == 31
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.RegistryType'
+          description: Registry Type (1 - Quay, 2 - Azure, 3 - Custom, 4 - Gitlab, 5 - ProGet, 6 - DockerHub, 7 - ECR)
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+        URL:
+          description: URL or IP address of the Docker registry
+          example: registry.mydomain.tld:2375
+          type: string
+        UserAccessPolicies:
+          allOf:
+            - $ref: '#/components/schemas/portainer.UserAccessPolicies'
+          description: |-
+            Deprecated fields
+            Deprecated in DBVersion == 31
+        Username:
+          description: Username or AccessKeyID used to authenticate against this registry
+          example: registry user
+          type: string
+      type: object
+    registries.registryUpdatePayload:
+      properties:
+        Authentication:
+          example: false
+          type: boolean
+        BaseURL:
+          example: registry.mydomain.tld:2375
+          type: string
+        Ecr:
+          $ref: '#/components/schemas/portainer.EcrData'
+        Github:
+          $ref: '#/components/schemas/portaineree.GithubRegistryData'
+        Name:
+          example: my-registry
+          type: string
+        Password:
+          example: registry_password
+          type: string
+        Quay:
+          $ref: '#/components/schemas/portainer.QuayRegistryData'
+        RegistryAccesses:
+          $ref: '#/components/schemas/portainer.RegistryAccesses'
+        URL:
+          example: registry.mydomain.tld:2375/feed
+          type: string
+        Username:
+          example: registry_user
+          type: string
+      required:
+        - Authentication
+        - Name
+        - URL
+      type: object
+    registries.registryCreatePayload:
+      properties:
+        Authentication:
+          description: Is authentication against this registry enabled
+          example: false
+          type: boolean
+        BaseURL:
+          description: BaseURL required for ProGet registry
+          example: registry.mydomain.tld:2375
+          type: string
+        Ecr:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EcrData'
+          description: ECR specific details, required when type = 7
+        Github:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.GithubRegistryData'
+          description: Github specific details, required when type = 8
+        Gitlab:
+          allOf:
+            - $ref: '#/components/schemas/portainer.GitlabRegistryData'
+          description: Gitlab specific details, required when type = 4
+        Name:
+          description: Name that will be used to identify this registry
+          example: my-registry
+          type: string
+        Password:
+          description: Password used to authenticate against this registry. required when Authentication is true
+          example: registry_password
+          type: string
+        Quay:
+          allOf:
+            - $ref: '#/components/schemas/portainer.QuayRegistryData'
+          description: Quay specific details, required when type = 1
+        TLS:
+          description: Use TLS
+          example: true
+          type: boolean
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.RegistryType'
+          description: "Registry Type. Valid values are:\n\t1 (Quay.io),\n\t2 (Azure container registry),\n\t3 (custom registry),\n\t4 (Gitlab registry),\n\t5 (ProGet registry),\n\t6 (DockerHub)\n\t7 (ECR)\n\t8 (Github registry)"
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+            - 8
+          example: 1
+        URL:
+          description: URL or IP address of the Docker registry
+          example: registry.mydomain.tld:2375/feed
+          type: string
+        Username:
+          description: Username used to authenticate against this registry. Required when Authentication is true
+          example: registry_user
+          type: string
+      required:
+        - Authentication
+        - Name
+        - Type
+        - URL
+      type: object
+    portainer.RegistryType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+      type: integer
+      x-enum-varnames:
+        - _
+        - QuayRegistry
+        - AzureRegistry
+        - CustomRegistry
+        - GitlabRegistry
+        - ProGetRegistry
+        - DockerHubRegistry
+        - EcrRegistry
+        - GithubRegistry
+    portainer.UserAccessPolicies:
+      additionalProperties:
+        $ref: '#/components/schemas/portainer.AccessPolicy'
+      type: object
+    portainer.TeamAccessPolicies:
+      additionalProperties:
+        $ref: '#/components/schemas/portainer.AccessPolicy'
+      type: object
+    portainer.RegistryAccesses:
+      additionalProperties:
+        $ref: '#/components/schemas/portainer.RegistryAccessPolicies'
+      type: object
+    portainer.QuayRegistryData:
+      properties:
+        OrganisationName:
+          type: string
+        UseOrganisation:
+          type: boolean
+      type: object
+    portainer.RegistryManagementConfiguration:
+      properties:
+        AccessToken:
+          type: string
+        AccessTokenExpiry:
+          type: integer
+        Authentication:
+          type: boolean
+        Ecr:
+          $ref: '#/components/schemas/portainer.EcrData'
+        Password:
+          type: string
+        TLSConfig:
+          $ref: '#/components/schemas/portainer.TLSConfiguration'
+        Type:
+          $ref: '#/components/schemas/portainer.RegistryType'
+        Username:
+          type: string
+      type: object
+    portainer.GitlabRegistryData:
+      properties:
+        InstanceURL:
+          type: string
+        ProjectId:
+          type: integer
+        ProjectPath:
+          type: string
+      type: object
+    portaineree.GithubRegistryData:
+      properties:
+        OrganisationName:
+          type: string
+        UseOrganisation:
+          type: boolean
+      type: object
+    portainer.EcrData:
+      properties:
+        Region:
+          example: ap-southeast-2
+          type: string
+      type: object
+    portainer.AccessPolicy:
+      properties:
+        Namespaces:
+          description: Namespaces is a list of namespaces that this access policy applies to. Only used for namespaced level roles
+          items:
+            type: string
+          type: array
+        RoleId:
+          description: Role identifier. Reference the role that will be associated to this access policy
+          example: 1
+          type: integer
+      type: object
+    portainer.RegistryAccessPolicies:
+      properties:
+        Namespaces:
+          description: Kubernetes specific fields (with kubernetes, namespaces have access to a registry, if users/teams have access to the same namespace, they have access to the registry)
+          items:
+            type: string
+          type: array
+        TeamAccessPolicies:
+          $ref: '#/components/schemas/portainer.TeamAccessPolicies'
+        UserAccessPolicies:
+          allOf:
+            - $ref: '#/components/schemas/portainer.UserAccessPolicies'
+          description: Docker specific fields (with docker, users/teams have access to a registry)
+      type: object
+    portainer.TLSConfiguration:
+      properties:
+        TLS:
+          description: Use TLS
+          example: true
+          type: boolean
+        TLSCACert:
+          description: Path to the TLS CA certificate file
+          example: /data/tls/ca.pem
+          type: string
+        TLSCert:
+          description: Path to the TLS client certificate file
+          example: /data/tls/cert.pem
+          type: string
+        TLSKey:
+          description: Path to the TLS client key file
+          example: /data/tls/key.pem
+          type: string
+        TLSSkipVerify:
+          description: Skip the verification of the server TLS certificate
+          example: false
+          type: boolean
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

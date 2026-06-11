@@ -1,0 +1,238 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage licenses
+    name: license
+    x-displayName: Licenses
+servers:
+  - url: /api
+paths:
+  /licenses:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: licensesList
+      responses:
+        '200':
+          description: Licenses
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/liblicense.PortainerLicense'
+                type: array
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: fetches the list of licenses on Portainer
+      tags:
+        - license
+  /licenses/add:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: licensesAttach
+      parameters:
+        - description: remove conflicting licenses
+          in: query
+          name: force
+          schema:
+            type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/licenses.attachPayload'
+        description: list of licenses keys to attach
+        required: true
+      responses:
+        '200':
+          description: Success license data will be in `body.Licenses`, Failures will be in `body.ConflictingKeys = error`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/licenses.attachResponse'
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: attaches a list of licenses to Portainer
+      tags:
+        - license
+  /licenses/info:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: licensesInfo
+      responses:
+        '200':
+          description: License info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/licenses.LicenseInfo'
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: summarizes licenses on Portainer
+      tags:
+        - license
+  /licenses/remove:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: licensesDelete
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/licenses.deletePayload'
+        description: list of license keys to remove
+        required: true
+      responses:
+        '200':
+          description: OK
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: delete license from portainer instance
+      tags:
+        - license
+components:
+  schemas:
+    licenses.deletePayload:
+      properties:
+        LicenseKeys:
+          description: List of license keys to remove
+          items:
+            type: string
+          type: array
+      type: object
+    licenses.LicenseInfo:
+      properties:
+        company:
+          type: string
+        enforcedAt:
+          type: integer
+        expiresAt:
+          type: integer
+        nodes:
+          type: integer
+        overuseStartedTimestamp:
+          description: unix timestamp when node usage exceeded available license limit
+          type: integer
+        type:
+          $ref: '#/components/schemas/liblicense.PortainerLicenseType'
+        valid:
+          type: boolean
+      type: object
+    licenses.attachResponse:
+      properties:
+        conflictingKeys:
+          items:
+            type: string
+          type: array
+      type: object
+    licenses.attachPayload:
+      properties:
+        key:
+          type: string
+      type: object
+    liblicense.PortainerLicense:
+      properties:
+        company:
+          type: string
+        created:
+          type: integer
+        email:
+          type: string
+        expiresAfter:
+          type: integer
+        expiresAt:
+          type: integer
+        firstCheckin:
+          type: integer
+        id:
+          type: string
+        lastCheckin:
+          type: integer
+        licenseKey:
+          type: string
+        multiCheckinCount:
+          type: integer
+        multiuseInstancesCount:
+          type: integer
+        nodes:
+          type: integer
+        productEdition:
+          allOf:
+            - $ref: '#/components/schemas/liblicense.ProductEdition'
+          description: |-
+            ProductEdition was created originally with plans on having a
+            seperate portainer product for Enterprise users and Business users
+            with differing features. This didn't wind up coming about, but may
+            still serve useful in the future if we need to issue keys for a
+            different product entirely.
+            Originally, the ProductEdition was used as the prefix for generating
+            license keys, but in practice most people thought it was the
+            "version" due to us having the original extension licenses which can
+            be thought of as the true version 1 licenses.
+        redisRef:
+          type: string
+        reference:
+          type: string
+        revoked:
+          type: boolean
+        revokedAt:
+          type: integer
+        type:
+          allOf:
+            - $ref: '#/components/schemas/liblicense.PortainerLicenseType'
+          description: |-
+            Type is used to distinguish different kinds of licenses, trial
+            licenses, enterprise subscriptions
+        uniqueId:
+          type: string
+        version:
+          description: |-
+            Version indicates which key should be used to encode/decode the
+            license string.
+          type: integer
+      type: object
+    liblicense.PortainerLicenseType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+      type: integer
+      x-enum-varnames:
+        - _
+        - PortainerLicenseTrial
+        - PortainerLicenseSubscription
+        - PortainerLicenseFree
+        - PortainerLicensePersonal
+        - PortainerLicenseStarter
+    liblicense.ProductEdition:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+      type: integer
+      x-enum-varnames:
+        - _
+        - PortainerCE
+        - PortainerBE
+        - PortainerEE
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

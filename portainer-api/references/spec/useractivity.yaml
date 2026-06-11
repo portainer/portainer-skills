@@ -1,0 +1,320 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage user activity logs
+    name: useractivity
+    x-displayName: User activity
+servers:
+  - url: /api
+paths:
+  /useractivity/authlogs:
+    get:
+      description: |-
+        List logs by provided query
+        **Access policy**: admin
+      operationId: AuthLogsList
+      parameters:
+        - description: Pagination offset
+          in: query
+          name: offset
+          schema:
+            type: integer
+        - description: Limit results
+          in: query
+          name: limit
+          schema:
+            type: integer
+        - description: Results before timestamp (unix)
+          in: query
+          name: before
+          schema:
+            type: integer
+        - description: Results after timestamp (unix)
+          in: query
+          name: after
+          schema:
+            type: integer
+        - description: Sort by this column
+          in: query
+          name: sortBy
+          schema:
+            type: string
+        - description: Sort order, if true will return results by descending order
+          in: query
+          name: sortDesc
+          schema:
+            type: boolean
+        - description: Query logs by this keyword
+          in: query
+          name: keyword
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/portaineree.AuthActivityLog'
+                type: array
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List auth activity logs
+      tags:
+        - useractivity
+  /useractivity/authlogs.csv:
+    get:
+      description: |-
+        Download auth logs as CSV by provided query
+        **Access policy**: admin
+      operationId: AuthLogsCSV
+      parameters:
+        - description: Results before timestamp (unix)
+          in: query
+          name: before
+          schema:
+            type: integer
+        - description: Results after timestamp (unix)
+          in: query
+          name: after
+          schema:
+            type: integer
+        - description: Sort by this column
+          in: query
+          name: sortBy
+          schema:
+            type: string
+        - description: Sort order, if true will return results by descending order
+          in: query
+          name: sortDesc
+          schema:
+            type: boolean
+        - description: Limit results
+          in: query
+          name: limit
+          schema:
+            type: integer
+        - description: Query logs by this keyword
+          in: query
+          name: keyword
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Download auth logs as CSV
+      tags:
+        - useractivity
+  /useractivity/logs:
+    get:
+      description: |-
+        List logs by provided query
+        **Access policy**: admin
+      operationId: LogsList
+      parameters:
+        - description: Pagination offset
+          in: query
+          name: offset
+          schema:
+            type: integer
+        - description: Limit results
+          in: query
+          name: limit
+          schema:
+            type: integer
+        - description: Results before timestamp (unix)
+          in: query
+          name: before
+          schema:
+            type: integer
+        - description: Results after timestamp (unix)
+          in: query
+          name: after
+          schema:
+            type: integer
+        - description: Sort by this column
+          in: query
+          name: sortBy
+          schema:
+            type: string
+        - description: Sort order, if true will return results by descending order
+          in: query
+          name: sortDesc
+          schema:
+            type: boolean
+        - description: Query logs by this keyword
+          in: query
+          name: keyword
+          schema:
+            type: string
+        - description: Filter by context
+          in: query
+          name: context
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - description: Filter by usernames
+          in: query
+          name: username
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/useractivity.logsListResponse'
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List user activity logs
+      tags:
+        - useractivity
+  /useractivity/logs.csv:
+    get:
+      description: |-
+        Download user activity logs as CSV by provided query
+        **Access policy**: admin
+      operationId: LogsCSV
+      parameters:
+        - description: Results before timestamp (unix)
+          in: query
+          name: before
+          schema:
+            type: integer
+        - description: Results after timestamp (unix)
+          in: query
+          name: after
+          schema:
+            type: integer
+        - description: Sort by this column
+          in: query
+          name: sortBy
+          schema:
+            type: string
+        - description: Sort order, if true will return results by descending order
+          in: query
+          name: sortDesc
+          schema:
+            type: boolean
+        - description: Limit results (defaults to 1000000 if not provided, zero, negative, or exceeds maximum)
+          in: query
+          name: limit
+          schema:
+            type: integer
+        - description: Query logs by this keyword
+          in: query
+          name: keyword
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Download user activity logs as CSV
+      tags:
+        - useractivity
+components:
+  schemas:
+    useractivity.logsListResponse:
+      properties:
+        logs:
+          items:
+            $ref: '#/components/schemas/portaineree.UserActivityLog'
+          type: array
+        totalCount:
+          type: integer
+      type: object
+    portaineree.AuthActivityLog:
+      properties:
+        context:
+          $ref: '#/components/schemas/portainer.AuthenticationMethod'
+        id:
+          type: integer
+        origin:
+          type: string
+        timestamp:
+          type: integer
+        type:
+          $ref: '#/components/schemas/portaineree.AuthenticationActivityType'
+        username:
+          type: string
+      type: object
+    portaineree.UserActivityLog:
+      properties:
+        action:
+          type: string
+        context:
+          type: string
+        id:
+          type: integer
+        payload:
+          items:
+            type: integer
+          type: array
+        timestamp:
+          type: integer
+        username:
+          type: string
+      type: object
+    portaineree.AuthenticationActivityType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+      type: integer
+      x-enum-varnames:
+        - _
+        - AuthenticationActivitySuccess
+        - AuthenticationActivityFailure
+        - AuthenticationActivityLogOut
+    portainer.AuthenticationMethod:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+      type: integer
+      x-enum-varnames:
+        - _
+        - AuthenticationInternal
+        - AuthenticationLDAP
+        - AuthenticationOAuth
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

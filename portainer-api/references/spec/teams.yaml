@@ -1,0 +1,228 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage teams
+    name: teams
+    x-displayName: Teams
+servers:
+  - url: /api
+paths:
+  /teams:
+    get:
+      description: |-
+        List teams. All authenticated users can list all teams (teams only expose ID and Name).
+        **Access policy**: authenticated
+      operationId: TeamList
+      parameters:
+        - description: Only list teams that the user is leader of
+          in: query
+          name: onlyLedTeams
+          schema:
+            type: boolean
+        - description: Identifier of the environment(endpoint) that will be used to filter the authorized teams
+          in: query
+          name: environmentId
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/portainer.Team'
+                type: array
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List teams
+      tags:
+        - teams
+    post:
+      description: |-
+        Create a new team.
+        **Access policy**: administrator
+      operationId: TeamCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/teams.teamCreatePayload'
+        description: details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.Team'
+        '400':
+          description: Invalid request
+        '409':
+          description: A team with the same name already exists
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create a new team
+      tags:
+        - teams
+  /teams/{id}:
+    delete:
+      description: |-
+        Remove a team.
+        **Access policy**: administrator
+      operationId: TeamDelete
+      parameters:
+        - description: Team Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Team not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Remove a team
+      tags:
+        - teams
+    get:
+      description: |-
+        Retrieve details about a team. Access is only available for administrator and leaders of that team.
+        **Access policy**: administrator or team leader
+      operationId: TeamInspect
+      parameters:
+        - description: Team identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.Team'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Team not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect a team
+      tags:
+        - teams
+    put:
+      description: |-
+        Update a team.
+        **Access policy**: administrator
+      operationId: TeamUpdate
+      parameters:
+        - description: Team identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/teams.teamUpdatePayload'
+        description: Team details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.Team'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Team not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update a team
+      tags:
+        - teams
+components:
+  schemas:
+    portainer.Team:
+      properties:
+        Id:
+          description: Team Identifier
+          example: 1
+          type: integer
+        Name:
+          description: Team name
+          example: developers
+          type: string
+      type: object
+    teams.teamUpdatePayload:
+      properties:
+        Name:
+          description: Name
+          example: developers
+          type: string
+      type: object
+    teams.teamCreatePayload:
+      properties:
+        Name:
+          description: Name
+          example: developers
+          type: string
+        TeamLeaders:
+          description: TeamLeaders
+          example:
+            - 3
+            - 5
+          items:
+            type: integer
+          type: array
+      required:
+        - Name
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

@@ -1,0 +1,305 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage access control on Docker resources
+    name: resource_controls
+    x-displayName: Docker access control
+servers:
+  - url: /api
+paths:
+  /resource_controls:
+    post:
+      description: |-
+        Create a new resource control to restrict access to a Docker resource.
+        **Access policy**: administrator
+      operationId: ResourceControlCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/resourcecontrols.resourceControlCreatePayload'
+        description: Resource control details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.ResourceControl'
+        '400':
+          description: Invalid request
+        '409':
+          description: A resource control is already associated to this resource
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create a new resource control
+      tags:
+        - resource_controls
+  /resource_controls/{id}:
+    delete:
+      description: |-
+        Remove a resource control.
+        **Access policy**: administrator
+      operationId: ResourceControlDelete
+      parameters:
+        - description: Resource control identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '404':
+          description: Resource control not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Remove a resource control
+      tags:
+        - resource_controls
+    put:
+      description: |-
+        Update a resource control
+        **Access policy**: authenticated
+      operationId: ResourceControlUpdate
+      parameters:
+        - description: Resource control identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/resourcecontrols.resourceControlUpdatePayload'
+        description: Resource control details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.ResourceControl'
+        '400':
+          description: Invalid request
+        '403':
+          description: Unauthorized
+        '404':
+          description: Resource control not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update a resource control
+      tags:
+        - resource_controls
+components:
+  schemas:
+    portainer.ResourceControl:
+      properties:
+        AccessLevel:
+          $ref: '#/components/schemas/portainer.ResourceAccessLevel'
+        AdministratorsOnly:
+          description: Permit access to resource only to admins
+          example: true
+          type: boolean
+        Id:
+          description: ResourceControl Identifier
+          example: 1
+          type: integer
+        OwnerId:
+          description: |-
+            Deprecated fields
+            Deprecated in DBVersion == 2
+          type: integer
+        Public:
+          description: Permit access to the associated resource to any user
+          example: true
+          type: boolean
+        ResourceId:
+          description: |-
+            Docker resource identifier on which access control will be applied.\
+            In the case of a resource control applied to a stack, use the stack name as identifier
+          example: 617c5f22bb9b023d6daab7cba43a57576f83492867bc767d1c59416b065e5f08
+          type: string
+        SubResourceIds:
+          description: List of Docker resources that will inherit this access control
+          example:
+            - 617c5f22bb9b023d6daab7cba43a57576f83492867bc767d1c59416b065e5f08
+          items:
+            type: string
+          type: array
+        System:
+          type: boolean
+        TeamAccesses:
+          items:
+            $ref: '#/components/schemas/portainer.TeamResourceAccess'
+          type: array
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.ResourceControlType'
+          description: |-
+            Type of Docker resource. Valid values are: 1- container, 2 -service
+            3 - volume, 4 - secret, 5 - stack, 6 - config or 7 - custom template
+          example: 1
+        UserAccesses:
+          items:
+            $ref: '#/components/schemas/portainer.UserResourceAccess'
+          type: array
+      type: object
+    resourcecontrols.resourceControlUpdatePayload:
+      properties:
+        AdministratorsOnly:
+          description: Permit access to resource only to admins
+          example: true
+          type: boolean
+        Public:
+          description: Permit access to the associated resource to any user
+          example: true
+          type: boolean
+        Teams:
+          description: List of team identifiers with access to the associated resource
+          example:
+            - 7
+          items:
+            type: integer
+          type: array
+        Users:
+          description: List of user identifiers with access to the associated resource
+          example:
+            - 4
+          items:
+            type: integer
+          type: array
+      type: object
+    resourcecontrols.resourceControlCreatePayload:
+      properties:
+        AdministratorsOnly:
+          description: Permit access to resource only to admins
+          example: true
+          type: boolean
+        Public:
+          description: Permit access to the associated resource to any user
+          example: true
+          type: boolean
+        ResourceID:
+          example: 617c5f22bb9b023d6daab7cba43a57576f83492867bc767d1c59416b065e5f08
+          type: string
+        SubResourceIDs:
+          description: List of Docker resources that will inherit this access control
+          example:
+            - 617c5f22bb9b023d6daab7cba43a57576f83492867bc767d1c59416b065e5f08
+          items:
+            type: string
+          type: array
+        Teams:
+          description: List of team identifiers with access to the associated resource
+          example:
+            - 56
+            - 7
+          items:
+            type: integer
+          type: array
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.ResourceControlType'
+          description: |-
+            Type of Resource. Valid values are: 1 - container, 2 - service
+            3 - volume, 4 - network, 5 - secret, 6 - stack, 7 - config, 8 - custom template, 9 - azure-container-group
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+            - 8
+            - 9
+          example: 1
+        Users:
+          description: List of user identifiers with access to the associated resource
+          example:
+            - 1
+            - 4
+          items:
+            type: integer
+          type: array
+      required:
+        - ResourceID
+        - Type
+      type: object
+    portainer.UserResourceAccess:
+      properties:
+        AccessLevel:
+          $ref: '#/components/schemas/portainer.ResourceAccessLevel'
+        UserId:
+          type: integer
+      type: object
+    portainer.ResourceControlType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+      type: integer
+      x-enum-varnames:
+        - _
+        - ContainerResourceControl
+        - ServiceResourceControl
+        - VolumeResourceControl
+        - NetworkResourceControl
+        - SecretResourceControl
+        - StackResourceControl
+        - ConfigResourceControl
+        - CustomTemplateResourceControl
+        - ContainerGroupResourceControl
+    portainer.TeamResourceAccess:
+      properties:
+        AccessLevel:
+          $ref: '#/components/schemas/portainer.ResourceAccessLevel'
+        TeamId:
+          type: integer
+      type: object
+    portainer.ResourceAccessLevel:
+      enum:
+        - 0
+        - 1
+      type: integer
+      x-enum-varnames:
+        - _
+        - ReadWriteAccessLevel
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

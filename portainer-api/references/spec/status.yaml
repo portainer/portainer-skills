@@ -1,0 +1,54 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Information about the Portainer instance
+    name: status
+    x-displayName: Portainer status
+servers:
+  - url: /api
+paths:
+  /status:
+    get:
+      deprecated: true
+      description: |-
+        Deprecated: use the `/system/status` endpoint instead.
+        Retrieve Portainer status
+        **Access policy**: public
+      operationId: StatusInspect
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_system.status'
+      summary: Check Portainer status
+      tags:
+        - status
+components:
+  schemas:
+    github_com_portainer_portainer-ee_api_http_handler_system.status:
+      properties:
+        InstanceID:
+          description: Server Instance ID
+          example: 299ab403-70a8-4c05-92f7-bf7a994d50df
+          type: string
+        Version:
+          description: Portainer API version
+          example: 2.0.0
+          type: string
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

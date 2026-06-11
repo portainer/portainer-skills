@@ -1,0 +1,86 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage roles
+    name: roles
+    x-displayName: Roles
+servers:
+  - url: /api
+paths:
+  /roles:
+    get:
+      description: |-
+        List all roles available for use
+        **Access policy**: authenticated
+      operationId: RoleList
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/portaineree.Role'
+                type: array
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List roles
+      tags:
+        - roles
+components:
+  schemas:
+    portaineree.Role:
+      properties:
+        Authorizations:
+          allOf:
+            - $ref: '#/components/schemas/portainer.Authorizations'
+          description: Authorizations associated to a role
+        Description:
+          description: Role description
+          example: Read-only access of all resources in an environment(endpoint)
+          type: string
+        Id:
+          description: Role Identifier
+          example: 1
+          type: integer
+        Name:
+          description: Role name
+          example: HelpDesk
+          type: string
+        Priority:
+          type: integer
+        Scope:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          type: object
+      required:
+        - Authorizations
+        - Description
+        - Id
+        - Name
+        - Priority
+        - Scope
+      type: object
+    portainer.Authorizations:
+      additionalProperties:
+        type: boolean
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

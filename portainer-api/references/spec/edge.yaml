@@ -1,0 +1,501 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage Edge related environment settings
+    name: edge
+    x-displayName: Edge settings
+  - description: Manage Edge Stacks
+    name: edge_stacks
+    x-displayName: Edge stacks
+  - description: Manage environments
+    name: endpoints
+    x-displayName: Environments
+servers:
+  - url: /api
+paths:
+  /endpoints/{id}/edge/alerts:
+    post:
+      description: Authorized only if the request is made by a trusted Edge environment(endpoint)
+      operationId: EndpointEdgeAlertsReceive
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/models.PostableAlert'
+              type: array
+        description: Alertmanager alert batch
+        required: true
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Receive Alertmanager-compatible alerts from an Edge agent
+      tags:
+        - edge
+        - endpoints
+  /endpoints/{id}/edge/jobs/{jobID}/logs:
+    post:
+      description: Authorized only if the request is done by an Edge Environment(Endpoint)
+      parameters:
+        - description: Environment(Endpoint) Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Job Id
+          in: path
+          name: jobID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+      summary: Update the logs collected from an Edge Job
+      tags:
+        - edge
+        - endpoints
+  /endpoints/{id}/edge/stacks/{stackId}:
+    get:
+      description: '**Access policy**: public'
+      parameters:
+        - description: Environment(Endpoint) Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: EdgeStack Id
+          in: path
+          name: stackId
+          required: true
+          schema:
+            type: integer
+        - description: Stack file version maintained by Portainer
+          in: query
+          name: version
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/edge.StackPayload'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      summary: Inspect an Edge Stack for an Environment(Endpoint)
+      tags:
+        - edge
+        - endpoints
+        - edge_stacks
+  /endpoints/edge/generate-key:
+    post:
+      description: |-
+        Generates a general edge key
+        **Access policy**: admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpointedge.generateKeyResponse'
+        description: Generate Key Info
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      summary: Generate an EdgeKey
+      tags:
+        - edge
+        - endpoints
+components:
+  schemas:
+    endpointedge.generateKeyResponse:
+      properties:
+        edgeKey:
+          type: string
+      type: object
+    edge.StackPayload:
+      properties:
+        AlwaysCloneGitRepoForRelativePath:
+          description: |-
+            AlwaysCloneGitRepoForRelativePath is a flag indicating if the agent must always clone the git repository for relative path.
+            This field is only valid when SupportRelativePath is true.
+            Used only for EE
+          type: boolean
+        CreatedBy:
+          description: |-
+            CreatedBy is the username that created this stack
+            Used for adding labels to Kubernetes manifests
+          type: string
+        CreatedByUserId:
+          description: |-
+            CreatedByUserId is the user ID that created this stack
+            Used for adding labels to Kubernetes manifests
+          type: string
+        DeployerOptionsPayload:
+          $ref: '#/components/schemas/edge.DeployerOptionsPayload'
+        DirEntries:
+          description: Content of stack folder
+          items:
+            $ref: '#/components/schemas/filesystem.DirEntry'
+          type: array
+        EdgeUpdateID:
+          description: |-
+            EdgeUpdateID is the ID of the edge update related to this stack.
+            Used only for EE
+          type: integer
+        EntryFileName:
+          description: Name of the stack entry file
+          type: string
+        EnvVars:
+          description: |-
+            Used only for EE
+            EnvVars is a list of environment variables to inject into the stack
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        FilesystemPath:
+          description: Mount point for relative path
+          type: string
+        ForceUpdate:
+          description: |-
+            ForceUpdate is a flag indicating if the agent must force the update of the stack.
+            Used only for EE
+          type: boolean
+        HelmConfig:
+          allOf:
+            - $ref: '#/components/schemas/portainer.HelmConfig'
+          description: HelmConfig represents the Helm configuration for an edge stack
+        ID:
+          description: ID of the stack
+          type: integer
+        Name:
+          description: Name of the stack
+          type: string
+        Namespace:
+          description: Namespace to use for kubernetes stack. Keep empty to use the manifest namespace.
+          type: string
+        PrePullImage:
+          description: |-
+            PrePullImage is a flag indicating if the agent must pull the image before deploying the stack.
+            Used only for EE
+          type: boolean
+        RePullImage:
+          description: |-
+            RePullImage is a flag indicating if the agent must pull the image if it is already present on the node.
+            Used only for EE
+          type: boolean
+        ReadyRePullImage:
+          description: |-
+            Used only for EE async edge agent
+            ReadyRePullImage is a flag to indicate whether the auto update is trigger to re-pull image
+            Deprecated(2.36): use DeployerOptionsPayload.ForceRecreate instead
+          type: boolean
+        RegistryCredentials:
+          description: |-
+            RegistryCredentials holds the credentials for a Docker registry.
+            Used only for EE
+          items:
+            $ref: '#/components/schemas/edge.RegistryCredentials'
+          type: array
+        RetryDeploy:
+          description: |-
+            RetryDeploy is a flag indicating if the agent must retry to deploy the stack if it fails.
+            Used only for EE
+          type: boolean
+        RetryPeriod:
+          description: |-
+            RetryPeriod specifies the duration, in seconds, for which the agent should continue attempting to deploy the stack after a failure
+            Used only for EE
+          type: integer
+        RollbackTo:
+          description: RollbackTo specifies the stack file version to rollback to (only support to rollback to the last version currently)
+          type: integer
+        StackFileContent:
+          description: Content of the stack file (for compatibility to agent version less than 2.19.0)
+          type: string
+        SupportPerDeviceConfigs:
+          description: Whether the edge stack supports per device configs
+          type: boolean
+        SupportRelativePath:
+          description: Is relative path supported
+          type: boolean
+        Version:
+          description: Version of the stack file
+          type: integer
+      type: object
+    models.PostableAlert:
+      properties:
+        annotations:
+          allOf:
+            - $ref: '#/components/schemas/models.LabelSet'
+          description: annotations
+        endsAt:
+          description: |-
+            ends at
+            Format: date-time
+          type: string
+        generatorURL:
+          description: |-
+            generator URL
+            Format: uri
+          type: string
+        labels:
+          allOf:
+            - $ref: '#/components/schemas/models.LabelSet'
+          description: |-
+            labels
+            Required: true
+        startsAt:
+          description: |-
+            starts at
+            Format: date-time
+          type: string
+      type: object
+    edge.RegistryCredentials:
+      properties:
+        Secret:
+          type: string
+        ServerURL:
+          type: string
+        Username:
+          type: string
+      type: object
+    portainer.HelmConfig:
+      properties:
+        Atomic:
+          description: |-
+            Atomic enables automatic rollback on deployment failure (equivalent to helm --atomic).
+            Used by both git repo and Helm repository deployments.
+          example: true
+          type: boolean
+        ChartName:
+          description: |-
+            ChartName is the name of the Helm chart within the repository.
+            Required for Helm repository deployments.
+          example: nginx
+          type: string
+        ChartPath:
+          description: |-
+            ChartPath is the path to a Helm chart folder within the cloned git repository.
+            Used exclusively for git repo helm deployments. Mutually exclusive with ChartURL.
+          example: charts/my-app
+          type: string
+        ChartURL:
+          description: |-
+            ChartURL is the URL of a Helm chart repository.
+            Used exclusively for Helm repository deployments. Mutually exclusive with ChartPath.
+          example: https://charts.bitnami.com/bitnami
+          type: string
+        ChartVersion:
+          description: |-
+            ChartVersion is the version of the Helm chart to deploy. Empty means latest.
+            Used exclusively for Helm repository deployments.
+          example: 15.0.0
+          type: string
+        Namespace:
+          description: |-
+            Namespace is the Kubernetes namespace to deploy the Helm chart into.
+            Used by both git repo and Helm repository deployments.
+          example: default
+          type: string
+        Timeout:
+          description: |-
+            Timeout sets the deadline for Helm operations (equivalent to helm --timeout, e.g. "5m0s").
+            Used by both git repo and Helm repository deployments.
+          example: 5m0s
+          type: string
+        ValuesFiles:
+          description: |-
+            ValuesFiles is a list of relative paths to Helm values YAML files within the cloned git repository.
+            Used exclusively for git repo helm deployments.
+          example:
+            - '[''values/prod.yaml'''
+            - ' ''values/secrets.yaml'']'
+          items:
+            type: string
+          type: array
+        ValuesInline:
+          description: |-
+            ValuesInline is the inline YAML string of Helm values.
+            Used exclusively for Helm repository deployments.
+          example: 'replicaCount: 2'
+          type: string
+      type: object
+    portainer.Pair:
+      properties:
+        name:
+          example: name
+          type: string
+        value:
+          example: value
+          type: string
+      type: object
+    filesystem.DirEntry:
+      properties:
+        Content:
+          type: string
+        IsFile:
+          type: boolean
+        Name:
+          type: string
+        Permissions:
+          $ref: '#/components/schemas/os.FileMode'
+      type: object
+    edge.DeployerOptionsPayload:
+      properties:
+        ForceRecreate:
+          description: |-
+            ForceRecreate is a flag indicating if the agent must force the redeployment of the stack.
+            This field is only used when the Force Redeployment is triggered.
+            Once the stack is redeployed, this field will be reset to false.
+            For standard edge agent, this field is used in agent side
+            For async edge agent, this field is used in both agent side and server side.
+            This flag drives `docker compose up --force-recreate` option
+          type: boolean
+        Prune:
+          description: |-
+            Prune is a flag indicating if the agent must prune the containers or not when creating/updating an edge stack
+            This flag drives `docker compose up --remove-orphans` and `docker stack up --prune` options
+            Used only for EE
+          type: boolean
+        RemoveVolumes:
+          description: |-
+            RemoveVolumes is a flag indicating if the agent must remove the named volumes declared
+            in the compose file and anonymouse volumes attached to containers
+            This flag drives `docker compose down --volumes` option
+            Used only for EE
+          type: boolean
+      type: object
+    models.LabelSet:
+      additionalProperties:
+        type: string
+      type: object
+    os.FileMode:
+      enum:
+        - 2147483648
+        - 1073741824
+        - 536870912
+        - 268435456
+        - 134217728
+        - 67108864
+        - 33554432
+        - 16777216
+        - 8388608
+        - 4194304
+        - 2097152
+        - 1048576
+        - 524288
+        - 2401763328
+        - 511
+        - 2147483648
+        - 1073741824
+        - 536870912
+        - 268435456
+        - 134217728
+        - 67108864
+        - 33554432
+        - 16777216
+        - 8388608
+        - 4194304
+        - 2097152
+        - 1048576
+        - 524288
+        - 2401763328
+        - 511
+      format: int32
+      type: integer
+      x-enum-comments:
+        ModeAppend: 'a: append-only'
+        ModeCharDevice: 'c: Unix character device, when ModeDevice is set'
+        ModeDevice: 'D: device file'
+        ModeDir: 'd: is a directory'
+        ModeExclusive: 'l: exclusive use'
+        ModeIrregular: '?: non-regular file; nothing else is known about this file'
+        ModeNamedPipe: 'p: named pipe (FIFO)'
+        ModePerm: Unix permission bits, 0o777
+        ModeSetgid: 'g: setgid'
+        ModeSetuid: 'u: setuid'
+        ModeSocket: 'S: Unix domain socket'
+        ModeSticky: 't: sticky'
+        ModeSymlink: 'L: symbolic link'
+        ModeTemporary: 'T: temporary file; Plan 9 only'
+      x-enum-descriptions:
+        - 'd: is a directory'
+        - 'a: append-only'
+        - 'l: exclusive use'
+        - 'T: temporary file; Plan 9 only'
+        - 'L: symbolic link'
+        - 'D: device file'
+        - 'p: named pipe (FIFO)'
+        - 'S: Unix domain socket'
+        - 'u: setuid'
+        - 'g: setgid'
+        - 'c: Unix character device, when ModeDevice is set'
+        - 't: sticky'
+        - '?: non-regular file; nothing else is known about this file'
+        - ''
+        - Unix permission bits, 0o777
+      x-enum-varnames:
+        - ModeDir
+        - ModeAppend
+        - ModeExclusive
+        - ModeTemporary
+        - ModeSymlink
+        - ModeDevice
+        - ModeNamedPipe
+        - ModeSocket
+        - ModeSetuid
+        - ModeSetgid
+        - ModeCharDevice
+        - ModeSticky
+        - ModeIrregular
+        - ModeType
+        - ModePerm
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

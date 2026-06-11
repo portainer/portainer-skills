@@ -1,0 +1,221 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage Portainer system
+    name: system
+    x-displayName: Portainer system
+servers:
+  - url: /api
+paths:
+  /system/info:
+    get:
+      description: '**Access policy**: authenticated'
+      operationId: systemInfo
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_system.systemInfoResponse'
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Retrieve system info
+      tags:
+        - system
+  /system/nodes:
+    get:
+      description: '**Access policy**: authenticated'
+      operationId: systemNodesCount
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_system.nodesCountResponse'
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Retrieve the count of nodes
+      tags:
+        - system
+  /system/status:
+    get:
+      description: |-
+        Retrieve Portainer status
+        **Access policy**: public
+      operationId: systemStatus
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_system.status'
+      summary: Check Portainer status
+      tags:
+        - system
+  /system/update:
+    post:
+      description: |-
+        Update Portainer to latest version
+        **Access policy**: administrator
+      operationId: systemUpdate
+      responses:
+        '204':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_system.status'
+        '409':
+          description: Conflict, an automatic patch operation is already in progress
+        '500':
+          description: Server error
+      summary: Update Portainer to latest version
+      tags:
+        - system
+  /system/version:
+    get:
+      description: |-
+        Check if portainer has an update available
+        **Access policy**: authenticated
+      operationId: systemVersion
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_http_handler_system.versionResponse'
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Check for portainer updates
+      tags:
+        - system
+components:
+  schemas:
+    github_com_portainer_portainer-ee_api_http_handler_system.versionResponse:
+      properties:
+        Build:
+          $ref: '#/components/schemas/build.BuildInfo'
+        DatabaseVersion:
+          type: string
+        Dependencies:
+          $ref: '#/components/schemas/build.DependenciesInfo'
+        LatestVersion:
+          description: The latest version available
+          example: 2.0.0
+          type: string
+        Runtime:
+          $ref: '#/components/schemas/build.RuntimeInfo'
+        ServerEdition:
+          example: CE/EE
+          type: string
+        ServerVersion:
+          type: string
+        UpdateAvailable:
+          description: Whether portainer has an update available
+          example: false
+          type: boolean
+        VersionSupport:
+          example: STS/LTS
+          type: string
+      type: object
+    github_com_portainer_portainer-ee_api_http_handler_system.status:
+      properties:
+        InstanceID:
+          description: Server Instance ID
+          example: 299ab403-70a8-4c05-92f7-bf7a994d50df
+          type: string
+        Version:
+          description: Portainer API version
+          example: 2.0.0
+          type: string
+      type: object
+    github_com_portainer_portainer-ee_api_http_handler_system.nodesCountResponse:
+      properties:
+        nodes:
+          type: integer
+      type: object
+    github_com_portainer_portainer-ee_api_http_handler_system.systemInfoResponse:
+      properties:
+        agents:
+          type: integer
+        edgeAgents:
+          type: integer
+        edgeDevices:
+          type: integer
+        platform:
+          $ref: '#/components/schemas/platform.ContainerPlatform'
+      type: object
+    build.RuntimeInfo:
+      properties:
+        Env:
+          items:
+            type: string
+          type: array
+      type: object
+    build.DependenciesInfo:
+      properties:
+        ComposeVersion:
+          type: string
+        DockerVersion:
+          type: string
+        HelmVersion:
+          type: string
+        KubectlVersion:
+          type: string
+      type: object
+    build.BuildInfo:
+      properties:
+        BuildNumber:
+          type: string
+        GitCommit:
+          type: string
+        GoVersion:
+          type: string
+        ImageTag:
+          type: string
+        NodejsVersion:
+          type: string
+        PnpmVersion:
+          type: string
+        WebpackVersion:
+          type: string
+      type: object
+    platform.ContainerPlatform:
+      enum:
+        - Docker
+        - Docker Standalone
+        - Docker Swarm
+        - Kubernetes
+        - Podman
+      type: string
+      x-enum-varnames:
+        - PlatformDocker
+        - PlatformDockerStandalone
+        - PlatformDockerSwarm
+        - PlatformKubernetes
+        - PlatformPodman
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

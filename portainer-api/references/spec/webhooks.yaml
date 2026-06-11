@@ -1,0 +1,253 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage webhooks
+    name: webhooks
+    x-displayName: Webhooks
+servers:
+  - url: /api
+paths:
+  /webhooks:
+    get:
+      description: '**Access policy**: authenticated'
+      parameters:
+        - description: Filters (json-string)
+          example: '{"EndpointID":1,"ResourceID":"abc12345-abcd-2345-ab12-58005b4a0260"}'
+          in: query
+          name: filters
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/portainer.Webhook'
+                type: array
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List webhooks
+      tags:
+        - webhooks
+    post:
+      description: '**Access policy**: authenticated'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/webhooks.webhookCreatePayload'
+        description: Webhook data
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.Webhook'
+        '400':
+          description: Invalid request
+        '409':
+          description: A webhook for this resource already exists
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create a webhook
+      tags:
+        - webhooks
+  /webhooks/{id}:
+    delete:
+      description: '**Access policy**: authenticated'
+      parameters:
+        - description: Webhook id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '202':
+          description: Webhook deleted
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Delete a webhook
+      tags:
+        - webhooks
+    post:
+      description: |-
+        Acts on a passed in token UUID to restart the docker service
+        **Access policy**: public
+      parameters:
+        - description: Webhook token
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Webhook executed
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+      summary: Execute a webhook
+      tags:
+        - webhooks
+    put:
+      description: '**Access policy**: authenticated'
+      parameters:
+        - description: Webhook id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/webhooks.webhookUpdatePayload'
+        description: Webhook data
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.Webhook'
+        '400':
+          description: Bad Request
+        '409':
+          description: Conflict
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update a webhook
+      tags:
+        - webhooks
+  /webhooks/{id}/reassign:
+    put:
+      description: '**Access policy**: authenticated'
+      parameters:
+        - description: Webhook id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/webhooks.webhookReassignPayload'
+        description: Webhook data
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.Webhook'
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Reassign a webhook to another resource
+      tags:
+        - webhooks
+components:
+  schemas:
+    portainer.Webhook:
+      properties:
+        EndpointId:
+          type: integer
+        Id:
+          description: Webhook Identifier
+          example: 1
+          type: integer
+        RegistryId:
+          type: integer
+        ResourceId:
+          type: string
+        Token:
+          type: string
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.WebhookType'
+          description: Type of webhook (1 - service)
+      type: object
+    webhooks.webhookReassignPayload:
+      properties:
+        ResourceID:
+          type: string
+        WebhookType:
+          allOf:
+            - $ref: '#/components/schemas/portainer.WebhookType'
+          description: Type of webhook (1 - service, 2 - container)
+      type: object
+    webhooks.webhookUpdatePayload:
+      properties:
+        RegistryID:
+          type: integer
+      type: object
+    webhooks.webhookCreatePayload:
+      properties:
+        EndpointID:
+          type: integer
+        RegistryID:
+          type: integer
+        ResourceID:
+          type: string
+        WebhookType:
+          allOf:
+            - $ref: '#/components/schemas/portainer.WebhookType'
+          description: Type of webhook (1 - service, 2 - container)
+      type: object
+    portainer.WebhookType:
+      enum:
+        - 0
+        - 1
+      type: integer
+      x-enum-varnames:
+        - _
+        - ServiceWebhook
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

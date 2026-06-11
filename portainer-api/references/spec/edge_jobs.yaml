@@ -1,0 +1,520 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage Edge Jobs
+    name: edge_jobs
+    x-displayName: Edge jobs
+servers:
+  - url: /api
+paths:
+  /edge_jobs:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeJobList
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/portainer.EdgeJob'
+                type: array
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetch EdgeJobs list
+      tags:
+        - edge_jobs
+  /edge_jobs/{id}:
+    delete:
+      description: '**Access policy**: administrator'
+      operationId: EdgeJobDelete
+      parameters:
+        - description: EdgeJob Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Delete an EdgeJob
+      tags:
+        - edge_jobs
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeJobInspect
+      parameters:
+        - description: EdgeJob Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.EdgeJob'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect an EdgeJob
+      tags:
+        - edge_jobs
+    put:
+      description: '**Access policy**: administrator'
+      operationId: EdgeJobUpdate
+      parameters:
+        - description: EdgeJob Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/edgejobs.edgeJobUpdatePayload'
+        description: EdgeGroup data
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.EdgeJob'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update an EdgeJob
+      tags:
+        - edge_jobs
+  /edge_jobs/{id}/file:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeJobFile
+      parameters:
+        - description: EdgeJob Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/edgejobs.edgeJobFileResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetch a file of an EdgeJob
+      tags:
+        - edge_jobs
+  /edge_jobs/{id}/tasks:
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeJobTasksList
+      parameters:
+        - description: EdgeJob Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/edgejobs.taskContainer'
+                type: array
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetch the list of tasks on an EdgeJob
+      tags:
+        - edge_jobs
+  /edge_jobs/{id}/tasks/{taskID}/logs:
+    delete:
+      description: '**Access policy**: administrator'
+      operationId: EdgeJobTasksClear
+      parameters:
+        - description: EdgeJob Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Task Id
+          in: path
+          name: taskID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Clear the log for a specifc task on an EdgeJob
+      tags:
+        - edge_jobs
+    get:
+      description: '**Access policy**: administrator'
+      operationId: EdgeJobTaskLogsInspect
+      parameters:
+        - description: EdgeJob Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Task Id
+          in: path
+          name: taskID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/edgejobs.fileResponse'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetch the log for a specifc task on an EdgeJob
+      tags:
+        - edge_jobs
+    post:
+      description: '**Access policy**: administrator'
+      operationId: EdgeJobTasksCollect
+      parameters:
+        - description: EdgeJob Id
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Task Id
+          in: path
+          name: taskID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Collect the log for a specifc task on an EdgeJob
+      tags:
+        - edge_jobs
+  /edge_jobs/create/file:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: EdgeJobCreateFile
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  description: Content of the Stack file
+                  type: string
+                  format: binary
+                Name:
+                  description: Name of the stack
+                  type: string
+                CronExpression:
+                  description: A cron expression to schedule this job
+                  type: string
+                EdgeGroups:
+                  description: JSON stringified array of Edge Groups ids
+                  type: string
+                Endpoints:
+                  description: JSON stringified array of Environment ids
+                  type: string
+                Recurring:
+                  description: If recurring
+                  type: boolean
+              required:
+                - file
+                - Name
+                - CronExpression
+                - EdgeGroups
+                - Endpoints
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeGroup'
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create an EdgeJob from a file
+      tags:
+        - edge_jobs
+  /edge_jobs/create/string:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: EdgeJobCreateString
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/edgejobs.edgeJobCreateFromFileContentPayload'
+        description: EdgeGroup data when method is string
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.EdgeGroup'
+        '500':
+          description: Internal Server Error
+        '503':
+          description: Edge compute features are disabled
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create an EdgeJob from a text
+      tags:
+        - edge_jobs
+components:
+  schemas:
+    portaineree.EdgeGroup:
+      properties:
+        Dynamic:
+          type: boolean
+        EdgeUpdateID:
+          type: integer
+        EndpointIds:
+          $ref: '#/components/schemas/roar.Roar-portainer_EndpointID'
+        Endpoints:
+          description: 'Deprecated: only used for API responses'
+          items:
+            type: integer
+          type: array
+        Id:
+          description: EdgeGroup Identifier
+          example: 1
+          type: integer
+        Name:
+          type: string
+        PartialMatch:
+          type: boolean
+        TagIds:
+          items:
+            type: integer
+          type: array
+      type: object
+    edgejobs.edgeJobCreateFromFileContentPayload:
+      properties:
+        CronExpression:
+          type: string
+        EdgeGroups:
+          items:
+            type: integer
+          type: array
+        Endpoints:
+          items:
+            type: integer
+          type: array
+        FileContent:
+          type: string
+        Name:
+          type: string
+        Recurring:
+          type: boolean
+      type: object
+    edgejobs.fileResponse:
+      properties:
+        FileContent:
+          type: string
+      type: object
+    edgejobs.taskContainer:
+      properties:
+        EndpointId:
+          type: integer
+        EndpointName:
+          type: string
+        Id:
+          type: string
+        LogsStatus:
+          $ref: '#/components/schemas/portainer.EdgeJobLogsStatus'
+      type: object
+    edgejobs.edgeJobFileResponse:
+      properties:
+        FileContent:
+          type: string
+      type: object
+    portainer.EdgeJob:
+      properties:
+        Created:
+          type: integer
+        CronExpression:
+          type: string
+        EdgeGroups:
+          items:
+            type: integer
+          type: array
+        Endpoints:
+          additionalProperties:
+            $ref: '#/components/schemas/portainer.EdgeJobEndpointMeta'
+          type: object
+        GroupLogsCollection:
+          additionalProperties:
+            $ref: '#/components/schemas/portainer.EdgeJobEndpointMeta'
+          description: Field used for log collection of Endpoints belonging to EdgeGroups
+          type: object
+        Id:
+          description: EdgeJob Identifier
+          example: 1
+          type: integer
+        Name:
+          type: string
+        Recurring:
+          type: boolean
+        ScriptPath:
+          type: string
+        Version:
+          type: integer
+      type: object
+    edgejobs.edgeJobUpdatePayload:
+      properties:
+        CronExpression:
+          type: string
+        EdgeGroups:
+          items:
+            type: integer
+          type: array
+        Endpoints:
+          items:
+            type: integer
+          type: array
+        FileContent:
+          type: string
+        Name:
+          type: string
+        Recurring:
+          type: boolean
+      type: object
+    roar.Roar-portainer_EndpointID:
+      type: object
+    portainer.EdgeJobLogsStatus:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+      type: integer
+      x-enum-varnames:
+        - _
+        - EdgeJobLogsStatusIdle
+        - EdgeJobLogsStatusPending
+        - EdgeJobLogsStatusCollected
+    portainer.EdgeJobEndpointMeta:
+      properties:
+        CollectLogs:
+          type: boolean
+        LogsStatus:
+          $ref: '#/components/schemas/portainer.EdgeJobLogsStatus'
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

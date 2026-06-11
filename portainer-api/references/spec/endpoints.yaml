@@ -1,0 +1,3296 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage Docker resources
+    name: docker
+    x-displayName: Docker resources
+  - description: Manage environments
+    name: endpoints
+    x-displayName: Environments
+servers:
+  - url: /api
+paths:
+  /docker/{environmentId}/snapshot:
+    get:
+      description: '**Access policy**:'
+      operationId: snapshotInspect
+      parameters:
+        - description: Environment identifier
+          in: path
+          name: environmentId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.DockerSnapshotRaw'
+        '404':
+          description: Environment not found
+      security:
+        - jwt: []
+      summary: Fetch latest snapshot of environment
+      tags:
+        - endpoints
+        - docker
+  /docker/{environmentId}/snapshot/containers:
+    get:
+      description: '**Access policy**:'
+      operationId: snapshotContainersList
+      parameters:
+        - description: Environment identifier
+          in: path
+          name: environmentId
+          required: true
+          schema:
+            type: integer
+        - description: Edge stack identifier, will return only containers for this edge stack
+          in: query
+          name: edgeStackId
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.DockerContainerSnapshot'
+        '404':
+          description: Environment not found
+      security:
+        - jwt: []
+      summary: Fetch containers list from a snapshot
+      tags:
+        - endpoints
+        - docker
+  /docker/{environmentId}/snapshot/containers/{containerId}:
+    get:
+      description: '**Access policy**:'
+      operationId: snapshotContainerInspect
+      parameters:
+        - description: Environment identifier
+          in: path
+          name: environmentId
+          required: true
+          schema:
+            type: integer
+        - description: Container identifier
+          in: path
+          name: containerId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.DockerContainerSnapshot'
+        '404':
+          description: Environment not found
+      security:
+        - jwt: []
+      summary: Fetch container from a snapshot
+      tags:
+        - endpoints
+        - docker
+  /endpoints:
+    delete:
+      deprecated: true
+      description: |-
+        Deprecated: use the `POST` endpoint instead.
+        Remove multiple environments and optionally clean-up associated resources.
+        **Access policy**: Administrator only.
+      operationId: EndpointDeleteBatchDeprecated
+      requestBody:
+        $ref: '#/components/requestBodies/endpoints.endpointDeleteBatchPayload'
+      responses:
+        '204':
+          description: Environment(s) successfully deleted.
+        '207':
+          description: Partial success. Some environments were deleted successfully, while others failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.endpointDeleteBatchPartialResponse'
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '403':
+          description: Unauthorized access or operation not allowed.
+        '500':
+          description: Server error occurred while attempting to delete the specified environments.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Remove multiple environments
+      tags:
+        - endpoints
+    get:
+      description: |-
+        List all environments(endpoints) based on the current user authorizations. Will
+        return all environments(endpoints) if using an administrator or team leader account otherwise it will
+        only return authorized environments(endpoints).
+        **Access policy**: restricted
+      operationId: EndpointList
+      parameters:
+        - description: Start searching from
+          in: query
+          name: start
+          schema:
+            type: integer
+        - description: Limit results to this value
+          in: query
+          name: limit
+          schema:
+            type: integer
+        - description: Sort results by this value
+          in: query
+          name: sort
+          schema:
+            type: string
+            enum:
+              - Name
+              - Group
+              - Status
+              - LastCheckIn
+              - EdgeID
+              - PlatformType
+              - Health
+              - Id
+        - description: Order sorted results by desc/asc
+          in: query
+          name: order
+          schema:
+            type: integer
+        - description: If true, an `X-Update-Available` header will be added to the response to indicate if an update is available
+          in: query
+          name: updateInformation
+          schema:
+            type: boolean
+        - description: If true, an `X-K8S-Env-Admin` header will be added to the response to indicate if the user is a K8S environment admin for any of the returned environments
+          in: query
+          name: k8sEnvAdmin
+          schema:
+            type: boolean
+        - description: Search query
+          in: query
+          name: search
+          schema:
+            type: string
+        - description: List environments(endpoints) of these groups
+          in: query
+          name: groupIds
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+        - description: List environments(endpoints) by this status
+          in: query
+          name: status
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+        - description: List environments(endpoints) of this type
+          in: query
+          name: types
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+        - description: search environments(endpoints) with these tags (depends on tagsPartialMatch)
+          in: query
+          name: tagIds
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+        - description: If true, will return environment(endpoint) which has one of tagIds, if false (or missing) will return only environments(endpoints) that has all the tags
+          in: query
+          name: tagsPartialMatch
+          schema:
+            type: boolean
+        - description: will return only these environments(endpoints)
+          in: query
+          name: endpointIds
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+        - description: will exclude these environments(endpoints)
+          in: query
+          name: excludeIds
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+        - description: If true, will return environment(endpoint) that were provisioned
+          in: query
+          name: provisioned
+          schema:
+            type: boolean
+        - description: will return only environments with on of these agent versions
+          in: query
+          name: agentVersions
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - description: if exists true show only edge async agents, false show only standard edge agents. if missing, will show both types (relevant only for edge agents)
+          in: query
+          name: edgeAsync
+          schema:
+            type: boolean
+        - description: if true, show only untrusted edge agents, if false show only trusted edge agents (relevant only for edge agents)
+          in: query
+          name: edgeDeviceUntrusted
+          schema:
+            type: boolean
+        - description: if bigger then zero, show only edge agents that checked-in in the last provided seconds (relevant only for edge agents)
+          in: query
+          name: edgeCheckInPassedSeconds
+          schema:
+            type: number
+        - description: if true, the snapshot data won't be retrieved
+          in: query
+          name: excludeSnapshots
+          schema:
+            type: boolean
+        - description: will return only environments(endpoints) with this name
+          in: query
+          name: name
+          schema:
+            type: string
+        - description: Filter environments by partial name match (case-insensitive, searches name only)
+          in: query
+          name: nameFilter
+          schema:
+            type: string
+        - description: only applied when edgeStackId exists. Filter the returned environments based on their deployment status in the stack (not the environment status!)
+          in: query
+          name: edgeStackStatus
+          schema:
+            type: string
+        - description: List environments(endpoints) of these edge groups
+          in: query
+          name: edgeGroupIds
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+        - description: Exclude environments(endpoints) of these edge groups
+          in: query
+          name: excludeEdgeGroupIds
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+        - description: If true, will apply policy data to the returned environments(endpoints)
+          in: query
+          name: policy
+          schema:
+            type: boolean
+        - description: List environments(endpoints) associated with these policies
+          in: query
+          name: policyIds
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: integer
+        - description: Filter environments by policy status (applied, failed, in_progress, warning, not_supported). Only applies when policyIds is specified.
+          in: query
+          name: policyStatus
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Endpoints
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/portaineree.Endpoint'
+                type: array
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List environments(endpoints)
+      tags:
+        - endpoints
+    post:
+      description: |-
+        Create a new environment(endpoint) that will be used to manage an environment(endpoint).
+        **Access policy**: administrator
+      operationId: EndpointCreate
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                Name:
+                  description: 'Name that will be used to identify this environment(endpoint) (example: my-environment)'
+                  type: string
+                EndpointCreationType:
+                  description: 'Environment(Endpoint) type. Value must be one of: 1 (Local Docker environment), 2 (Agent environment), 3 (Azure environment), 4 (Edge agent environment) or 5 (Local Kubernetes Environment)'
+                  type: integer
+                ContainerEngine:
+                  description: 'Container engine used by the environment(endpoint). Value must be one of: ''docker'' or ''podman'''
+                  type: string
+                URL:
+                  description: 'URL or IP address of a Docker host (example: docker.mydomain.tld:2375). Defaults to local if not specified (Linux: /var/run/docker.sock, Windows: //./pipe/docker_engine). Cannot be empty if EndpointCreationType is set to 4 (Edge agent environment)'
+                  type: string
+                PublicURL:
+                  description: 'URL or IP address where exposed containers will be reachable. Defaults to URL if not specified (example: docker.mydomain.tld:2375)'
+                  type: string
+                GroupID:
+                  description: Environment(Endpoint) group identifier. If not specified will default to 1 (unassigned).
+                  type: integer
+                TLS:
+                  description: Require TLS to connect against this environment(endpoint). Must be true if EndpointCreationType is set to 2 (Agent environment)
+                  type: boolean
+                TLSSkipVerify:
+                  description: Skip server verification when using TLS. Must be true if EndpointCreationType is set to 2 (Agent environment)
+                  type: boolean
+                TLSSkipClientVerify:
+                  description: Skip client verification when using TLS. Must be true if EndpointCreationType is set to 2 (Agent environment)
+                  type: boolean
+                TLSCACertFile:
+                  description: TLS CA certificate file
+                  type: string
+                  format: binary
+                TLSCertFile:
+                  description: TLS client certificate file
+                  type: string
+                  format: binary
+                TLSKeyFile:
+                  description: TLS client key file
+                  type: string
+                  format: binary
+                AzureApplicationID:
+                  description: Azure application ID. Required if environment(endpoint) type is set to 3
+                  type: string
+                AzureTenantID:
+                  description: Azure tenant ID. Required if environment(endpoint) type is set to 3
+                  type: string
+                AzureAuthenticationKey:
+                  description: Azure authentication key. Required if environment(endpoint) type is set to 3
+                  type: string
+                TagIds:
+                  description: List of tag identifiers to which this environment(endpoint) is associated
+                  type: array
+                  items:
+                    type: integer
+                EdgeCheckinInterval:
+                  description: The check in interval for edge agent (in seconds)
+                  type: integer
+                EdgeTunnelServerAddress:
+                  description: URL or IP address that will be used to establish a reverse tunnel. Required when settings.EnableEdgeComputeFeatures is set to false or when settings.Edge.TunnelServerAddress is not set
+                  type: string
+                EdgeAsyncMode:
+                  description: Enable async mode for edge agent
+                  type: boolean
+                Gpus:
+                  description: List of GPUs - json stringified array of {name, value} structs
+                  type: string
+              required:
+                - Name
+                - EndpointCreationType
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Endpoint'
+        '400':
+          description: Invalid request
+        '409':
+          description: Name is not unique
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create a new environment(endpoint)
+      tags:
+        - endpoints
+  /endpoints/{id}:
+    delete:
+      description: |-
+        Remove the environment associated to the specified identifier and optionally clean-up associated resources.
+        **Access policy**: Administrator only.
+      operationId: EndpointDelete
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Environment successfully deleted.
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '403':
+          description: Unauthorized access or operation not allowed.
+        '404':
+          description: Unable to find the environment with the specified identifier inside the database.
+        '500':
+          description: Server error occurred while attempting to delete the environment.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Remove an environment
+      tags:
+        - endpoints
+    get:
+      description: |-
+        Retrieve details about an environment(endpoint).
+        **Access policy**: restricted
+      operationId: EndpointInspect
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: if true, the snapshot data won't be retrieved
+          in: query
+          name: excludeSnapshot
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Endpoint'
+        '400':
+          description: Invalid request
+        '404':
+          description: Environment(Endpoint) not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect an environment(endpoint)
+      tags:
+        - endpoints
+    put:
+      description: |-
+        Update an environment(endpoint).
+        **Access policy**: authenticated
+      operationId: EndpointUpdate
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.endpointUpdatePayload'
+        description: Environment(Endpoint) details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Endpoint'
+        '400':
+          description: Invalid request
+        '404':
+          description: Environment(Endpoint) not found
+        '409':
+          description: Name is not unique
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update an environment(endpoint)
+      tags:
+        - endpoints
+  /endpoints/{id}/association:
+    put:
+      description: |-
+        De-association an edge environment(endpoint).
+        **Access policy**: administrator
+      operationId: EndpointAssociationDelete
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Endpoint'
+        '400':
+          description: Invalid request
+        '404':
+          description: Environment(Endpoint) not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: De-association an edge environment(endpoint)
+      tags:
+        - endpoints
+  /endpoints/{id}/docker/v2/browse/put:
+    post:
+      description: |-
+        Use this environment(endpoint) to upload TLS files.
+        **Access policy**: administrator
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Optional volume identifier to upload the file
+          in: query
+          name: volumeID
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                Path:
+                  description: The destination path to upload the file to
+                  type: string
+                file:
+                  description: The file to upload
+                  type: string
+                  format: binary
+              required:
+                - Path
+                - file
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Upload a file under a specific path on the file system of an environment (endpoint)
+      tags:
+        - endpoints
+  /endpoints/{id}/dockerhub/{registryId}:
+    get:
+      description: |-
+        get docker pull limits for a docker hub registry in the environment
+        **Access policy**:
+      operationId: endpointDockerhubStatus
+      parameters:
+        - description: endpoint ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: registry ID
+          in: path
+          name: registryId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.dockerhubStatusResponse'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: registry or endpoint not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: fetch docker pull limits
+      tags:
+        - endpoints
+  /endpoints/{id}/edge/alerts/state:
+    get:
+      description: |-
+        Returns the latest alert rule evaluation state reported by an edge agent
+        **Access policy**: authenticated
+      operationId: EndpointEdgeAlertState
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/metrics.EdgeAlertState'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get edge agent alert evaluation state
+      tags:
+        - endpoints
+  /endpoints/{id}/edge/charts:
+    get:
+      description: |-
+        environment(endpoint) for edge agent to get contents of requested Helm charts environment(endpoint)
+        **Access policy**: restricted only to Edge environments(endpoints)
+      operationId: EndpointGetCharts
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: JSON encoded list of charts to install
+          in: query
+          name: chartNames
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/endpointedge.endpointGetChartsResponse'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied to access environment(endpoint)
+        '404':
+          description: Environment(Endpoint) not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get environment(endpoint) charts to install
+      tags:
+        - endpoints
+  /endpoints/{id}/edge/charts/statuses:
+    put:
+      description: |-
+        environment(endpoint) for edge agent to report back installation statuses of Helm charts
+        **Access policy**: restricted only to Edge environments(endpoints)
+      operationId: EndpointUpdateChartStatuses
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied to access environment(endpoint)
+        '404':
+          description: Environment(Endpoint) not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update environment(endpoint) policy chart installation statuses
+      tags:
+        - endpoints
+  /endpoints/{id}/edge/status:
+    get:
+      description: |-
+        environment(endpoint) for edge agent to check status of environment(endpoint)
+        **Access policy**: restricted only to Edge environments(endpoints)
+      operationId: EndpointEdgeStatusInspect
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/endpointedge.endpointEdgeStatusInspectResponse'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied to access environment(endpoint)
+        '404':
+          description: Environment(Endpoint) not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get environment(endpoint) status
+      tags:
+        - endpoints
+  /endpoints/{id}/forceupdateservice:
+    put:
+      description: |-
+        force update a docker service
+        **Access policy**: authenticated
+      operationId: endpointForceUpdateService
+      parameters:
+        - description: endpoint identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.forceUpdateServicePayload'
+        description: details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/swarm.ServiceUpdateResponse'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: endpoint not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: force update a docker service
+      tags:
+        - endpoints
+  /endpoints/{id}/mtls_certificate:
+    get:
+      description: |-
+        Retrieve the mTLS certificate of an environment(endpoint).
+        **Access policy**: administrator
+      operationId: EndpointMTLSCertificate
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.endpointMTLSCertResponse'
+        '400':
+          description: Invalid request
+        '404':
+          description: Environment(Endpoint) not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get an environment(endpoint) mTLS certificate
+      tags:
+        - endpoints
+  /endpoints/{id}/mtls_certificate_error:
+    get:
+      description: |-
+        Retrieve the mTLS certificate of an environment(endpoint).
+        **Access policy**: administrator
+      operationId: EndpointMTLSAgentCertificateError
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.endpointMTLSCertResponse'
+        '400':
+          description: Invalid request
+        '404':
+          description: Environment(Endpoint) not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get an agent(endpoint) mTLS certificate
+      tags:
+        - endpoints
+  /endpoints/{id}/pools/{rpn}/access:
+    put:
+      description: |-
+        Update the access permissions on a namespace in the given environment. This endpoint allows adding or removing users and teams that can access the specified namespace. Please note that users or teams must be added to the environment before they can be added to the namespace.
+        **Access policy**: Restricted. User must be an administrator or have appropriate permissions to modify namespace access.
+      operationId: namespacesAccessUpdate
+      parameters:
+        - description: Environment identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Namespace identifier
+          in: path
+          name: rpn
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.resourcePoolUpdatePayload'
+        description: Payload containing lists of users and teams to add or remove access for
+        required: true
+      responses:
+        '204':
+          description: Success - Access permissions were successfully updated
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '404':
+          description: Unable to find an environment with the specified identifier.
+        '500':
+          description: Server error occurred while attempting to update namespace access permissions.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Update namespace access for a given namespace
+      tags:
+        - endpoints
+  /endpoints/{id}/registries:
+    get:
+      description: |-
+        List all registries based on the current user authorizations in current environment.
+        **Access policy**: authenticated
+      operationId: endpointRegistriesList
+      parameters:
+        - description: required if kubernetes environment, will show registries by namespace
+          in: query
+          name: namespace
+          schema:
+            type: string
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/portaineree.Registry'
+                type: array
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List Registries on environment
+      tags:
+        - endpoints
+  /endpoints/{id}/registries/{registryId}:
+    put:
+      description: '**Access policy**: authenticated'
+      operationId: endpointRegistryAccess
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Registry identifier
+          in: path
+          name: registryId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.registryAccessPayload'
+        description: details
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Endpoint not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: update registry access for environment
+      tags:
+        - endpoints
+  /endpoints/{id}/settings:
+    put:
+      description: |-
+        Update settings for an environment(endpoint).
+        **Access policy**: authenticated
+      operationId: EndpointSettingsUpdate
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.endpointSettingsUpdatePayload'
+        description: Environment(Endpoint) details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Endpoint'
+        '400':
+          description: Invalid request
+        '404':
+          description: Environment(Endpoint) not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update settings for an environment(endpoint)
+      tags:
+        - endpoints
+  /endpoints/{id}/snapshot:
+    post:
+      description: |-
+        Snapshots an environment(endpoint)
+        **Access policy**: authenticated
+      operationId: EndpointSnapshot
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '404':
+          description: Environment(Endpoint) not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Snapshots an environment(endpoint)
+      tags:
+        - endpoints
+  /endpoints/agent_versions:
+    get:
+      description: |-
+        List all agent versions based on the current user authorizations and query parameters.
+        **Access policy**: restricted
+      operationId: AgentVersions
+      responses:
+        '200':
+          description: List of available agent versions
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List agent versions
+      tags:
+        - endpoints
+  /endpoints/delete:
+    post:
+      description: |-
+        Remove multiple environments and optionally clean-up associated resources.
+        **Access policy**: Administrator only.
+      operationId: EndpointDeleteBatch
+      requestBody:
+        $ref: '#/components/requestBodies/endpoints.endpointDeleteBatchPayload'
+      responses:
+        '204':
+          description: Environment(s) successfully deleted.
+        '207':
+          description: Partial success. Some environments were deleted successfully, while others failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.endpointDeleteBatchPartialResponse'
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '403':
+          description: Unauthorized access or operation not allowed.
+        '500':
+          description: Server error occurred while attempting to delete the specified environments.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Remove multiple environments
+      tags:
+        - endpoints
+  /endpoints/edge/async:
+    post:
+      description: |-
+        Environment(Endpoint) for edge agent to check status of environment(endpoint)
+        **Access policy**: restricted only to Edge environments(endpoints)
+      operationId: endpointEdgeAsync
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/endpointedge.EdgeAsyncResponse'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied to access environment(endpoint)
+        '404':
+          description: Environment(Endpoint) not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get environment(endpoint) status
+      tags:
+        - endpoints
+  /endpoints/edge/trust:
+    post:
+      description: |-
+        Associate one or more Edge environments, currently in the waiting room, with Portainer environments. This action effectively grants trust to these environments.
+        **Access policy**: Administrator only.
+      operationId: TrustEdgeEndpoints
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpointedge.endpointsTrustPayload'
+        description: Information about the environments to trust
+        required: true
+      responses:
+        '204':
+          description: Environment(s) successfully associated.
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '500':
+          description: Server error occurred while attempting to associate the environments.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Associate one or more Edge environments in the waiting room to environments
+      tags:
+        - endpoints
+  /endpoints/global-key:
+    post:
+      operationId: EndpointCreateGlobalKey
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/endpoints.endpointCreateGlobalKeyResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      summary: Create or retrieve the endpoint for an EdgeID
+      tags:
+        - endpoints
+  /endpoints/relations:
+    put:
+      description: |-
+        Update relations for a list of environments
+        Edge groups, tags and environment group can be updated.
+
+        **Access policy**: administrator
+      operationId: EndpointUpdateRelations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/endpoints.endpointUpdateRelationsPayload'
+        description: Environment relations data
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        '500':
+          description: Server error
+      security:
+        - jwt: []
+      summary: Update relations for a list of environments
+      tags:
+        - endpoints
+  /endpoints/snapshot:
+    post:
+      description: |-
+        Snapshot all environments(endpoints)
+        **Access policy**: administrator
+      operationId: EndpointSnapshots
+      responses:
+        '204':
+          description: Success
+        '500':
+          description: Server Error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Snapshot all environment(endpoint)
+      tags:
+        - endpoints
+  /endpoints/summary:
+    get:
+      description: |-
+        Returns counts of environments by status (up, down, outdated) and ungrouped environments (unassigned), plus breakdowns by group, type, and health.
+        **Access policy**: restricted
+      operationId: EndpointSummaryCounts
+      responses:
+        '200':
+          description: Environment summary counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/endpoints.EnvironmentSummaryCountsResponse'
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get environment summary counts
+      tags:
+        - endpoints
+components:
+  schemas:
+    endpoints.EnvironmentSummaryCountsResponse:
+      properties:
+        byGroup:
+          items:
+            $ref: '#/components/schemas/endpoints.groupCount'
+          type: array
+        byHealth:
+          $ref: '#/components/schemas/endpoints.healthCounts'
+        byPlatformType:
+          $ref: '#/components/schemas/endpoints.platformCounts'
+        down:
+          type: integer
+        outdated:
+          type: integer
+        total:
+          type: integer
+        unassigned:
+          type: integer
+        up:
+          type: integer
+      type: object
+    endpoints.endpointUpdateRelationsPayload:
+      properties:
+        Relations:
+          additionalProperties:
+            $ref: '#/components/schemas/endpoints.endpointUpdateRelation'
+          type: object
+      type: object
+    endpoints.endpointCreateGlobalKeyResponse:
+      properties:
+        endpointID:
+          type: integer
+      type: object
+    endpointedge.endpointsTrustPayload:
+      properties:
+        EndpointIDs:
+          items:
+            type: integer
+          type: array
+        Relations:
+          additionalProperties:
+            $ref: '#/components/schemas/endpointedge.endpointTrustUpdateRelation'
+          type: object
+      type: object
+    endpointedge.EdgeAsyncResponse:
+      properties:
+        commandInterval:
+          type: integer
+        commands:
+          items:
+            $ref: '#/components/schemas/portaineree.EdgeAsyncCommand'
+          type: array
+        endpointID:
+          type: integer
+        needFullSnapshot:
+          type: boolean
+        pingInterval:
+          type: integer
+        snapshotInterval:
+          type: integer
+      type: object
+    endpoints.endpointDeleteBatchPartialResponse:
+      properties:
+        deleted:
+          items:
+            type: integer
+          type: array
+        errors:
+          items:
+            type: integer
+          type: array
+      type: object
+    portaineree.Endpoint:
+      properties:
+        Agent:
+          $ref: '#/components/schemas/portaineree.EnvironmentAgentData'
+        AuthorizedTeams:
+          items:
+            type: integer
+          type: array
+        AuthorizedUsers:
+          description: Deprecated in DBVersion == 18
+          items:
+            type: integer
+          type: array
+        AzureCredentials:
+          $ref: '#/components/schemas/portainer.AzureCredentials'
+        ChangeWindow:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointChangeWindow'
+          description: GitOps update change window restriction for stacks and apps
+        CloudProvider:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.CloudProvider'
+          description: |-
+            A Kubernetes as a service cloud provider. Only included if this
+            endpoint was created using KaaS provisioning.
+        ComposeSyntaxMaxVersion:
+          description: Maximum version of docker-compose
+          example: '3.8'
+          type: string
+        ContainerEngine:
+          description: ContainerEngine represents the container engine type. This can be 'docker' or 'podman' when interacting directly with these environmentes, otherwise '' for kubernetes environments.
+          example: docker
+          type: string
+        DeploymentOptions:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.DeploymentOptions'
+          description: Hide manual deployment forms for an environment
+        Edge:
+          $ref: '#/components/schemas/portainer.EnvironmentEdgeSettings'
+        EdgeCheckinInterval:
+          description: The check in interval for edge agent (in seconds)
+          example: 5
+          type: integer
+        EdgeID:
+          description: The identifier of the edge agent associated with this environment(endpoint)
+          type: string
+        EdgeKey:
+          description: The key which is used to map the agent to Portainer
+          type: string
+        EnableGPUManagement:
+          type: boolean
+        EnableImageNotification:
+          type: boolean
+        Gpus:
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        GroupId:
+          description: Environment(Endpoint) group identifier
+          example: 1
+          type: integer
+        Heartbeat:
+          description: Heartbeat indicates the heartbeat status of an edge environment
+          example: true
+          type: boolean
+        Id:
+          description: Environment(Endpoint) Identifier
+          example: 1
+          type: integer
+        IsEdgeDevice:
+          description: Deprecated v2.18
+          type: boolean
+        Kubernetes:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.KubernetesData'
+          description: Associated Kubernetes data
+        LastCheckInDate:
+          description: LastCheckInDate mark last check-in date on checkin
+          format: int64
+          type: integer
+        LocalTimeZone:
+          description: LocalTimeZone is the local time zone of the endpoint
+          type: string
+        MTLSStatus:
+          $ref: '#/components/schemas/portaineree.MTLSStatus'
+        Name:
+          description: Environment(Endpoint) name
+          example: my-environment
+          type: string
+        Policies:
+          $ref: '#/components/schemas/portaineree.EndpointPolicies'
+        PostInitMigrations:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointPostInitMigrations'
+          description: Whether we need to run any "post init migrations".
+        PublicURL:
+          description: URL or IP address where exposed containers will be reachable
+          example: docker.mydomain.tld:2375
+          type: string
+        SecuritySettings:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EndpointSecuritySettings'
+          description: Environment(Endpoint) specific security settings
+        Snapshots:
+          description: List of snapshots
+          items:
+            $ref: '#/components/schemas/portainer.DockerSnapshot'
+          type: array
+        Status:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EndpointStatus'
+          description: The status of the environment(endpoint) (1 - up, 2 - down)
+          example: 1
+        StatusMessage:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointStatusMessage'
+          description: |-
+            A message that describes the status. Should be included for Status 3
+            or 4.
+        TLS:
+          description: |-
+            Deprecated fields
+            Deprecated in DBVersion == 4
+          type: boolean
+        TLSCACert:
+          type: string
+        TLSCert:
+          type: string
+        TLSConfig:
+          $ref: '#/components/schemas/portainer.TLSConfiguration'
+        TLSKey:
+          type: string
+        TagIds:
+          description: List of tag identifiers to which this environment(endpoint) is associated
+          items:
+            type: integer
+          type: array
+        Tags:
+          description: Deprecated in DBVersion == 22
+          items:
+            type: string
+          type: array
+        TeamAccessPolicies:
+          allOf:
+            - $ref: '#/components/schemas/portainer.TeamAccessPolicies'
+          description: List of team identifiers authorized to connect to this environment(endpoint)
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EndpointType'
+          description: Environment(Endpoint) environment(endpoint) type. 1 for a Docker environment(endpoint), 2 for an agent on Docker environment(endpoint) or 3 for an Azure environment(endpoint).
+          example: 1
+        URL:
+          description: URL or IP address of the Docker host associated to this environment(endpoint)
+          example: docker.mydomain.tld:2375
+          type: string
+        UserAccessPolicies:
+          allOf:
+            - $ref: '#/components/schemas/portainer.UserAccessPolicies'
+          description: List of user identifiers authorized to connect to this environment(endpoint)
+        UserTrusted:
+          description: Whether the device has been trusted or not by the user
+          type: boolean
+      type: object
+    endpoints.endpointSettingsUpdatePayload:
+      properties:
+        changeWindow:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointChangeWindow'
+          description: Whether GitOps update time restrictions are enabled
+        deploymentOptions:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.DeploymentOptions'
+          description: Hide manual deployment forms for an environment
+        enableGPUManagement:
+          example: false
+          type: boolean
+        enableImageNotification:
+          example: true
+          type: boolean
+        gpus:
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        securitySettings:
+          description: Security settings updates
+          properties:
+            allowBindMountsForRegularUsers:
+              description: Whether non-administrator should be able to use bind mounts when creating containers
+              example: false
+              type: boolean
+            allowContainerCapabilitiesForRegularUsers:
+              description: Whether non-administrator should be able to use container capabilities
+              example: true
+              type: boolean
+            allowDeviceMappingForRegularUsers:
+              description: Whether non-administrator should be able to use device mapping
+              example: true
+              type: boolean
+            allowHostNamespaceForRegularUsers:
+              description: Whether non-administrator should be able to use the host pid
+              example: true
+              type: boolean
+            allowPrivilegedModeForRegularUsers:
+              description: Whether non-administrator should be able to use privileged mode when creating containers
+              example: false
+              type: boolean
+            allowSecurityOptForRegularUsers:
+              description: Whether non-administrator should be able to use security-opt settings
+              example: true
+              type: boolean
+            allowStackManagementForRegularUsers:
+              description: Whether non-administrator should be able to manage stacks
+              example: true
+              type: boolean
+            allowSysctlSettingForRegularUsers:
+              description: Whether non-administrator should be able to use sysctl settings
+              example: true
+              type: boolean
+            allowVolumeBrowserForRegularUsers:
+              description: Whether non-administrator should be able to browse volumes
+              example: true
+              type: boolean
+            enableHostManagementFeatures:
+              description: Whether host management features are enabled
+              example: true
+              type: boolean
+          type: object
+      type: object
+    endpoints.registryAccessPayload:
+      properties:
+        Namespaces:
+          items:
+            type: string
+          type: array
+        TeamAccessPolicies:
+          $ref: '#/components/schemas/portainer.TeamAccessPolicies'
+        UserAccessPolicies:
+          $ref: '#/components/schemas/portainer.UserAccessPolicies'
+      type: object
+    portaineree.Registry:
+      properties:
+        AccessToken:
+          description: Stores temporary access token
+          type: string
+        AccessTokenExpiry:
+          type: integer
+        Authentication:
+          description: Is authentication against this registry enabled
+          example: true
+          type: boolean
+        AuthorizedTeams:
+          description: Deprecated in DBVersion == 18
+          items:
+            type: integer
+          type: array
+        AuthorizedUsers:
+          description: Deprecated in DBVersion == 18
+          items:
+            type: integer
+          type: array
+        BaseURL:
+          description: Base URL, introduced for ProGet registry
+          example: registry.mydomain.tld:2375
+          type: string
+        Ecr:
+          $ref: '#/components/schemas/portainer.EcrData'
+        Github:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.GithubRegistryData'
+          description: |-
+            TODO: remove this in 2.34.0 https://linear.app/portainer/issue/R8S-399/
+            this data is migrated in migrateGithubRegistry_2_32_0
+        Gitlab:
+          $ref: '#/components/schemas/portainer.GitlabRegistryData'
+        Id:
+          description: Registry Identifier
+          example: 1
+          type: integer
+        ManagementConfiguration:
+          $ref: '#/components/schemas/portainer.RegistryManagementConfiguration'
+        Name:
+          description: Registry Name
+          example: my-registry
+          type: string
+        Password:
+          description: Password or SecretAccessKey used to authenticate against this registry
+          example: registry_password
+          type: string
+        Quay:
+          $ref: '#/components/schemas/portainer.QuayRegistryData'
+        RegistryAccesses:
+          $ref: '#/components/schemas/portainer.RegistryAccesses'
+        TeamAccessPolicies:
+          allOf:
+            - $ref: '#/components/schemas/portainer.TeamAccessPolicies'
+          description: Deprecated in DBVersion == 31
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.RegistryType'
+          description: Registry Type (1 - Quay, 2 - Azure, 3 - Custom, 4 - Gitlab, 5 - ProGet, 6 - DockerHub, 7 - ECR)
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+        URL:
+          description: URL or IP address of the Docker registry
+          example: registry.mydomain.tld:2375
+          type: string
+        UserAccessPolicies:
+          allOf:
+            - $ref: '#/components/schemas/portainer.UserAccessPolicies'
+          description: |-
+            Deprecated fields
+            Deprecated in DBVersion == 31
+        Username:
+          description: Username or AccessKeyID used to authenticate against this registry
+          example: registry user
+          type: string
+      type: object
+    endpoints.resourcePoolUpdatePayload:
+      properties:
+        TeamsToAdd:
+          items:
+            type: integer
+          type: array
+        TeamsToRemove:
+          items:
+            type: integer
+          type: array
+        UsersToAdd:
+          items:
+            type: integer
+          type: array
+        UsersToRemove:
+          items:
+            type: integer
+          type: array
+      type: object
+    endpoints.endpointMTLSCertResponse:
+      properties:
+        MTLSCertificate:
+          allOf:
+            - $ref: '#/components/schemas/ssl.Certificate'
+          description: MTLSCertificate is the X.509 Certificate of the MTLS Certificate
+      type: object
+    swarm.ServiceUpdateResponse:
+      properties:
+        Warnings:
+          description: Optional warning messages
+          items:
+            type: string
+          type: array
+      type: object
+    endpoints.forceUpdateServicePayload:
+      properties:
+        PullImage:
+          description: PullImage if true will pull the image
+          type: boolean
+        ServiceID:
+          description: ServiceId to update
+          type: string
+      type: object
+    endpointedge.endpointEdgeStatusInspectResponse:
+      properties:
+        alert_rules:
+          description: Alert rules applicable to this agent, for local evaluation
+          items:
+            $ref: '#/components/schemas/metrics.EdgeAlertRule'
+          type: array
+        alert_rules_yaml:
+          description: Pre-compiled Prometheus rule groups YAML for file-based agent loading
+          type: string
+        checkin:
+          description: The current value of CheckinInterval
+          example: 5
+          type: integer
+        credentials:
+          type: string
+        edge_configurations:
+          additionalProperties:
+            $ref: '#/components/schemas/portaineree.EdgeConfigStateType'
+          description: Edge configurations associated to this environment(endpoint)
+          type: object
+        policy_chart_summaries:
+          description: Helm charts to be installed on the environment(endpoint)
+          items:
+            $ref: '#/components/schemas/portainer.PolicyChartSummary'
+          type: array
+        port:
+          description: The tunnel port
+          example: 8732
+          type: integer
+        schedules:
+          description: List of requests for jobs to run on the environment(endpoint)
+          items:
+            $ref: '#/components/schemas/endpointedge.edgeJobResponse'
+          type: array
+        stacks:
+          description: List of stacks to be deployed on the environments(endpoints)
+          items:
+            $ref: '#/components/schemas/endpointedge.stackStatusResponse'
+          type: array
+        status:
+          description: Status represents the environment(endpoint) status
+          example: REQUIRED
+          type: string
+      type: object
+    endpointedge.endpointGetChartsResponse:
+      properties:
+        policyChartBundles:
+          items:
+            $ref: '#/components/schemas/portainer.PolicyChartBundle'
+          type: array
+        restoreSettingsBundle:
+          $ref: '#/components/schemas/portainer.RestoreSettingsBundle'
+      type: object
+    metrics.EdgeAlertState:
+      properties:
+        config_reload_error:
+          type: string
+        rules:
+          items:
+            $ref: '#/components/schemas/metrics.EdgeAlertRuleState'
+          type: array
+      type: object
+    endpoints.dockerhubStatusResponse:
+      properties:
+        limit:
+          description: Daily limit
+          type: integer
+        remaining:
+          description: Remaiming images to pull
+          type: integer
+      type: object
+    endpoints.endpointUpdatePayload:
+      properties:
+        AzureApplicationID:
+          description: Azure application ID
+          example: eag7cdo9-o09l-9i83-9dO9-f0b23oe78db4
+          type: string
+        AzureAuthenticationKey:
+          description: Azure authentication key
+          example: cOrXoK/1D35w8YQ8nH1/8ZGwzz45JIYD5jxHKXEQknk=
+          type: string
+        AzureTenantID:
+          description: Azure tenant ID
+          example: 34ddc78d-4fel-2358-8cc1-df84c8o839f5
+          type: string
+        ChangeWindow:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointChangeWindow'
+          description: Whether GitOps update time restrictions are enabled
+        DeploymentOptions:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.DeploymentOptions'
+          description: Hide manual deployment forms for an environment
+        Edge:
+          properties:
+            CommandInterval:
+              description: The command list interval for edge agent - used in edge async mode (in seconds)
+              example: 5
+              type: integer
+            PingInterval:
+              description: The ping interval for edge agent - used in edge async mode (in seconds)
+              example: 5
+              type: integer
+            SnapshotInterval:
+              description: The snapshot interval for edge agent - used in edge async mode (in seconds)
+              example: 5
+              type: integer
+          type: object
+        EdgeCheckinInterval:
+          description: The check in interval for edge agent (in seconds)
+          example: 5
+          type: integer
+        Gpus:
+          description: GPUs information
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        GroupID:
+          description: Group identifier
+          example: 1
+          type: integer
+        IsSetStatusMessage:
+          type: boolean
+        Kubernetes:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.KubernetesData'
+          description: Associated Kubernetes data
+        Name:
+          description: Name that will be used to identify this environment(endpoint)
+          example: my-environment
+          type: string
+        PublicURL:
+          description: |-
+            URL or IP address where exposed containers will be reachable.\
+            Defaults to URL if not specified
+          example: docker.mydomain.tld:2375
+          type: string
+        Status:
+          description: The status of the environment(endpoint) (1 - up, 2 - down)
+          example: 1
+          type: integer
+        StatusMessage:
+          properties:
+            Detail:
+              example: Error message
+              type: string
+            Summary:
+              example: Error
+              type: string
+            operation:
+              description: '''scale'', ''upgrade'', ''addons'''
+              example: scale
+              type: string
+            operationStatus:
+              allOf:
+                - $ref: '#/components/schemas/portaineree.EndpointOperationStatus'
+              description: ''''', ''error'', ''processing'''
+              example: error
+          type: object
+        TLS:
+          description: Require TLS to connect against this environment(endpoint)
+          example: true
+          type: boolean
+        TLSSkipClientVerify:
+          description: Skip client verification when using TLS
+          example: false
+          type: boolean
+        TLSSkipVerify:
+          description: Skip server verification when using TLS
+          example: false
+          type: boolean
+        TagIDs:
+          description: List of tag identifiers to which this environment(endpoint) is associated
+          example:
+            - 1
+            - 2
+          items:
+            type: integer
+          type: array
+        TeamAccessPolicies:
+          $ref: '#/components/schemas/portainer.TeamAccessPolicies'
+        URL:
+          description: URL or IP address of a Docker host
+          example: docker.mydomain.tld:2375
+          type: string
+        UserAccessPolicies:
+          $ref: '#/components/schemas/portainer.UserAccessPolicies'
+      type: object
+    portainer.DockerContainerSnapshot:
+      properties:
+        Command:
+          type: string
+        Created:
+          format: int64
+          type: integer
+        Env:
+          description: EE-5240
+          items:
+            type: string
+          type: array
+        HostConfig:
+          properties:
+            Annotations:
+              additionalProperties:
+                type: string
+              type: object
+            NetworkMode:
+              type: string
+          type: object
+        Id:
+          type: string
+        Image:
+          type: string
+        ImageID:
+          type: string
+        ImageManifestDescriptor:
+          $ref: '#/components/schemas/v1.Descriptor'
+        Labels:
+          additionalProperties:
+            type: string
+          type: object
+        Mounts:
+          items:
+            $ref: '#/components/schemas/container.MountPoint'
+          type: array
+        Names:
+          items:
+            type: string
+          type: array
+        NetworkSettings:
+          $ref: '#/components/schemas/container.NetworkSettingsSummary'
+        Ports:
+          items:
+            $ref: '#/components/schemas/container.Port'
+          type: array
+        SizeRootFs:
+          type: integer
+        SizeRw:
+          type: integer
+        State:
+          $ref: '#/components/schemas/container.ContainerState'
+        Status:
+          type: string
+      type: object
+    portainer.DockerSnapshotRaw:
+      type: object
+    endpoints.platformCounts:
+      properties:
+        azure:
+          type: integer
+        docker:
+          type: integer
+        kubernetes:
+          type: integer
+        podman:
+          type: integer
+      type: object
+    endpoints.healthCounts:
+      properties:
+        down:
+          type: integer
+        heartbeat:
+          type: integer
+        outdated:
+          type: integer
+        up:
+          type: integer
+      type: object
+    endpoints.groupCount:
+      properties:
+        count:
+          type: integer
+        groupID:
+          type: integer
+        groupName:
+          type: string
+      type: object
+    endpoints.endpointUpdateRelation:
+      properties:
+        EdgeGroups:
+          items:
+            type: integer
+          type: array
+        Group:
+          type: integer
+        Tags:
+          items:
+            type: integer
+          type: array
+      type: object
+    endpointedge.endpointTrustUpdateRelation:
+      properties:
+        EdgeGroups:
+          items:
+            type: integer
+          type: array
+        Group:
+          type: integer
+        Tags:
+          items:
+            type: integer
+          type: array
+      type: object
+    portaineree.EdgeAsyncCommand:
+      properties:
+        endpointID:
+          type: integer
+        executed:
+          type: boolean
+        id:
+          type: integer
+        op:
+          $ref: '#/components/schemas/portaineree.EdgeAsyncCommandOperation'
+        path:
+          type: string
+        scheduledTime:
+          type: string
+        timestamp:
+          type: string
+        type:
+          $ref: '#/components/schemas/portaineree.EdgeAsyncCommandType'
+        value: {}
+      type: object
+    endpoints.endpointDeleteBatchPayload:
+      properties:
+        endpoints:
+          items:
+            $ref: '#/components/schemas/endpoints.endpointDeleteRequest'
+          type: array
+      type: object
+    portainer.UserAccessPolicies:
+      additionalProperties:
+        $ref: '#/components/schemas/portainer.AccessPolicy'
+      type: object
+    portainer.EndpointType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+      type: integer
+      x-enum-varnames:
+        - _
+        - DockerEnvironment
+        - AgentOnDockerEnvironment
+        - AzureEnvironment
+        - EdgeAgentOnDockerEnvironment
+        - KubernetesLocalEnvironment
+        - AgentOnKubernetesEnvironment
+        - EdgeAgentOnKubernetesEnvironment
+    portainer.TeamAccessPolicies:
+      additionalProperties:
+        $ref: '#/components/schemas/portainer.AccessPolicy'
+      type: object
+    portainer.TLSConfiguration:
+      properties:
+        TLS:
+          description: Use TLS
+          example: true
+          type: boolean
+        TLSCACert:
+          description: Path to the TLS CA certificate file
+          example: /data/tls/ca.pem
+          type: string
+        TLSCert:
+          description: Path to the TLS client certificate file
+          example: /data/tls/cert.pem
+          type: string
+        TLSKey:
+          description: Path to the TLS client key file
+          example: /data/tls/key.pem
+          type: string
+        TLSSkipVerify:
+          description: Skip the verification of the server TLS certificate
+          example: false
+          type: boolean
+      type: object
+    portaineree.EndpointStatusMessage:
+      properties:
+        detail:
+          type: string
+        operation:
+          description: |-
+            TODO: in future versions, we should think about removing these fields and
+            create a separate bucket to store cluster operation messages instead or try to find a better way.
+            Operation/OperationStatus blank means, nothing is happening
+          type: string
+        operationStatus:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointOperationStatus'
+          description: ',processing,error'
+        summary:
+          type: string
+        warnings:
+          items:
+            type: string
+          type: array
+      type: object
+    portainer.EndpointStatus:
+      enum:
+        - 0
+        - 1
+        - 2
+      type: integer
+      x-enum-varnames:
+        - _
+        - EndpointStatusUp
+        - EndpointStatusDown
+    portainer.DockerSnapshot:
+      properties:
+        ContainerCount:
+          type: integer
+        DiagnosticsData:
+          $ref: '#/components/schemas/portainer.DiagnosticsData'
+        DockerSnapshotRaw:
+          $ref: '#/components/schemas/portainer.DockerSnapshotRaw'
+        DockerVersion:
+          type: string
+        GpuUseAll:
+          type: boolean
+        GpuUseList:
+          items:
+            type: string
+          type: array
+        HealthyContainerCount:
+          type: integer
+        ImageCount:
+          type: integer
+        IsPodman:
+          type: boolean
+        NodeCount:
+          type: integer
+        PerformanceMetrics:
+          $ref: '#/components/schemas/portainer.PerformanceMetrics'
+        RunningContainerCount:
+          type: integer
+        ServiceCount:
+          type: integer
+        StackCount:
+          type: integer
+        StoppedContainerCount:
+          type: integer
+        Swarm:
+          type: boolean
+        Time:
+          type: integer
+        TotalCPU:
+          type: integer
+        TotalMemory:
+          type: integer
+        UnhealthyContainerCount:
+          type: integer
+        VolumeCount:
+          type: integer
+      type: object
+    portainer.EndpointSecuritySettings:
+      properties:
+        allowBindMountsForRegularUsers:
+          description: Whether non-administrator should be able to use bind mounts when creating containers
+          example: false
+          type: boolean
+        allowContainerCapabilitiesForRegularUsers:
+          description: Whether non-administrator should be able to use container capabilities
+          example: true
+          type: boolean
+        allowDeviceMappingForRegularUsers:
+          description: Whether non-administrator should be able to use device mapping
+          example: true
+          type: boolean
+        allowHostNamespaceForRegularUsers:
+          description: Whether non-administrator should be able to use the host pid
+          example: true
+          type: boolean
+        allowPrivilegedModeForRegularUsers:
+          description: Whether non-administrator should be able to use privileged mode when creating containers
+          example: false
+          type: boolean
+        allowSecurityOptForRegularUsers:
+          description: Whether non-administrator should be able to use security-opt settings
+          example: true
+          type: boolean
+        allowStackManagementForRegularUsers:
+          description: Whether non-administrator should be able to manage stacks
+          example: true
+          type: boolean
+        allowSysctlSettingForRegularUsers:
+          description: Whether non-administrator should be able to use sysctl settings
+          example: true
+          type: boolean
+        allowVolumeBrowserForRegularUsers:
+          description: Whether non-administrator should be able to browse volumes
+          example: true
+          type: boolean
+        enableHostManagementFeatures:
+          description: Whether host management features are enabled
+          example: true
+          type: boolean
+      type: object
+    portaineree.EndpointPostInitMigrations:
+      properties:
+        MigrateGPUs:
+          type: boolean
+        MigrateGateKeeper:
+          type: boolean
+        MigrateIngresses:
+          type: boolean
+        MigrateRegistrySASecrets:
+          type: boolean
+        MigrateSecretOwners:
+          type: boolean
+      type: object
+    portaineree.EndpointPolicies:
+      properties:
+        changeConfirmationPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        dockerRBACPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        dockerRegistryPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        dockerSecurityPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        dockerSetupPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        k8sRBACPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        k8sRegistryPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        k8sSecurityPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        k8sSetupPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+      type: object
+    portaineree.MTLSStatus:
+      properties:
+        enabled:
+          type: boolean
+        ok:
+          type: boolean
+      type: object
+    portaineree.KubernetesData:
+      properties:
+        Configuration:
+          $ref: '#/components/schemas/portaineree.KubernetesConfiguration'
+        Flags:
+          $ref: '#/components/schemas/portainer.KubernetesFlags'
+        Snapshots:
+          items:
+            $ref: '#/components/schemas/portainer.KubernetesSnapshot'
+          type: array
+      type: object
+    portainer.Pair:
+      properties:
+        name:
+          example: name
+          type: string
+        value:
+          example: value
+          type: string
+      type: object
+    portainer.EnvironmentEdgeSettings:
+      properties:
+        AsyncMode:
+          description: Whether the device has been started in edge async mode
+          type: boolean
+        CommandInterval:
+          description: The command list interval for edge agent - used in edge async mode [seconds]
+          example: 60
+          type: integer
+        PingInterval:
+          description: The ping interval for edge agent - used in edge async mode [seconds]
+          example: 60
+          type: integer
+        SnapshotInterval:
+          description: The snapshot interval for edge agent - used in edge async mode [seconds]
+          example: 60
+          type: integer
+      type: object
+    portaineree.DeploymentOptions:
+      properties:
+        hideAddWithForm:
+          description: Hide manual deploy forms in portainer
+          example: true
+          type: boolean
+        hideFileUpload:
+          description: Hide the file upload option in the remaining visible forms
+          example: false
+          type: boolean
+        hideWebEditor:
+          description: Hide the webeditor in the remaining visible forms
+          example: false
+          type: boolean
+        overrideGlobalOptions:
+          type: boolean
+      type: object
+    portaineree.CloudProvider:
+      properties:
+        AmiType:
+          description: Amazon specific fields
+          type: string
+        CPU:
+          type: integer
+        CredentialID:
+          description: CredentialID holds an ID of the credential used to create the cluster
+          type: integer
+        DNSPrefix:
+          type: string
+        HDD:
+          type: integer
+        InstanceType:
+          type: string
+        KubernetesVersion:
+          type: string
+        Name:
+          type: string
+        NetworkID:
+          description: |-
+            Pointer will hide this field for providers other than civo which do
+            not use this field.
+          type: string
+        NodeCount:
+          type: integer
+        NodeVolumeSize:
+          type: integer
+        PoolName:
+          type: string
+        Provider:
+          type: string
+        RAM:
+          type: number
+        Region:
+          type: string
+        ResourceGroup:
+          description: Azure specific fields
+          type: string
+        Size:
+          type: string
+        Tier:
+          type: string
+        URL:
+          type: string
+      type: object
+    portaineree.EndpointChangeWindow:
+      properties:
+        Enabled:
+          example: true
+          type: boolean
+        EndTime:
+          example: '02:00'
+          type: string
+        StartTime:
+          example: '22:00'
+          type: string
+      type: object
+    portainer.AzureCredentials:
+      properties:
+        ApplicationID:
+          description: Azure application ID
+          example: eag7cdo9-o09l-9i83-9dO9-f0b23oe78db4
+          type: string
+        AuthenticationKey:
+          description: Azure authentication key
+          example: cOrXoK/1D35w8YQ8nH1/8ZGwzz45JIYD5jxHKXEQknk=
+          type: string
+        TenantID:
+          description: Azure tenant ID
+          example: 34ddc78d-4fel-2358-8cc1-df84c8o839f5
+          type: string
+      type: object
+    portaineree.EnvironmentAgentData:
+      properties:
+        PreviousVersion:
+          example: 1.0.0
+          type: string
+        Version:
+          example: 1.0.0
+          type: string
+      type: object
+    portainer.RegistryType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+      type: integer
+      x-enum-varnames:
+        - _
+        - QuayRegistry
+        - AzureRegistry
+        - CustomRegistry
+        - GitlabRegistry
+        - ProGetRegistry
+        - DockerHubRegistry
+        - EcrRegistry
+        - GithubRegistry
+    portainer.RegistryAccesses:
+      additionalProperties:
+        $ref: '#/components/schemas/portainer.RegistryAccessPolicies'
+      type: object
+    portainer.QuayRegistryData:
+      properties:
+        OrganisationName:
+          type: string
+        UseOrganisation:
+          type: boolean
+      type: object
+    portainer.RegistryManagementConfiguration:
+      properties:
+        AccessToken:
+          type: string
+        AccessTokenExpiry:
+          type: integer
+        Authentication:
+          type: boolean
+        Ecr:
+          $ref: '#/components/schemas/portainer.EcrData'
+        Password:
+          type: string
+        TLSConfig:
+          $ref: '#/components/schemas/portainer.TLSConfiguration'
+        Type:
+          $ref: '#/components/schemas/portainer.RegistryType'
+        Username:
+          type: string
+      type: object
+    portainer.GitlabRegistryData:
+      properties:
+        InstanceURL:
+          type: string
+        ProjectId:
+          type: integer
+        ProjectPath:
+          type: string
+      type: object
+    portaineree.GithubRegistryData:
+      properties:
+        OrganisationName:
+          type: string
+        UseOrganisation:
+          type: boolean
+      type: object
+    portainer.EcrData:
+      properties:
+        Region:
+          example: ap-southeast-2
+          type: string
+      type: object
+    ssl.Certificate:
+      properties:
+        AuthorityKeyId:
+          type: string
+        CRLDistributionPoints:
+          items:
+            type: string
+          type: array
+        ExtendedKeyUsages:
+          items:
+            type: string
+          type: array
+        IsCertificateAuthority:
+          type: boolean
+        Issuer:
+          $ref: '#/components/schemas/ssl.Name'
+        IssuingCertificateURLs:
+          items:
+            type: string
+          type: array
+        KeyUsages:
+          items:
+            type: string
+          type: array
+        OCSPServers:
+          items:
+            type: string
+          type: array
+        Policies:
+          items:
+            type: string
+          type: array
+        PublicKey:
+          $ref: '#/components/schemas/ssl.PublicKey'
+        SHA256Fingerprint:
+          type: string
+        SerialNumber:
+          type: string
+        SignatureAlgorithm:
+          type: string
+        Subject:
+          $ref: '#/components/schemas/ssl.Name'
+        SubjectAltDNSNames:
+          items:
+            type: string
+          type: array
+        SubjectAltEmailAddresses:
+          items:
+            type: string
+          type: array
+        SubjectAltIpAddresses:
+          items:
+            type: string
+          type: array
+        SubjectAltURIs:
+          items:
+            type: string
+          type: array
+        SubjectKeyId:
+          type: string
+        ValidNotAfter:
+          type: string
+        ValidNotBefore:
+          type: string
+        Version:
+          type: integer
+      type: object
+    endpointedge.stackStatusResponse:
+      properties:
+        ForceRedeploy:
+          description: ForceRedeploy indicates whether the stack is force redeployed
+          example: true
+          type: boolean
+        ID:
+          description: EdgeStack Identifier
+          example: 1
+          type: integer
+        ReadyRePullImage:
+          description: |-
+            Deprecated(2.36): use ForceRedeploy and RepullImage instead for cleaner responsibility
+            But keep it for backward compatibility. To remove in future versions (2.44+)
+            ReadyRePullImage indicates whether the stack is ready to re-pull image
+          example: true
+          type: boolean
+        RepullImage:
+          description: RepullImage indicates whether the stack's images should be repulled
+          example: true
+          type: boolean
+        Version:
+          description: Version of this stack
+          example: 3
+          type: integer
+      type: object
+    endpointedge.edgeJobResponse:
+      properties:
+        CollectLogs:
+          description: Whether to collect logs
+          example: true
+          type: boolean
+        CronExpression:
+          description: A cron expression to schedule this job
+          example: '* * * * *'
+          type: string
+        Id:
+          description: EdgeJob Identifier
+          example: 2
+          type: integer
+        Script:
+          description: Script to run
+          example: echo hello
+          type: string
+        Version:
+          description: Version of this EdgeJob
+          example: 2
+          type: integer
+      type: object
+    portainer.PolicyChartSummary:
+      properties:
+        ChartName:
+          type: string
+        Fingerprint:
+          type: string
+      type: object
+    portaineree.EdgeConfigStateType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+      type: integer
+      x-enum-varnames:
+        - EdgeConfigIdleState
+        - EdgeConfigFailureState
+        - EdgeConfigSavingState
+        - EdgeConfigDeletingState
+        - EdgeConfigUpdatingState
+    metrics.EdgeAlertRule:
+      properties:
+        annotations:
+          additionalProperties:
+            type: string
+          type: object
+        enabled:
+          type: boolean
+        for_duration_minutes:
+          type: integer
+        id:
+          type: integer
+        labels:
+          additionalProperties:
+            type: string
+          type: object
+        name:
+          type: string
+        promql_expr:
+          type: string
+        severity:
+          type: string
+      type: object
+    portainer.RestoreSettingsBundle:
+      additionalProperties:
+        $ref: '#/components/schemas/portainer.RestoreSettings'
+      type: object
+    portainer.PolicyChartBundle:
+      properties:
+        ChartName:
+          type: string
+        EncodedTgz:
+          type: string
+        EncodedValues:
+          type: string
+        Fingerprint:
+          type: string
+        Namespace:
+          type: string
+        PreInstallAdoptions:
+          items:
+            $ref: '#/components/schemas/portainer.ResourceAdoption'
+          type: array
+        PreInstallDeletions:
+          items:
+            $ref: '#/components/schemas/portainer.ResourceDeletion'
+          type: array
+        PreReleaseManifest:
+          type: string
+      type: object
+    metrics.EdgeAlertRuleState:
+      properties:
+        last_error:
+          type: string
+        last_evaluation:
+          description: unix milliseconds
+          type: integer
+        rule_id:
+          type: integer
+        state:
+          $ref: '#/components/schemas/metrics.AlertRuleStateType'
+      type: object
+    portaineree.EndpointOperationStatus:
+      enum:
+        - processing
+        - warning
+        - error
+        - ''
+      type: string
+      x-enum-varnames:
+        - EndpointOperationStatusProcessing
+        - EndpointOperationStatusWarning
+        - EndpointOperationStatusError
+        - EndpointOperationStatusDone
+    container.ContainerState:
+      enum:
+        - created
+        - running
+        - paused
+        - restarting
+        - removing
+        - exited
+        - dead
+      type: string
+      x-enum-comments:
+        StateCreated: StateCreated indicates the container is created, but not (yet) started.
+        StateDead: StateDead indicates that the container failed to be deleted. Containers in this state are attempted to be cleaned up when the daemon restarts.
+        StateExited: StateExited indicates that the container exited.
+        StatePaused: StatePaused indicates that the container's current state is paused.
+        StateRemoving: StateRemoving indicates that the container is being removed.
+        StateRestarting: StateRestarting indicates that the container is currently restarting.
+        StateRunning: StateRunning indicates that the container is running.
+      x-enum-descriptions:
+        - StateCreated indicates the container is created, but not (yet) started.
+        - StateRunning indicates that the container is running.
+        - StatePaused indicates that the container's current state is paused.
+        - StateRestarting indicates that the container is currently restarting.
+        - StateRemoving indicates that the container is being removed.
+        - StateExited indicates that the container exited.
+        - StateDead indicates that the container failed to be deleted. Containers in this state are attempted to be cleaned up when the daemon restarts.
+      x-enum-varnames:
+        - StateCreated
+        - StateRunning
+        - StatePaused
+        - StateRestarting
+        - StateRemoving
+        - StateExited
+        - StateDead
+    container.Port:
+      properties:
+        IP:
+          description: Host IP address that the container's port is mapped to
+          type: string
+        PrivatePort:
+          description: |-
+            Port on the container
+            Required: true
+          type: integer
+        PublicPort:
+          description: Port exposed on the host
+          type: integer
+        Type:
+          description: |-
+            type
+            Required: true
+          type: string
+      type: object
+    container.NetworkSettingsSummary:
+      properties:
+        Networks:
+          additionalProperties:
+            $ref: '#/components/schemas/network.EndpointSettings'
+          type: object
+      type: object
+    container.MountPoint:
+      properties:
+        Destination:
+          description: |-
+            Destination is the path relative to the container root (`/`) where the
+            Source is mounted inside the container.
+          type: string
+        Driver:
+          description: Driver is the volume driver used to create the volume (if it is a volume).
+          type: string
+        Mode:
+          description: |-
+            Mode is a comma separated list of options supplied by the user when
+            creating the bind/volume mount.
+
+            The default is platform-specific (`"z"` on Linux, empty on Windows).
+          type: string
+        Name:
+          description: |-
+            Name is the name reference to the underlying data defined by `Source`
+            e.g., the volume name.
+          type: string
+        Propagation:
+          allOf:
+            - $ref: '#/components/schemas/mount.Propagation'
+          description: |-
+            Propagation describes how mounts are propagated from the host into the
+            mount point, and vice-versa. Refer to the Linux kernel documentation
+            for details:
+            https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt
+
+            This field is not used on Windows.
+        RW:
+          description: RW indicates whether the mount is mounted writable (read-write).
+          type: boolean
+        Source:
+          description: |-
+            Source is the source location of the mount.
+
+            For volumes, this contains the storage location of the volume (within
+            `/var/lib/docker/volumes/`). For bind-mounts, and `npipe`, this contains
+            the source (host) part of the bind-mount. For `tmpfs` mount points, this
+            field is empty.
+          type: string
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/mount.Type'
+          description: |-
+            Type is the type of mount, see `Type<foo>` definitions in
+            github.com/docker/docker/api/types/mount.Type
+      type: object
+    v1.Descriptor:
+      properties:
+        annotations:
+          additionalProperties:
+            type: string
+          description: Annotations contains arbitrary metadata relating to the targeted content.
+          type: object
+        artifactType:
+          description: ArtifactType is the IANA media type of this artifact.
+          type: string
+        data:
+          description: |-
+            Data is an embedding of the targeted content. This is encoded as a base64
+            string when marshalled to JSON (automatically, by encoding/json). If
+            present, Data can be used directly to avoid fetching the targeted content.
+          items:
+            type: integer
+          type: array
+        digest:
+          description: Digest is the digest of the targeted content.
+          type: string
+        mediaType:
+          description: MediaType is the media type of the object this schema refers to.
+          type: string
+        platform:
+          allOf:
+            - $ref: '#/components/schemas/v1.Platform'
+          description: |-
+            Platform describes the platform which the image in the manifest runs on.
+
+            This should only be used when referring to a manifest.
+        size:
+          description: Size specifies the size in bytes of the blob.
+          type: integer
+        urls:
+          description: URLs specifies a list of URLs from which this object MAY be downloaded
+          items:
+            type: string
+          type: array
+      type: object
+    portaineree.EdgeAsyncCommandType:
+      enum:
+        - edgeConfig
+        - edgeStack
+        - edgeJob
+        - edgeLog
+        - container
+        - image
+        - volume
+        - normalStack
+      type: string
+      x-enum-varnames:
+        - EdgeAsyncCommandTypeConfig
+        - EdgeAsyncCommandTypeStack
+        - EdgeAsyncCommandTypeJob
+        - EdgeAsyncCommandTypeLog
+        - EdgeAsyncCommandTypeContainer
+        - EdgeAsyncCommandTypeImage
+        - EdgeAsyncCommandTypeVolume
+        - EdgeAsyncCommandTypeNormalStack
+    portaineree.EdgeAsyncCommandOperation:
+      enum:
+        - add
+        - remove
+        - replace
+      type: string
+      x-enum-varnames:
+        - EdgeAsyncCommandOpAdd
+        - EdgeAsyncCommandOpRemove
+        - EdgeAsyncCommandOpReplace
+    endpoints.endpointDeleteRequest:
+      properties:
+        deleteCluster:
+          type: boolean
+        id:
+          type: integer
+      type: object
+    portainer.AccessPolicy:
+      properties:
+        Namespaces:
+          description: Namespaces is a list of namespaces that this access policy applies to. Only used for namespaced level roles
+          items:
+            type: string
+          type: array
+        RoleId:
+          description: Role identifier. Reference the role that will be associated to this access policy
+          example: 1
+          type: integer
+      type: object
+    portainer.PerformanceMetrics:
+      properties:
+        CPUUsage:
+          type: number
+        DiskUsage:
+          type: number
+        MemoryUsage:
+          type: number
+        NetworkUsage:
+          type: number
+      type: object
+    portainer.DiagnosticsData:
+      properties:
+        DNS:
+          additionalProperties:
+            type: string
+          type: object
+        Log:
+          type: string
+        Proxy:
+          additionalProperties:
+            type: string
+          type: object
+        Telnet:
+          additionalProperties:
+            type: string
+          type: object
+      type: object
+    portaineree.AppliedPolicy:
+      properties:
+        policyID:
+          type: integer
+        policyName:
+          type: string
+        policyStatus:
+          $ref: '#/components/schemas/portaineree.PolicyStatus'
+      type: object
+    portainer.KubernetesSnapshot:
+      properties:
+        DiagnosticsData:
+          $ref: '#/components/schemas/portainer.DiagnosticsData'
+        KubernetesVersion:
+          type: string
+        NodeCount:
+          type: integer
+        PerformanceMetrics:
+          $ref: '#/components/schemas/portainer.PerformanceMetrics'
+        Time:
+          type: integer
+        TotalCPU:
+          type: integer
+        TotalMemory:
+          type: integer
+      type: object
+    portainer.KubernetesFlags:
+      properties:
+        IsServerIngressClassDetected:
+          type: boolean
+        IsServerMetricsDetected:
+          type: boolean
+        IsServerStorageDetected:
+          type: boolean
+      type: object
+    portaineree.KubernetesConfiguration:
+      properties:
+        AllowNoneIngressClass:
+          type: boolean
+        EnableResourceOverCommit:
+          type: boolean
+        IngressAvailabilityPerNamespace:
+          type: boolean
+        IngressClasses:
+          items:
+            $ref: '#/components/schemas/portainer.KubernetesIngressClassConfig'
+          type: array
+        ResourceOverCommitPercentage:
+          type: integer
+        RestrictDefaultNamespace:
+          type: boolean
+        RestrictSecrets:
+          type: boolean
+        RestrictStandardUserIngressW:
+          type: boolean
+        StorageClasses:
+          items:
+            $ref: '#/components/schemas/portainer.KubernetesStorageClassConfig'
+          type: array
+        UseLoadBalancer:
+          type: boolean
+        UseServerMetrics:
+          type: boolean
+      type: object
+    portainer.RegistryAccessPolicies:
+      properties:
+        Namespaces:
+          description: Kubernetes specific fields (with kubernetes, namespaces have access to a registry, if users/teams have access to the same namespace, they have access to the registry)
+          items:
+            type: string
+          type: array
+        TeamAccessPolicies:
+          $ref: '#/components/schemas/portainer.TeamAccessPolicies'
+        UserAccessPolicies:
+          allOf:
+            - $ref: '#/components/schemas/portainer.UserAccessPolicies'
+          description: Docker specific fields (with docker, users/teams have access to a registry)
+      type: object
+    ssl.Name:
+      properties:
+        CommonName:
+          type: string
+        Country:
+          items:
+            type: string
+          type: array
+        Locality:
+          items:
+            type: string
+          type: array
+        Organization:
+          items:
+            type: string
+          type: array
+        OrganizationalUnit:
+          items:
+            type: string
+          type: array
+        PostalCode:
+          items:
+            type: string
+          type: array
+        Province:
+          items:
+            type: string
+          type: array
+        SerialNumber:
+          type: string
+        StreetAddress:
+          items:
+            type: string
+          type: array
+      type: object
+    ssl.PublicKey:
+      properties:
+        Algorithm:
+          type: string
+        Exponent:
+          type: string
+        Modulus:
+          type: string
+        Size:
+          type: integer
+        Value:
+          type: string
+      type: object
+    portainer.RestoreSettings:
+      properties:
+        manifest:
+          description: Base64-encoded Kubernetes YAML manifest
+          type: string
+      type: object
+    portainer.ResourceDeletion:
+      properties:
+        apiVersion:
+          example: v1
+          type: string
+        kind:
+          example: Secret
+          type: string
+        name:
+          example: registry-1
+          type: string
+        namespace:
+          example: default
+          type: string
+      type: object
+    portainer.ResourceAdoption:
+      properties:
+        apiVersion:
+          example: v1
+          type: string
+        kind:
+          example: Secret
+          type: string
+        name:
+          example: registry-1
+          type: string
+        namespace:
+          example: default
+          type: string
+      type: object
+    metrics.AlertRuleStateType:
+      enum:
+        - ok
+        - pending
+        - firing
+      type: string
+      x-enum-varnames:
+        - AlertRuleStateOK
+        - AlertRuleStatePending
+        - AlertRuleStateFiring
+    network.EndpointSettings:
+      properties:
+        Aliases:
+          description: Aliases holds the list of extra, user-specified DNS names for this endpoint.
+          items:
+            type: string
+          type: array
+        DNSNames:
+          description: |-
+            DNSNames holds all the (non fully qualified) DNS names associated to this endpoint. First entry is used to
+            generate PTR records.
+          items:
+            type: string
+          type: array
+        DriverOpts:
+          additionalProperties:
+            type: string
+          type: object
+        EndpointID:
+          type: string
+        Gateway:
+          type: string
+        GlobalIPv6Address:
+          type: string
+        GlobalIPv6PrefixLen:
+          type: integer
+        GwPriority:
+          description: |-
+            GwPriority determines which endpoint will provide the default gateway
+            for the container. The endpoint with the highest priority will be used.
+            If multiple endpoints have the same priority, they are lexicographically
+            sorted based on their network name, and the one that sorts first is picked.
+          type: integer
+        IPAMConfig:
+          allOf:
+            - $ref: '#/components/schemas/network.EndpointIPAMConfig'
+          description: Configurations
+        IPAddress:
+          type: string
+        IPPrefixLen:
+          type: integer
+        IPv6Gateway:
+          type: string
+        Links:
+          items:
+            type: string
+          type: array
+        MacAddress:
+          description: |-
+            MacAddress may be used to specify a MAC address when the container is created.
+            Once the container is running, it becomes operational data (it may contain a
+            generated address).
+          type: string
+        NetworkID:
+          description: Operational data
+          type: string
+      type: object
+    mount.Type:
+      enum:
+        - bind
+        - volume
+        - tmpfs
+        - npipe
+        - cluster
+        - image
+      type: string
+      x-enum-varnames:
+        - TypeBind
+        - TypeVolume
+        - TypeTmpfs
+        - TypeNamedPipe
+        - TypeCluster
+        - TypeImage
+    mount.Propagation:
+      enum:
+        - rprivate
+        - private
+        - rshared
+        - shared
+        - rslave
+        - slave
+      type: string
+      x-enum-varnames:
+        - PropagationRPrivate
+        - PropagationPrivate
+        - PropagationRShared
+        - PropagationShared
+        - PropagationRSlave
+        - PropagationSlave
+    v1.Platform:
+      properties:
+        architecture:
+          description: |-
+            Architecture field specifies the CPU architecture, for example
+            `amd64` or `ppc64le`.
+          type: string
+        os:
+          description: OS specifies the operating system, for example `linux` or `windows`.
+          type: string
+        os.features:
+          description: |-
+            OSFeatures is an optional field specifying an array of strings,
+            each listing a required OS feature (for example on Windows `win32k`).
+          items:
+            type: string
+          type: array
+        os.version:
+          description: |-
+            OSVersion is an optional field specifying the operating system
+            version, for example on Windows `10.0.14393.1066`.
+          type: string
+        variant:
+          description: |-
+            Variant is an optional field specifying a variant of the CPU, for
+            example `v7` to specify ARMv7 when architecture is `arm`.
+          type: string
+      type: object
+    portaineree.PolicyStatus:
+      properties:
+        LastAttemptTime:
+          description: Unix timestamp
+          type: integer
+        Message:
+          type: string
+        Status:
+          $ref: '#/components/schemas/portaineree.PolicyStatusType'
+      type: object
+    portainer.KubernetesStorageClassConfig:
+      properties:
+        AccessModes:
+          items:
+            type: string
+          type: array
+        AllowVolumeExpansion:
+          type: boolean
+        Name:
+          type: string
+        Provisioner:
+          type: string
+      type: object
+    portainer.KubernetesIngressClassConfig:
+      properties:
+        Blocked:
+          type: boolean
+        BlockedNamespaces:
+          items:
+            type: string
+          type: array
+        Name:
+          type: string
+        Type:
+          type: string
+      type: object
+    network.EndpointIPAMConfig:
+      properties:
+        IPv4Address:
+          type: string
+        IPv6Address:
+          type: string
+        LinkLocalIPs:
+          items:
+            type: string
+          type: array
+      type: object
+    portaineree.PolicyStatusType:
+      enum:
+        - applied
+        - failed
+        - in_progress
+        - warning
+        - not_supported
+      type: string
+      x-enum-varnames:
+        - PolicyStatusTypeApplied
+        - PolicyStatusTypeFailed
+        - PolicyStatusTypeInProgress
+        - PolicyStatusTypeWarning
+        - PolicyStatusTypeNotSupported
+  requestBodies:
+    endpoints.endpointDeleteBatchPayload:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/endpoints.endpointDeleteBatchPayload'
+      description: List of environments to delete, with optional deleteCluster flag to clean-up associated resources (cloud environments only)
+      required: true
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

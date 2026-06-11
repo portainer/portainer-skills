@@ -1,0 +1,878 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Authenticate against Portainer HTTP API
+    name: auth
+    x-displayName: Authentication
+  - description: Automatic updates
+    name: auto_updates
+    x-displayName: Automatic updates
+  - description: Manage backups
+    name: backup
+    x-displayName: Backups
+  - description: Manage cloud credentials
+    name: cloud_credentials
+    x-displayName: Cloud credentials
+  - description: Manage Custom Templates
+    name: custom_templates
+    x-displayName: Custom templates
+  - description: Manage Docker resources
+    name: docker
+    x-displayName: Docker resources
+  - description: Manage Edge related environment settings
+    name: edge
+    x-displayName: Edge settings
+  - description: Manage Edge Groups
+    name: edge_groups
+    x-displayName: Edge groups
+  - description: Manage Edge Jobs
+    name: edge_jobs
+    x-displayName: Edge jobs
+  - description: Manage Edge Stacks
+    name: edge_stacks
+    x-displayName: Edge stacks
+  - description: Manage Edge Update Schedules
+    name: edge_update_schedules
+    x-displayName: Edge update schedules
+  - description: Manage Edge configurations
+    name: edge_configs
+    x-displayName: Edge configurations
+  - description: Manage environment groups
+    name: endpoint_groups
+    x-displayName: Environment groups
+  - description: Manage environments
+    name: endpoints
+    x-displayName: Environments
+  - description: Operate git repository
+    name: gitops
+    x-displayName: GitOps
+  - description: Manage Helm charts
+    name: helm
+    x-displayName: Helm charts
+  - description: Manage KaaS
+    name: kaas
+    x-displayName: KaaS
+  - description: Manage Kubernetes cluster
+    name: kubernetes
+    x-displayName: Kubernetes management
+  - description: Manage LDAP settings
+    name: ldap
+    x-displayName: LDAP
+  - description: Manage licenses
+    name: license
+    x-displayName: Licenses
+  - description: Fetch the message of the day
+    name: motd
+    x-displayName: Message of the day
+  - description: Manage Omni Talos clusters and machines
+    name: omni
+    x-displayName: Omni Talos
+  - description: Manage Docker registries
+    name: registries
+    x-displayName: Registries
+  - description: Manage access control on Docker resources
+    name: resource_controls
+    x-displayName: Docker access control
+  - description: Manage roles
+    name: roles
+    x-displayName: Roles
+  - description: Manage Portainer settings
+    name: settings
+    x-displayName: Portainer settings
+  - description: Manage stacks
+    name: stacks
+    x-displayName: Stacks
+  - description: Information about the Portainer instance
+    name: status
+    x-displayName: Portainer status
+  - description: Manage Portainer system
+    name: system
+    x-displayName: Portainer system
+  - description: Manage tags
+    name: tags
+    x-displayName: Tags
+  - description: Manage team memberships
+    name: team_memberships
+    x-displayName: Team memberships
+  - description: Manage teams
+    name: teams
+    x-displayName: Teams
+  - description: Manage App Templates
+    name: templates
+    x-displayName: App templates
+  - description: Upload files
+    name: upload
+    x-displayName: Upload files
+  - description: Manage user activity logs
+    name: useractivity
+    x-displayName: User activity
+  - description: Manage users
+    name: users
+    x-displayName: Users
+  - description: Manage webhooks
+    name: webhooks
+    x-displayName: Webhooks
+  - description: Create exec sessions using websockets
+    name: websocket
+    x-displayName: Websocket
+  - description: Create and update your policies
+    name: policies
+    x-displayName: Policies
+  - description: Alert configurations
+    name: observability
+    x-displayName: Observability
+  - description: Retrieve your recommendations
+    name: recommendations
+    x-displayName: Recommendations
+  - description: Retrieve your debug logs
+    name: support
+    x-displayName: Support
+  - description: View and update SSL settings
+    name: ssl
+    x-displayName: SSL
+x-tagGroups:
+  - name: Access Control
+    tags:
+      - auth
+      - cloud_credentials
+      - license
+      - roles
+      - team_memberships
+      - teams
+      - useractivity
+      - users
+  - name: Administration
+    tags:
+      - auto_updates
+      - backup
+      - ldap
+      - motd
+      - observability
+      - settings
+      - status
+      - system
+      - recommendations
+      - ssl
+      - support
+      - upload
+  - name: Docker
+    tags:
+      - templates
+      - custom_templates
+      - resource_controls
+      - docker
+      - registries
+      - stacks
+      - webhooks
+      - websocket
+  - name: Edge Compute
+    tags:
+      - edge_configs
+      - edge_groups
+      - edge_jobs
+      - edge
+      - edge_stacks
+      - edge_update_schedules
+  - name: Environment Management
+    tags:
+      - endpoint_groups
+      - endpoints
+      - policies
+      - tags
+  - name: GitOps
+    tags:
+      - gitops
+  - name: Kubernetes
+    tags:
+      - helm
+      - kaas
+      - kubernetes
+      - omni
+servers:
+  - url: /api
+paths:
+  /auth:
+    $ref: auth.yaml#/paths/~1auth
+  /auth/logout:
+    $ref: auth.yaml#/paths/~1auth~1logout
+  /auth/oauth/validate:
+    $ref: auth.yaml#/paths/~1auth~1oauth~1validate
+  /auto_updates:
+    $ref: auto_updates.yaml#/paths/~1auto_updates
+  /backup:
+    $ref: backup.yaml#/paths/~1backup
+  /backup/azure/execute:
+    $ref: backup.yaml#/paths/~1backup~1azure~1execute
+  /backup/azure/restore:
+    $ref: backup.yaml#/paths/~1backup~1azure~1restore
+  /backup/azure/settings:
+    $ref: backup.yaml#/paths/~1backup~1azure~1settings
+  /backup/azure/status:
+    $ref: backup.yaml#/paths/~1backup~1azure~1status
+  /backup/azure/test:
+    $ref: backup.yaml#/paths/~1backup~1azure~1test
+  /backup/local/run:
+    $ref: backup.yaml#/paths/~1backup~1local~1run
+  /backup/local/settings:
+    $ref: backup.yaml#/paths/~1backup~1local~1settings
+  /backup/local/status:
+    $ref: backup.yaml#/paths/~1backup~1local~1status
+  /backup/s3/execute:
+    $ref: backup.yaml#/paths/~1backup~1s3~1execute
+  /backup/s3/restore:
+    $ref: backup.yaml#/paths/~1backup~1s3~1restore
+  /backup/s3/settings:
+    $ref: backup.yaml#/paths/~1backup~1s3~1settings
+  /backup/s3/status:
+    $ref: backup.yaml#/paths/~1backup~1s3~1status
+  /restore:
+    $ref: backup.yaml#/paths/~1restore
+  /cloud/credentials:
+    $ref: cloud_credentials.yaml#/paths/~1cloud~1credentials
+  /cloud/credentials/{id}:
+    $ref: cloud_credentials.yaml#/paths/~1cloud~1credentials~1{id}
+  /cloud/gitcredentials:
+    $ref: cloud_credentials.yaml#/paths/~1cloud~1gitcredentials
+  /cloud/gitcredentials/{id}:
+    $ref: cloud_credentials.yaml#/paths/~1cloud~1gitcredentials~1{id}
+  /sshkeygen:
+    $ref: cloud_credentials.yaml#/paths/~1sshkeygen
+  /custom_templates:
+    $ref: custom_templates.yaml#/paths/~1custom_templates
+  /custom_templates/{id}:
+    $ref: custom_templates.yaml#/paths/~1custom_templates~1{id}
+  /custom_templates/{id}/file:
+    $ref: custom_templates.yaml#/paths/~1custom_templates~1{id}~1file
+  /custom_templates/{id}/git_fetch:
+    $ref: custom_templates.yaml#/paths/~1custom_templates~1{id}~1git_fetch
+  /custom_templates/create/file:
+    $ref: custom_templates.yaml#/paths/~1custom_templates~1create~1file
+  /custom_templates/create/repository:
+    $ref: custom_templates.yaml#/paths/~1custom_templates~1create~1repository
+  /custom_templates/create/string:
+    $ref: custom_templates.yaml#/paths/~1custom_templates~1create~1string
+  /docker/{environmentId}/containers/{containerId}/gpus:
+    $ref: docker.yaml#/paths/~1docker~1{environmentId}~1containers~1{containerId}~1gpus
+  /docker/{environmentId}/containers/{containerId}/image_status:
+    $ref: docker.yaml#/paths/~1docker~1{environmentId}~1containers~1{containerId}~1image_status
+  /docker/{environmentId}/containers/image_status/clear:
+    $ref: docker.yaml#/paths/~1docker~1{environmentId}~1containers~1image_status~1clear
+  /docker/{environmentId}/dashboard:
+    $ref: docker.yaml#/paths/~1docker~1{environmentId}~1dashboard
+  /docker/{environmentId}/images:
+    $ref: docker.yaml#/paths/~1docker~1{environmentId}~1images
+  /docker/{environmentId}/services/{serviceId}/image_status:
+    $ref: docker.yaml#/paths/~1docker~1{environmentId}~1services~1{serviceId}~1image_status
+  /docker/{environmentId}/services/image_status/clear:
+    $ref: docker.yaml#/paths/~1docker~1{environmentId}~1services~1image_status~1clear
+  /stacks/image_status/clear:
+    $ref: docker.yaml#/paths/~1stacks~1image_status~1clear
+  /endpoints/{id}/edge/alerts:
+    $ref: edge.yaml#/paths/~1endpoints~1{id}~1edge~1alerts
+  /endpoints/{id}/edge/jobs/{jobID}/logs:
+    $ref: edge.yaml#/paths/~1endpoints~1{id}~1edge~1jobs~1{jobID}~1logs
+  /endpoints/{id}/edge/stacks/{stackId}:
+    $ref: edge.yaml#/paths/~1endpoints~1{id}~1edge~1stacks~1{stackId}
+  /endpoints/edge/generate-key:
+    $ref: edge.yaml#/paths/~1endpoints~1edge~1generate-key
+  /edge_configurations:
+    $ref: edge_configs.yaml#/paths/~1edge_configurations
+  /edge_configurations/{id}:
+    $ref: edge_configs.yaml#/paths/~1edge_configurations~1{id}
+  /edge_configurations/{id}/{state}:
+    $ref: edge_configs.yaml#/paths/~1edge_configurations~1{id}~1{state}
+  /edge_configurations/{id}/files:
+    $ref: edge_configs.yaml#/paths/~1edge_configurations~1{id}~1files
+  /edge_groups:
+    $ref: edge_groups.yaml#/paths/~1edge_groups
+  /edge_groups/{id}:
+    $ref: edge_groups.yaml#/paths/~1edge_groups~1{id}
+  /edge_jobs:
+    $ref: edge_jobs.yaml#/paths/~1edge_jobs
+  /edge_jobs/{id}:
+    $ref: edge_jobs.yaml#/paths/~1edge_jobs~1{id}
+  /edge_jobs/{id}/file:
+    $ref: edge_jobs.yaml#/paths/~1edge_jobs~1{id}~1file
+  /edge_jobs/{id}/tasks:
+    $ref: edge_jobs.yaml#/paths/~1edge_jobs~1{id}~1tasks
+  /edge_jobs/{id}/tasks/{taskID}/logs:
+    $ref: edge_jobs.yaml#/paths/~1edge_jobs~1{id}~1tasks~1{taskID}~1logs
+  /edge_jobs/create/file:
+    $ref: edge_jobs.yaml#/paths/~1edge_jobs~1create~1file
+  /edge_jobs/create/string:
+    $ref: edge_jobs.yaml#/paths/~1edge_jobs~1create~1string
+  /edge_stacks:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks
+  /edge_stacks/{id}:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1{id}
+  /edge_stacks/{id}/file:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1{id}~1file
+  /edge_stacks/{id}/git:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1{id}~1git
+  /edge_stacks/{id}/helmRepo:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1{id}~1helmRepo
+  /edge_stacks/{id}/logs/{endpoint_id}:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1{id}~1logs~1{endpoint_id}
+  /edge_stacks/{id}/logs/{endpoint_id}/file:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1{id}~1logs~1{endpoint_id}~1file
+  /edge_stacks/{id}/stagger/status:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1{id}~1stagger~1status
+  /edge_stacks/{id}/status:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1{id}~1status
+  /edge_stacks/create/file:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1create~1file
+  /edge_stacks/create/helmRepo:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1create~1helmRepo
+  /edge_stacks/create/repository:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1create~1repository
+  /edge_stacks/create/string:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1create~1string
+  /edge_stacks/parse_registries:
+    $ref: edge_stacks.yaml#/paths/~1edge_stacks~1parse_registries
+  /edge_update_schedules:
+    $ref: edge_update_schedules.yaml#/paths/~1edge_update_schedules
+  /edge_update_schedules/{id}:
+    $ref: edge_update_schedules.yaml#/paths/~1edge_update_schedules~1{id}
+  /edge_update_schedules/active:
+    $ref: edge_update_schedules.yaml#/paths/~1edge_update_schedules~1active
+  /edge_update_schedules/agent_versions:
+    $ref: edge_update_schedules.yaml#/paths/~1edge_update_schedules~1agent_versions
+  /edge_update_schedules/info:
+    $ref: edge_update_schedules.yaml#/paths/~1edge_update_schedules~1info
+  /edge_update_schedules/previous_versions:
+    $ref: edge_update_schedules.yaml#/paths/~1edge_update_schedules~1previous_versions
+  /endpoint_groups:
+    $ref: endpoint_groups.yaml#/paths/~1endpoint_groups
+  /endpoint_groups/{id}:
+    $ref: endpoint_groups.yaml#/paths/~1endpoint_groups~1{id}
+  /endpoint_groups/{id}/endpoints/{endpointId}:
+    $ref: endpoint_groups.yaml#/paths/~1endpoint_groups~1{id}~1endpoints~1{endpointId}
+  /docker/{environmentId}/snapshot:
+    $ref: endpoints.yaml#/paths/~1docker~1{environmentId}~1snapshot
+  /docker/{environmentId}/snapshot/containers:
+    $ref: endpoints.yaml#/paths/~1docker~1{environmentId}~1snapshot~1containers
+  /docker/{environmentId}/snapshot/containers/{containerId}:
+    $ref: endpoints.yaml#/paths/~1docker~1{environmentId}~1snapshot~1containers~1{containerId}
+  /endpoints:
+    $ref: endpoints.yaml#/paths/~1endpoints
+  /endpoints/{id}:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}
+  /endpoints/{id}/association:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1association
+  /endpoints/{id}/docker/v2/browse/put:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1docker~1v2~1browse~1put
+  /endpoints/{id}/dockerhub/{registryId}:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1dockerhub~1{registryId}
+  /endpoints/{id}/edge/alerts/state:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1edge~1alerts~1state
+  /endpoints/{id}/edge/charts:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1edge~1charts
+  /endpoints/{id}/edge/charts/statuses:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1edge~1charts~1statuses
+  /endpoints/{id}/edge/status:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1edge~1status
+  /endpoints/{id}/forceupdateservice:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1forceupdateservice
+  /endpoints/{id}/mtls_certificate:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1mtls_certificate
+  /endpoints/{id}/mtls_certificate_error:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1mtls_certificate_error
+  /endpoints/{id}/pools/{rpn}/access:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1pools~1{rpn}~1access
+  /endpoints/{id}/registries:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1registries
+  /endpoints/{id}/registries/{registryId}:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1registries~1{registryId}
+  /endpoints/{id}/settings:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1settings
+  /endpoints/{id}/snapshot:
+    $ref: endpoints.yaml#/paths/~1endpoints~1{id}~1snapshot
+  /endpoints/agent_versions:
+    $ref: endpoints.yaml#/paths/~1endpoints~1agent_versions
+  /endpoints/delete:
+    $ref: endpoints.yaml#/paths/~1endpoints~1delete
+  /endpoints/edge/async:
+    $ref: endpoints.yaml#/paths/~1endpoints~1edge~1async
+  /endpoints/edge/trust:
+    $ref: endpoints.yaml#/paths/~1endpoints~1edge~1trust
+  /endpoints/global-key:
+    $ref: endpoints.yaml#/paths/~1endpoints~1global-key
+  /endpoints/relations:
+    $ref: endpoints.yaml#/paths/~1endpoints~1relations
+  /endpoints/snapshot:
+    $ref: endpoints.yaml#/paths/~1endpoints~1snapshot
+  /endpoints/summary:
+    $ref: endpoints.yaml#/paths/~1endpoints~1summary
+  /gitops/repo/file/preview:
+    $ref: gitops.yaml#/paths/~1gitops~1repo~1file~1preview
+  /gitops/repo/files/search:
+    $ref: gitops.yaml#/paths/~1gitops~1repo~1files~1search
+  /gitops/repo/helm/values:
+    $ref: gitops.yaml#/paths/~1gitops~1repo~1helm~1values
+  /gitops/repo/refs:
+    $ref: gitops.yaml#/paths/~1gitops~1repo~1refs
+  /gitops/sources:
+    $ref: gitops.yaml#/paths/~1gitops~1sources
+  /gitops/sources/{id}:
+    $ref: gitops.yaml#/paths/~1gitops~1sources~1{id}
+  /gitops/sources/summary:
+    $ref: gitops.yaml#/paths/~1gitops~1sources~1summary
+  /gitops/workflows:
+    $ref: gitops.yaml#/paths/~1gitops~1workflows
+  /gitops/workflows/summary:
+    $ref: gitops.yaml#/paths/~1gitops~1workflows~1summary
+  /endpoints/{id}/kubernetes/helm:
+    $ref: helm.yaml#/paths/~1endpoints~1{id}~1kubernetes~1helm
+  /endpoints/{id}/kubernetes/helm/{release}:
+    $ref: helm.yaml#/paths/~1endpoints~1{id}~1kubernetes~1helm~1{release}
+  /endpoints/{id}/kubernetes/helm/{release}/history:
+    $ref: helm.yaml#/paths/~1endpoints~1{id}~1kubernetes~1helm~1{release}~1history
+  /endpoints/{id}/kubernetes/helm/{release}/rollback:
+    $ref: helm.yaml#/paths/~1endpoints~1{id}~1kubernetes~1helm~1{release}~1rollback
+  /endpoints/{id}/kubernetes/helm/git/dryrun:
+    $ref: helm.yaml#/paths/~1endpoints~1{id}~1kubernetes~1helm~1git~1dryrun
+  /templates/helm:
+    $ref: helm.yaml#/paths/~1templates~1helm
+  /templates/helm/{command}:
+    $ref: helm.yaml#/paths/~1templates~1helm~1{command}
+  /users/{id}/helm/repositories:
+    $ref: helm.yaml#/paths/~1users~1{id}~1helm~1repositories
+  /users/{id}/helm/repositories/{repositoryID}:
+    $ref: helm.yaml#/paths/~1users~1{id}~1helm~1repositories~1{repositoryID}
+  /cloud/{provider}/info:
+    $ref: kaas.yaml#/paths/~1cloud~1{provider}~1info
+  /cloud/{provider}/provision:
+    $ref: kaas.yaml#/paths/~1cloud~1{provider}~1provision
+  /cloud/amazon/provision:
+    $ref: kaas.yaml#/paths/~1cloud~1amazon~1provision
+  /cloud/azure/provision:
+    $ref: kaas.yaml#/paths/~1cloud~1azure~1provision
+  /cloud/endpoints/{environmentId}/upgrade:
+    $ref: kaas.yaml#/paths/~1cloud~1endpoints~1{environmentId}~1upgrade
+  /cloud/gke/provision:
+    $ref: kaas.yaml#/paths/~1cloud~1gke~1provision
+  /kubernetes/{environmentId}/opa:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{environmentId}~1opa
+  /kubernetes/{id}/applications:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1applications
+  /kubernetes/{id}/applications/count:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1applications~1count
+  /kubernetes/{id}/cluster_role_bindings/delete:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1cluster_role_bindings~1delete
+  /kubernetes/{id}/cluster_roles/delete:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1cluster_roles~1delete
+  /kubernetes/{id}/clusterrolebindings:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1clusterrolebindings
+  /kubernetes/{id}/clusterroles:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1clusterroles
+  /kubernetes/{id}/configmaps:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1configmaps
+  /kubernetes/{id}/configmaps/count:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1configmaps~1count
+  /kubernetes/{id}/cron_jobs:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1cron_jobs
+  /kubernetes/{id}/cron_jobs/delete:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1cron_jobs~1delete
+  /kubernetes/{id}/customresourcedefinitions:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1customresourcedefinitions
+  /kubernetes/{id}/customresourcedefinitions/{name}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1customresourcedefinitions~1{name}
+  /kubernetes/{id}/customresources:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1customresources
+  /kubernetes/{id}/customresources/{name}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1customresources~1{name}
+  /kubernetes/{id}/customresources/{namespace}/{name}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1customresources~1{namespace}~1{name}
+  /kubernetes/{id}/dashboard:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1dashboard
+  /kubernetes/{id}/describe:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1describe
+  /kubernetes/{id}/events:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1events
+  /kubernetes/{id}/ingresscontrollers:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1ingresscontrollers
+  /kubernetes/{id}/ingresses:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1ingresses
+  /kubernetes/{id}/ingresses/count:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1ingresses~1count
+  /kubernetes/{id}/ingresses/delete:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1ingresses~1delete
+  /kubernetes/{id}/jobs:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1jobs
+  /kubernetes/{id}/jobs/delete:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1jobs~1delete
+  /kubernetes/{id}/max_resource_limits:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1max_resource_limits
+  /kubernetes/{id}/metrics/applications_resources:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1metrics~1applications_resources
+  /kubernetes/{id}/metrics/nodes:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1metrics~1nodes
+  /kubernetes/{id}/metrics/nodes/{name}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1metrics~1nodes~1{name}
+  /kubernetes/{id}/metrics/pods/{namespace}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1metrics~1pods~1{namespace}
+  /kubernetes/{id}/metrics/pods/{namespace}/{name}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1metrics~1pods~1{namespace}~1{name}
+  /kubernetes/{id}/namespaces:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces
+  /kubernetes/{id}/namespaces/{namespace}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}
+  /kubernetes/{id}/namespaces/{namespace}/applications/{kind}/{name}/restart:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1applications~1{kind}~1{name}~1restart
+  /kubernetes/{id}/namespaces/{namespace}/applications/{name}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1applications~1{name}
+  /kubernetes/{id}/namespaces/{namespace}/configmaps/{configmap}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1configmaps~1{configmap}
+  /kubernetes/{id}/namespaces/{namespace}/events:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1events
+  /kubernetes/{id}/namespaces/{namespace}/ingresscontrollers:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1ingresscontrollers
+  /kubernetes/{id}/namespaces/{namespace}/ingresses:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1ingresses
+  /kubernetes/{id}/namespaces/{namespace}/ingresses/{ingress}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1ingresses~1{ingress}
+  /kubernetes/{id}/namespaces/{namespace}/persistent_volume_claims:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1persistent_volume_claims
+  /kubernetes/{id}/namespaces/{namespace}/persistent_volume_claims/{name}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1persistent_volume_claims~1{name}
+  /kubernetes/{id}/namespaces/{namespace}/pods/{name}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1pods~1{name}
+  /kubernetes/{id}/namespaces/{namespace}/pods/{name}/restart:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1pods~1{name}~1restart
+  /kubernetes/{id}/namespaces/{namespace}/secrets/{secret}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1secrets~1{secret}
+  /kubernetes/{id}/namespaces/{namespace}/service_accounts/{name}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1service_accounts~1{name}
+  /kubernetes/{id}/namespaces/{namespace}/service_accounts/{name}/image_pull_secrets:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1service_accounts~1{name}~1image_pull_secrets
+  /kubernetes/{id}/namespaces/{namespace}/services:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1services
+  /kubernetes/{id}/namespaces/{namespace}/system:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1system
+  /kubernetes/{id}/namespaces/{namespace}/volumes:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1{namespace}~1volumes
+  /kubernetes/{id}/namespaces/count:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1namespaces~1count
+  /kubernetes/{id}/nodes/{name}/drain:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1nodes~1{name}~1drain
+  /kubernetes/{id}/nodes_limits:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1nodes_limits
+  /kubernetes/{id}/persistent_volume_claims:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1persistent_volume_claims
+  /kubernetes/{id}/persistent_volume_claims/delete:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1persistent_volume_claims~1delete
+  /kubernetes/{id}/persistent_volume_claims/resize:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1persistent_volume_claims~1resize
+  /kubernetes/{id}/persistent_volumes:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1persistent_volumes
+  /kubernetes/{id}/persistent_volumes/{name}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1persistent_volumes~1{name}
+  /kubernetes/{id}/persistent_volumes/delete:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1persistent_volumes~1delete
+  /kubernetes/{id}/persistent_volumes/reclaim_policy:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1persistent_volumes~1reclaim_policy
+  /kubernetes/{id}/rbac_enabled:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1rbac_enabled
+  /kubernetes/{id}/role_bindings/delete:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1role_bindings~1delete
+  /kubernetes/{id}/rolebindings:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1rolebindings
+  /kubernetes/{id}/roles:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1roles
+  /kubernetes/{id}/roles/delete:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1roles~1delete
+  /kubernetes/{id}/secrets:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1secrets
+  /kubernetes/{id}/secrets/count:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1secrets~1count
+  /kubernetes/{id}/service_accounts/delete:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1service_accounts~1delete
+  /kubernetes/{id}/serviceaccounts:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1serviceaccounts
+  /kubernetes/{id}/services:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1services
+  /kubernetes/{id}/services/count:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1services~1count
+  /kubernetes/{id}/services/delete:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1services~1delete
+  /kubernetes/{id}/storage_classes:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1storage_classes
+  /kubernetes/{id}/storage_classes/{name}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1storage_classes~1{name}
+  /kubernetes/{id}/storage_classes/{name}/default:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1storage_classes~1{name}~1default
+  /kubernetes/{id}/storage_classes/delete:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1storage_classes~1delete
+  /kubernetes/{id}/version:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1version
+  /kubernetes/{id}/volumes:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1volumes
+  /kubernetes/{id}/volumes/{namespace}/{volume}:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1volumes~1{namespace}~1{volume}
+  /kubernetes/{id}/volumes/count:
+    $ref: kubernetes.yaml#/paths/~1kubernetes~1{id}~1volumes~1count
+  /ldap/admin-groups:
+    $ref: ldap.yaml#/paths/~1ldap~1admin-groups
+  /ldap/check:
+    $ref: ldap.yaml#/paths/~1ldap~1check
+  /ldap/groups:
+    $ref: ldap.yaml#/paths/~1ldap~1groups
+  /ldap/test:
+    $ref: ldap.yaml#/paths/~1ldap~1test
+  /ldap/users:
+    $ref: ldap.yaml#/paths/~1ldap~1users
+  /licenses:
+    $ref: license.yaml#/paths/~1licenses
+  /licenses/add:
+    $ref: license.yaml#/paths/~1licenses~1add
+  /licenses/info:
+    $ref: license.yaml#/paths/~1licenses~1info
+  /licenses/remove:
+    $ref: license.yaml#/paths/~1licenses~1remove
+  /motd:
+    $ref: motd.yaml#/paths/~1motd
+  /observability/alerting/alerts:
+    $ref: observability.yaml#/paths/~1observability~1alerting~1alerts
+  /observability/alerting/connectivity:
+    $ref: observability.yaml#/paths/~1observability~1alerting~1connectivity
+  /observability/alerting/rules:
+    $ref: observability.yaml#/paths/~1observability~1alerting~1rules
+  /observability/alerting/rules/{id}:
+    $ref: observability.yaml#/paths/~1observability~1alerting~1rules~1{id}
+  /observability/alerting/rules/{id}/environments:
+    $ref: observability.yaml#/paths/~1observability~1alerting~1rules~1{id}~1environments
+  /observability/alerting/rules/{id}/groups:
+    $ref: observability.yaml#/paths/~1observability~1alerting~1rules~1{id}~1groups
+  /observability/alerting/rules/{id}/tiers:
+    $ref: observability.yaml#/paths/~1observability~1alerting~1rules~1{id}~1tiers
+  /observability/alerting/settings:
+    $ref: observability.yaml#/paths/~1observability~1alerting~1settings
+  /observability/alerting/settings/{id}:
+    $ref: observability.yaml#/paths/~1observability~1alerting~1settings~1{id}
+  /observability/alerting/silence:
+    $ref: observability.yaml#/paths/~1observability~1alerting~1silence
+  /observability/alerting/silence/{id}:
+    $ref: observability.yaml#/paths/~1observability~1alerting~1silence~1{id}
+  /omni/{credentialID}/cluster/{name}:
+    $ref: omni.yaml#/paths/~1omni~1{credentialID}~1cluster~1{name}
+  /omni/{credentialID}/cluster/{name}/upgrade/status/k8s:
+    $ref: omni.yaml#/paths/~1omni~1{credentialID}~1cluster~1{name}~1upgrade~1status~1k8s
+  /omni/{credentialID}/cluster/{name}/upgrade/status/talos:
+    $ref: omni.yaml#/paths/~1omni~1{credentialID}~1cluster~1{name}~1upgrade~1status~1talos
+  /omni/{credentialID}/cluster/create:
+    $ref: omni.yaml#/paths/~1omni~1{credentialID}~1cluster~1create
+  /omni/{credentialID}/cluster/delete:
+    $ref: omni.yaml#/paths/~1omni~1{credentialID}~1cluster~1delete
+  /omni/{credentialID}/cluster/update:
+    $ref: omni.yaml#/paths/~1omni~1{credentialID}~1cluster~1update
+  /omni/{credentialID}/cluster/version/talos:
+    $ref: omni.yaml#/paths/~1omni~1{credentialID}~1cluster~1version~1talos
+  /omni/{credentialID}/machine/{name}:
+    $ref: omni.yaml#/paths/~1omni~1{credentialID}~1machine~1{name}
+  /omni/{credentialID}/machine/{name}/logs:
+    $ref: omni.yaml#/paths/~1omni~1{credentialID}~1machine~1{name}~1logs
+  /omni/{credentialID}/machines:
+    $ref: omni.yaml#/paths/~1omni~1{credentialID}~1machines
+  /omni/{credentialID}/node/{name}:
+    $ref: omni.yaml#/paths/~1omni~1{credentialID}~1node~1{name}
+  /omni/serviceaccount/validate:
+    $ref: omni.yaml#/paths/~1omni~1serviceaccount~1validate
+  /policies:
+    $ref: policies.yaml#/paths/~1policies
+  /policies/{id}:
+    $ref: policies.yaml#/paths/~1policies~1{id}
+  /policies/conflicts:
+    $ref: policies.yaml#/paths/~1policies~1conflicts
+  /policies/metadata:
+    $ref: policies.yaml#/paths/~1policies~1metadata
+  /policies/templates:
+    $ref: policies.yaml#/paths/~1policies~1templates
+  /policies/templates/{id}:
+    $ref: policies.yaml#/paths/~1policies~1templates~1{id}
+  /recommendations:
+    $ref: recommendations.yaml#/paths/~1recommendations
+  /recommendations/summary:
+    $ref: recommendations.yaml#/paths/~1recommendations~1summary
+  /registries:
+    $ref: registries.yaml#/paths/~1registries
+  /registries/{id}:
+    $ref: registries.yaml#/paths/~1registries~1{id}
+  /registries/{id}/configure:
+    $ref: registries.yaml#/paths/~1registries~1{id}~1configure
+  /registries/{id}/ecr/repositories/{repositoryName}:
+    $ref: registries.yaml#/paths/~1registries~1{id}~1ecr~1repositories~1{repositoryName}
+  /registries/{id}/ecr/repositories/{repositoryName}/tags:
+    $ref: registries.yaml#/paths/~1registries~1{id}~1ecr~1repositories~1{repositoryName}~1tags
+  /registries/{id}/repositories/{repositoryName}/tags:
+    $ref: registries.yaml#/paths/~1registries~1{id}~1repositories~1{repositoryName}~1tags
+  /registries/ping:
+    $ref: registries.yaml#/paths/~1registries~1ping
+  /resource_controls:
+    $ref: resource_controls.yaml#/paths/~1resource_controls
+  /resource_controls/{id}:
+    $ref: resource_controls.yaml#/paths/~1resource_controls~1{id}
+  /roles:
+    $ref: roles.yaml#/paths/~1roles
+  /settings:
+    $ref: settings.yaml#/paths/~1settings
+  /settings/additional_functionality:
+    $ref: settings.yaml#/paths/~1settings~1additional_functionality
+  /settings/default_registry:
+    $ref: settings.yaml#/paths/~1settings~1default_registry
+  /settings/edge/mtls_ca_certificate:
+    $ref: settings.yaml#/paths/~1settings~1edge~1mtls_ca_certificate
+  /settings/edge/mtls_certificate:
+    $ref: settings.yaml#/paths/~1settings~1edge~1mtls_certificate
+  /settings/experimental:
+    $ref: settings.yaml#/paths/~1settings~1experimental
+  /settings/public:
+    $ref: settings.yaml#/paths/~1settings~1public
+  /ssl:
+    $ref: ssl.yaml#/paths/~1ssl
+  /edge_stacks/webhooks/{webhookID}:
+    $ref: stacks.yaml#/paths/~1edge_stacks~1webhooks~1{webhookID}
+  /stacks:
+    $ref: stacks.yaml#/paths/~1stacks
+  /stacks/{id}:
+    $ref: stacks.yaml#/paths/~1stacks~1{id}
+  /stacks/{id}/associate:
+    $ref: stacks.yaml#/paths/~1stacks~1{id}~1associate
+  /stacks/{id}/convert:
+    $ref: stacks.yaml#/paths/~1stacks~1{id}~1convert
+  /stacks/{id}/file:
+    $ref: stacks.yaml#/paths/~1stacks~1{id}~1file
+  /stacks/{id}/git:
+    $ref: stacks.yaml#/paths/~1stacks~1{id}~1git
+  /stacks/{id}/git/redeploy:
+    $ref: stacks.yaml#/paths/~1stacks~1{id}~1git~1redeploy
+  /stacks/{id}/images_status:
+    $ref: stacks.yaml#/paths/~1stacks~1{id}~1images_status
+  /stacks/{id}/migrate:
+    $ref: stacks.yaml#/paths/~1stacks~1{id}~1migrate
+  /stacks/{id}/start:
+    $ref: stacks.yaml#/paths/~1stacks~1{id}~1start
+  /stacks/{id}/stop:
+    $ref: stacks.yaml#/paths/~1stacks~1{id}~1stop
+  /stacks/create/kubernetes/repository:
+    $ref: stacks.yaml#/paths/~1stacks~1create~1kubernetes~1repository
+  /stacks/create/kubernetes/string:
+    $ref: stacks.yaml#/paths/~1stacks~1create~1kubernetes~1string
+  /stacks/create/kubernetes/url:
+    $ref: stacks.yaml#/paths/~1stacks~1create~1kubernetes~1url
+  /stacks/create/standalone/file:
+    $ref: stacks.yaml#/paths/~1stacks~1create~1standalone~1file
+  /stacks/create/standalone/repository:
+    $ref: stacks.yaml#/paths/~1stacks~1create~1standalone~1repository
+  /stacks/create/standalone/string:
+    $ref: stacks.yaml#/paths/~1stacks~1create~1standalone~1string
+  /stacks/create/swarm/file:
+    $ref: stacks.yaml#/paths/~1stacks~1create~1swarm~1file
+  /stacks/create/swarm/repository:
+    $ref: stacks.yaml#/paths/~1stacks~1create~1swarm~1repository
+  /stacks/create/swarm/string:
+    $ref: stacks.yaml#/paths/~1stacks~1create~1swarm~1string
+  /stacks/name/{name}:
+    $ref: stacks.yaml#/paths/~1stacks~1name~1{name}
+  /stacks/webhooks/{webhookID}:
+    $ref: stacks.yaml#/paths/~1stacks~1webhooks~1{webhookID}
+  /status:
+    $ref: status.yaml#/paths/~1status
+  /support/debug_log:
+    $ref: support.yaml#/paths/~1support~1debug_log
+  /support/download:
+    $ref: support.yaml#/paths/~1support~1download
+  /system/info:
+    $ref: system.yaml#/paths/~1system~1info
+  /system/nodes:
+    $ref: system.yaml#/paths/~1system~1nodes
+  /system/status:
+    $ref: system.yaml#/paths/~1system~1status
+  /system/update:
+    $ref: system.yaml#/paths/~1system~1update
+  /system/version:
+    $ref: system.yaml#/paths/~1system~1version
+  /tags:
+    $ref: tags.yaml#/paths/~1tags
+  /tags/{id}:
+    $ref: tags.yaml#/paths/~1tags~1{id}
+  /team_memberships:
+    $ref: team_memberships.yaml#/paths/~1team_memberships
+  /team_memberships/{id}:
+    $ref: team_memberships.yaml#/paths/~1team_memberships~1{id}
+  /teams/{id}/memberships:
+    $ref: team_memberships.yaml#/paths/~1teams~1{id}~1memberships
+  /teams:
+    $ref: teams.yaml#/paths/~1teams
+  /teams/{id}:
+    $ref: teams.yaml#/paths/~1teams~1{id}
+  /templates:
+    $ref: templates.yaml#/paths/~1templates
+  /templates/{id}/file:
+    $ref: templates.yaml#/paths/~1templates~1{id}~1file
+  /upload/tls/{certificate}:
+    $ref: upload.yaml#/paths/~1upload~1tls~1{certificate}
+  /useractivity/authlogs:
+    $ref: useractivity.yaml#/paths/~1useractivity~1authlogs
+  /useractivity/authlogs.csv:
+    $ref: useractivity.yaml#/paths/~1useractivity~1authlogs.csv
+  /useractivity/logs:
+    $ref: useractivity.yaml#/paths/~1useractivity~1logs
+  /useractivity/logs.csv:
+    $ref: useractivity.yaml#/paths/~1useractivity~1logs.csv
+  /users:
+    $ref: users.yaml#/paths/~1users
+  /users/{id}:
+    $ref: users.yaml#/paths/~1users~1{id}
+  /users/{id}/effective-access:
+    $ref: users.yaml#/paths/~1users~1{id}~1effective-access
+  /users/{id}/gitcredentials:
+    $ref: users.yaml#/paths/~1users~1{id}~1gitcredentials
+  /users/{id}/gitcredentials/{credentialID}:
+    $ref: users.yaml#/paths/~1users~1{id}~1gitcredentials~1{credentialID}
+  /users/{id}/memberships:
+    $ref: users.yaml#/paths/~1users~1{id}~1memberships
+  /users/{id}/namespaces:
+    $ref: users.yaml#/paths/~1users~1{id}~1namespaces
+  /users/{id}/passwd:
+    $ref: users.yaml#/paths/~1users~1{id}~1passwd
+  /users/{id}/tokens:
+    $ref: users.yaml#/paths/~1users~1{id}~1tokens
+  /users/{id}/tokens/{keyID}:
+    $ref: users.yaml#/paths/~1users~1{id}~1tokens~1{keyID}
+  /users/admin/check:
+    $ref: users.yaml#/paths/~1users~1admin~1check
+  /users/admin/init:
+    $ref: users.yaml#/paths/~1users~1admin~1init
+  /users/me:
+    $ref: users.yaml#/paths/~1users~1me
+  /users/me/auth/{endpointID}:
+    $ref: users.yaml#/paths/~1users~1me~1auth~1{endpointID}
+  /webhooks:
+    $ref: webhooks.yaml#/paths/~1webhooks
+  /webhooks/{id}:
+    $ref: webhooks.yaml#/paths/~1webhooks~1{id}
+  /webhooks/{id}/reassign:
+    $ref: webhooks.yaml#/paths/~1webhooks~1{id}~1reassign
+  /websocket/attach:
+    $ref: websocket.yaml#/paths/~1websocket~1attach
+  /websocket/exec:
+    $ref: websocket.yaml#/paths/~1websocket~1exec
+  /websocket/kubernetes-shell:
+    $ref: websocket.yaml#/paths/~1websocket~1kubernetes-shell
+  /websocket/pod:
+    $ref: websocket.yaml#/paths/~1websocket~1pod
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

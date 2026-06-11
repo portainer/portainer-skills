@@ -1,0 +1,1169 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage Portainer settings
+    name: settings
+    x-displayName: Portainer settings
+servers:
+  - url: /api
+paths:
+  /settings:
+    get:
+      description: |-
+        Retrieve Portainer settings.
+        **Access policy**: administrator
+      operationId: SettingsInspect
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Settings'
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Retrieve Portainer settings
+      tags:
+        - settings
+    put:
+      description: |-
+        Update Portainer settings.
+        **Access policy**: administrator
+      operationId: SettingsUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/settings.settingsUpdatePayload'
+        description: New settings
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Settings'
+        '400':
+          description: Invalid request
+        '409':
+          description: Edge Compute features cannot be disabled while they are in use
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update Portainer settings
+      tags:
+        - settings
+  /settings/additional_functionality:
+    get:
+      description: |-
+        Retrieve Portainer additional functionality settings.
+        **Access policy**: authenticated
+      operationId: SettingsAdditionalFunctionalityInspect
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/settings.settingsAdditionalFunctionalityInspectResponse'
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Retrieve Portainer additional functionality settings
+      tags:
+        - settings
+    put:
+      description: |-
+        Update Portainer additional functionality settings.
+        **Access policy**: administrator
+      operationId: SettingsAdditionalFunctionalityUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/settings.settingsAdditionalFunctionalityUpdatePayload'
+        description: New settings
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update Portainer additional functionality settings
+      tags:
+        - settings
+  /settings/default_registry:
+    put:
+      description: |-
+        Update Portainer default registry settings.
+        **Access policy**: administrator
+      operationId: DefaultRegistryUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/settings.defaultRegistryUpdatePayload'
+        description: Update default registry
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Settings'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update Portainer default registry settings
+      tags:
+        - settings
+  /settings/edge/mtls_ca_certificate:
+    get:
+      description: |-
+        Retrieve Portainer Edge MTLS CA Certificates.
+        **Access policy**: administrator
+      operationId: SettingsEdgeMTLSCACertificates
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/settings.settingsCACertResponse'
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Retrieve Portainer Edge MTLS CA Certificates
+      tags:
+        - settings
+  /settings/edge/mtls_certificate:
+    get:
+      description: |-
+        Retrieve Portainer Edge MTLS Certificates.
+        **Access policy**: administrator
+      operationId: SettingsEdgeMTLSCertificates
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/settings.settingsCertResponse'
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Retrieve Portainer Edge MTLS Certificates
+      tags:
+        - settings
+  /settings/experimental:
+    get:
+      description: |-
+        Retrieve Portainer experimental settings.
+        **Access policy**: authenticated
+      operationId: SettingsExperimentalInspect
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/settings.settingsExperimentalInspectResponse'
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Retrieve Portainer experimental settings
+      tags:
+        - settings
+    put:
+      description: |-
+        Update Portainer experimental settings.
+        **Access policy**: administrator
+      operationId: SettingsExperimentalUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/settings.settingsExperimentalUpdatePayload'
+        description: New settings
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update Portainer experimental settings
+      tags:
+        - settings
+  /settings/public:
+    get:
+      description: |-
+        Retrieve public settings. Returns a small set of settings that are not reserved to administrators only.
+        **Access policy**: public
+      operationId: SettingsPublic
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/settings.publicSettingsResponse'
+        '500':
+          description: Server error
+      summary: Retrieve Portainer public settings
+      tags:
+        - settings
+components:
+  schemas:
+    settings.publicSettingsResponse:
+      properties:
+        AuthenticationMethod:
+          allOf:
+            - $ref: '#/components/schemas/portainer.AuthenticationMethod'
+          description: 'Active authentication method for the Portainer instance. Valid values are: 1 for internal, 2 for LDAP, or 3 for oauth'
+          example: 1
+        AutoPatchSettings:
+          $ref: '#/components/schemas/settings.autoPatchResponse'
+        CustomLoginBanner:
+          description: The content in plaintext used to display in the login page. Will hide when value is empty string
+          example: notice or agreement
+          type: string
+        DefaultRegistry:
+          properties:
+            Hide:
+              example: false
+              type: boolean
+          type: object
+        DisableKubeShell:
+          description: DisableKubeShell will disable the kube shell feature for non-admin users
+          example: false
+          type: boolean
+        DisableKubeconfigDownload:
+          description: DisableKubeconfigDownload will disable the download of kubeconfig files for non-admin users
+          example: false
+          type: boolean
+        Edge:
+          properties:
+            CheckinInterval:
+              description: The check in interval for edge agent (in seconds) - used in non async mode [seconds]
+              example: 60
+              type: integer
+            CommandInterval:
+              description: The command list interval for edge agent - used in edge async mode [seconds]
+              example: 60
+              type: integer
+            MTLS:
+              $ref: '#/components/schemas/portaineree.MTLSSettings'
+            PingInterval:
+              description: The ping interval for edge agent - used in edge async mode [seconds]
+              example: 60
+              type: integer
+            SnapshotInterval:
+              description: The snapshot interval for edge agent - used in edge async mode [seconds]
+              example: 60
+              type: integer
+          type: object
+        EnableEdgeComputeFeatures:
+          description: Whether edge compute features are enabled
+          example: true
+          type: boolean
+        FIPSMode:
+          description: Whether FIPS mode is enabled
+          type: boolean
+        Features:
+          additionalProperties:
+            type: boolean
+          description: Supported feature flags
+          type: object
+        GlobalDeploymentOptions:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.GlobalDeploymentOptions'
+          description: Deployment options for encouraging deployment as code
+        IsObservabilityEnabled:
+          description: Whether observability is enabled
+          type: boolean
+        KubeconfigExpiry:
+          default: '0'
+          description: The expiry of a Kubeconfig
+          example: 24h
+          type: string
+        LogoURL:
+          description: URL to a logo that will be displayed on the login page as well as on top of the sidebar. Will use default Portainer logo when value is empty string
+          example: https://mycompany.mydomain.tld/logo.png
+          type: string
+        OAuthHideInternalAuth:
+          description: Whether portainer internal auth view will be hidden
+          example: true
+          type: boolean
+        OAuthLoginURI:
+          description: The URL used for oauth login
+          example: https://gitlab.com/oauth
+          type: string
+        OAuthLogoutURI:
+          description: The URL used for oauth logout
+          example: https://gitlab.com/oauth/logout
+          type: string
+        RequiredPasswordLength:
+          description: The minimum required length for a password of any user when using internal auth mode
+          example: 1
+          type: integer
+        TeamSync:
+          description: Whether team sync is enabled
+          example: true
+          type: boolean
+        Whitelabel:
+          description: The display name of the app
+          example: My Company
+          type: string
+      type: object
+    settings.settingsExperimentalUpdatePayload:
+      properties:
+        fleetManagement:
+          example: false
+          type: boolean
+      type: object
+    settings.settingsExperimentalInspectResponse:
+      properties:
+        experimentalFeatures:
+          $ref: '#/components/schemas/portaineree.ExperimentalFeatures'
+      type: object
+    settings.settingsCertResponse:
+      properties:
+        MTLSCertificate:
+          allOf:
+            - $ref: '#/components/schemas/ssl.Certificate'
+          description: MTLSCertificate is the X.509 Certificate of the MTLS Certificate
+      type: object
+    settings.settingsCACertResponse:
+      properties:
+        MTLSCACertificate:
+          allOf:
+            - $ref: '#/components/schemas/ssl.Certificate'
+          description: MTLSCACertificate is the X.509 Certificate of the MTLS CA Certificate
+      type: object
+    portaineree.Settings:
+      properties:
+        AdditionalFunctionality:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.AdditionalFunctionality'
+          description: Additional Functionality
+        AgentSecret:
+          description: Container environment parameter AGENT_SECRET
+          type: string
+        AllowBindMountsForRegularUsers:
+          type: boolean
+        AllowContainerCapabilitiesForRegularUsers:
+          type: boolean
+        AllowDeviceMappingForRegularUsers:
+          type: boolean
+        AllowHostNamespaceForRegularUsers:
+          type: boolean
+        AllowPrivilegedModeForRegularUsers:
+          type: boolean
+        AllowStackManagementForRegularUsers:
+          type: boolean
+        AllowVolumeBrowserForRegularUsers:
+          type: boolean
+        AuthenticationMethod:
+          allOf:
+            - $ref: '#/components/schemas/portainer.AuthenticationMethod'
+          description: 'Active authentication method for the Portainer instance. Valid values are: 1 for internal, 2 for LDAP, or 3 for oauth'
+          example: 1
+        AutoPatchSettings:
+          $ref: '#/components/schemas/portaineree.AutoPatchSettings'
+        BlackListedLabels:
+          description: A list of label name & value that will be used to hide containers when querying containers
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        CloudApiKeys:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.CloudApiKeys'
+          description: CloudAPIKeys
+        CustomLoginBanner:
+          description: The content in plaintext used to display in the login page. Will hide when value is empty string
+          type: string
+        DefaultRegistry:
+          description: The default builtin registry now is anonymous docker hub registry
+          properties:
+            Hide:
+              example: false
+              type: boolean
+          type: object
+        DisableKubeRolesSync:
+          description: DisableKubeRolesSync will disable the sync of kube roles for all built-in roles
+          example: false
+          type: boolean
+        DisableKubeShell:
+          description: DisableKubeShell will disable the kube shell feature for non-admin users
+          example: false
+          type: boolean
+        DisableKubeconfigDownload:
+          description: DisableKubeconfigDownload will disable the download of kubeconfig files for non-admin users
+          example: false
+          type: boolean
+        DisplayDonationHeader:
+          description: Deprecated fields
+          type: boolean
+        DisplayExternalContributors:
+          type: boolean
+        Edge:
+          $ref: '#/components/schemas/portaineree.Edge'
+        EdgeAgentCheckinInterval:
+          description: The default check in interval for edge agent (in seconds)
+          example: 5
+          type: integer
+        EdgePortainerUrl:
+          description: EdgePortainerURL is the URL that is exposed to edge agents
+          type: string
+        EnableEdgeComputeFeatures:
+          description: Whether edge compute features are enabled
+          type: boolean
+        EnableHostManagementFeatures:
+          description: Deprecated fields v26
+          type: boolean
+        EnforceEdgeID:
+          description: EnforceEdgeID makes Portainer store the Edge ID instead of accepting anyone
+          example: false
+          type: boolean
+        ExperimentalFeatures:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.ExperimentalFeatures'
+          description: Experimental features
+        FeatureFlagSettings:
+          additionalProperties:
+            type: boolean
+          type: object
+        ForceSecureCookies:
+          description: |-
+            ForceSecureCookies forces the Secure attribute on auth cookies regardless of detected scheme.
+            Enable when Portainer runs behind a TLS-terminating proxy.
+          example: false
+          type: boolean
+        GlobalDeploymentOptions:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.GlobalDeploymentOptions'
+          description: Deployment options for encouraging git ops workflows
+        HelmRepositoryURL:
+          description: Helm repository URL, defaults to "https://charts.bitnami.com/bitnami"
+          example: https://charts.bitnami.com/bitnami
+          type: string
+        InternalAuthSettings:
+          $ref: '#/components/schemas/portainer.InternalAuthSettings'
+        IsDockerDesktopExtension:
+          type: boolean
+        KubeconfigExpiry:
+          description: The expiry of a Kubeconfig
+          example: 24h
+          type: string
+        KubectlShellImage:
+          description: KubectlImage, defaults to portainer/kubectl-shell
+          example: portainer/kubectl-shell
+          type: string
+        LDAPSettings:
+          $ref: '#/components/schemas/portaineree.LDAPSettings'
+        LogoURL:
+          description: URL to a logo that will be displayed on the login page as well as on top of the sidebar. Will use default Portainer logo when value is empty string
+          example: https://mycompany.mydomain.tld/logo.png
+          type: string
+        OAuthSettings:
+          $ref: '#/components/schemas/portaineree.OAuthSettings'
+        SnapshotInterval:
+          description: The interval in which environment(endpoint) snapshots are created
+          example: 5m
+          type: string
+        TemplatesURL:
+          description: URL to the templates that will be displayed in the UI when navigating to App Templates
+          example: https://raw.githubusercontent.com/portainer/templates/master/templates.json
+          type: string
+        TrustOnFirstConnect:
+          description: TrustOnFirstConnect makes Portainer accepting edge agent connection by default
+          example: false
+          type: boolean
+        UserSessionTimeout:
+          description: The duration of a user session
+          example: 5m
+          type: string
+      type: object
+    settings.defaultRegistryUpdatePayload:
+      properties:
+        Hide:
+          example: false
+          type: boolean
+      type: object
+    settings.settingsAdditionalFunctionalityUpdatePayload:
+      properties:
+        Observability:
+          example: true
+          type: boolean
+        Policies:
+          example: true
+          type: boolean
+      required:
+        - Observability
+        - Policies
+      type: object
+    settings.settingsAdditionalFunctionalityInspectResponse:
+      properties:
+        additionalFunctionality:
+          $ref: '#/components/schemas/portaineree.AdditionalFunctionality'
+      type: object
+    settings.settingsUpdatePayload:
+      properties:
+        AuthenticationMethod:
+          description: 'Active authentication method for the Portainer instance. Valid values are: 1 for internal, 2 for LDAP, or 3 for oauth'
+          example: 1
+          type: integer
+        AutoPatchSettings:
+          allOf:
+            - $ref: '#/components/schemas/settings.autoPatchSettingsPayload'
+          description: Whether to enable automatic patches
+        BlackListedLabels:
+          description: A list of label name & value that will be used to hide containers when querying containers
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        CustomLoginBanner:
+          description: The content in plaintext used to display in the login page. Will hide when value is empty string
+          example: notice or agreement
+          type: string
+        DisableKubeRolesSync:
+          description: Whether to disable kube roles sync for all built-in roles
+          example: false
+          type: boolean
+        DisableKubeShell:
+          description: Whether to disable kubeshell access for non-admin users
+          example: false
+          type: boolean
+        DisableKubeconfigDownload:
+          description: Whether to disable kubeconfig download for non-admin users
+          example: false
+          type: boolean
+        Edge:
+          properties:
+            AsyncMode:
+              description: AsyncMode enables edge agent to run in async mode by default
+              type: boolean
+            CommandInterval:
+              description: The command list interval for edge agent - used in edge async mode (in seconds)
+              example: 5
+              type: integer
+            MTLS:
+              $ref: '#/components/schemas/settings.mTLSPayload'
+            PingInterval:
+              description: The ping interval for edge agent - used in edge async mode (in seconds)
+              example: 5
+              type: integer
+            SnapshotInterval:
+              description: The snapshot interval for edge agent - used in edge async mode (in seconds)
+              example: 5
+              type: integer
+            TunnelServerAddress:
+              description: The address where the tunneling server can be reached by Edge agents
+              type: string
+          type: object
+        EdgeAgentCheckinInterval:
+          description: The default check in interval for edge agent (in seconds)
+          example: 5
+          type: integer
+        EdgePortainerURL:
+          description: EdgePortainerURL is the URL that is exposed to edge agents
+          type: string
+        EnableEdgeComputeFeatures:
+          description: Whether edge compute features are enabled
+          example: true
+          type: boolean
+        EnforceEdgeID:
+          description: EnforceEdgeID makes Portainer store the Edge ID instead of accepting anyone
+          example: false
+          type: boolean
+        ForceSecureCookies:
+          description: ForceSecureCookies forces the Secure attribute on auth cookies regardless of the detected scheme
+          example: false
+          type: boolean
+        GlobalDeploymentOptions:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.GlobalDeploymentOptions'
+          description: Deployment options for encouraging deployment as code
+        HelmRepositoryURL:
+          description: Helm repository URL
+          example: https://charts.bitnami.com/bitnami
+          type: string
+        InternalAuthSettings:
+          $ref: '#/components/schemas/portainer.InternalAuthSettings'
+        KubeconfigExpiry:
+          default: '0'
+          description: The expiry of a Kubeconfig
+          example: 24h
+          type: string
+        KubectlShellImage:
+          description: "Kubec\ttl Shell Image Name/Tag"
+          example: portainer/kubectl-shell:latest
+          type: string
+        LDAPSettings:
+          $ref: '#/components/schemas/portaineree.LDAPSettings'
+        LogoURL:
+          description: URL to a logo that will be displayed on the login page as well as on top of the sidebar. Will use default Portainer logo when value is empty string
+          example: https://mycompany.mydomain.tld/logo.png
+          type: string
+        OAuthSettings:
+          $ref: '#/components/schemas/portaineree.OAuthSettings'
+        SnapshotInterval:
+          description: The interval in which environment(endpoint) snapshots are created
+          example: 5m
+          type: string
+        TemplatesURL:
+          description: URL to the templates that will be displayed in the UI when navigating to App Templates
+          example: https://raw.githubusercontent.com/portainer/templates/master/templates.json
+          type: string
+        TrustOnFirstConnect:
+          description: TrustOnFirstConnect makes Portainer accepting edge agent connection by default
+          example: false
+          type: boolean
+        UserSessionTimeout:
+          description: The duration of a user session
+          example: 5m
+          type: string
+      type: object
+    portaineree.GlobalDeploymentOptions:
+      properties:
+        hideAddWithForm:
+          description: Hide manual deploy forms in portainer
+          example: false
+          type: boolean
+        hideFileUpload:
+          description: Hide the file upload option in the remaining visible forms
+          example: false
+          type: boolean
+        hideStacksFunctionality:
+          example: false
+          type: boolean
+        hideWebEditor:
+          description: Hide the webeditor in the remaining visible forms
+          example: false
+          type: boolean
+        minApplicationNoteLength:
+          example: 10
+          type: integer
+        perEnvOverride:
+          description: Configure this per environment or globally
+          example: false
+          type: boolean
+        requireNoteOnApplications:
+          description: Make note field mandatory if enabled
+          example: false
+          type: boolean
+      type: object
+    portaineree.MTLSSettings:
+      properties:
+        CaCertFile:
+          description: CaCertFile is the path to the mTLS CA certificate file
+          type: string
+        CertFile:
+          description: CertFile is the path to the mTLS certificate file
+          type: string
+        KeyFile:
+          description: KeyFile is the path to the mTLS key file
+          type: string
+        UseSeparateCert:
+          type: boolean
+      type: object
+    settings.autoPatchResponse:
+      properties:
+        Enabled:
+          type: boolean
+        PatchCron:
+          example: 0 4 * * *
+          type: string
+      type: object
+    portainer.AuthenticationMethod:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+      type: integer
+      x-enum-varnames:
+        - _
+        - AuthenticationInternal
+        - AuthenticationLDAP
+        - AuthenticationOAuth
+    portaineree.ExperimentalFeatures:
+      type: object
+    ssl.Certificate:
+      properties:
+        AuthorityKeyId:
+          type: string
+        CRLDistributionPoints:
+          items:
+            type: string
+          type: array
+        ExtendedKeyUsages:
+          items:
+            type: string
+          type: array
+        IsCertificateAuthority:
+          type: boolean
+        Issuer:
+          $ref: '#/components/schemas/ssl.Name'
+        IssuingCertificateURLs:
+          items:
+            type: string
+          type: array
+        KeyUsages:
+          items:
+            type: string
+          type: array
+        OCSPServers:
+          items:
+            type: string
+          type: array
+        Policies:
+          items:
+            type: string
+          type: array
+        PublicKey:
+          $ref: '#/components/schemas/ssl.PublicKey'
+        SHA256Fingerprint:
+          type: string
+        SerialNumber:
+          type: string
+        SignatureAlgorithm:
+          type: string
+        Subject:
+          $ref: '#/components/schemas/ssl.Name'
+        SubjectAltDNSNames:
+          items:
+            type: string
+          type: array
+        SubjectAltEmailAddresses:
+          items:
+            type: string
+          type: array
+        SubjectAltIpAddresses:
+          items:
+            type: string
+          type: array
+        SubjectAltURIs:
+          items:
+            type: string
+          type: array
+        SubjectKeyId:
+          type: string
+        ValidNotAfter:
+          type: string
+        ValidNotBefore:
+          type: string
+        Version:
+          type: integer
+      type: object
+    portaineree.OAuthSettings:
+      properties:
+        AccessTokenURI:
+          type: string
+        AuthStyle:
+          $ref: '#/components/schemas/oauth2.AuthStyle'
+        AuthorizationURI:
+          type: string
+        ClientID:
+          type: string
+        ClientSecret:
+          type: string
+        DefaultTeamID:
+          type: integer
+        HideInternalAuth:
+          type: boolean
+        KubeSecretKey:
+          items:
+            type: integer
+          type: array
+        LogoutURI:
+          type: string
+        MicrosoftTenantID:
+          type: string
+        OAuthAutoCreateUsers:
+          type: boolean
+        OAuthAutoMapTeamMemberships:
+          type: boolean
+        RedirectURI:
+          type: string
+        ResourceURI:
+          type: string
+        SSO:
+          type: boolean
+        Scopes:
+          type: string
+        TeamMemberships:
+          $ref: '#/components/schemas/portaineree.TeamMemberships'
+        UserIdentifier:
+          type: string
+      type: object
+    portaineree.LDAPSettings:
+      properties:
+        AdminAutoPopulate:
+          description: Whether auto admin population is switched on or not
+          example: true
+          type: boolean
+        AdminGroupSearchSettings:
+          items:
+            $ref: '#/components/schemas/portainer.LDAPGroupSearchSettings'
+          type: array
+        AdminGroups:
+          description: Saved admin group list, the user will be populated as an admin role if any user group matches the record in the list
+          example:
+            - '[''manager'''
+            - '''operator'']'
+          items:
+            type: string
+          type: array
+        AnonymousMode:
+          description: Enable this option if the server is configured for Anonymous access. When enabled, ReaderDN and Password will not be used
+          example: true
+          type: boolean
+        AutoCreateUsers:
+          description: Automatically provision users and assign them to matching LDAP group names
+          example: true
+          type: boolean
+        GroupSearchSettings:
+          items:
+            $ref: '#/components/schemas/portainer.LDAPGroupSearchSettings'
+          type: array
+        Kerberos:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.LDAPKerberosSettings'
+          description: Kerberos settings
+        Password:
+          description: Password of the account that will be used to search users
+          example: readonly-password
+          type: string
+        ReaderDN:
+          description: Account that will be used to search for users
+          example: cn=readonly-account,dc=ldap,dc=domain,dc=tld
+          type: string
+        SearchSettings:
+          items:
+            $ref: '#/components/schemas/portainer.LDAPSearchSettings'
+          type: array
+        ServerType:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.LDAPServerType'
+          example: 1
+        StartTLS:
+          description: Whether LDAP connection should use StartTLS
+          example: true
+          type: boolean
+        TLSConfig:
+          $ref: '#/components/schemas/portainer.TLSConfiguration'
+        URL:
+          description: Deprecated
+          type: string
+        URLs:
+          description: URLs or IP addresses of the LDAP server
+          items:
+            type: string
+          type: array
+      type: object
+    portainer.InternalAuthSettings:
+      properties:
+        RequiredPasswordLength:
+          type: integer
+      type: object
+    portaineree.Edge:
+      properties:
+        AsyncMode:
+          description: Deprecated 2.18
+          example: false
+          type: boolean
+        CommandInterval:
+          description: The command list interval for edge agent - used in edge async mode (in seconds)
+          example: 5
+          type: integer
+        MTLS:
+          $ref: '#/components/schemas/portaineree.MTLSSettings'
+        PingInterval:
+          description: The ping interval for edge agent - used in edge async mode (in seconds)
+          example: 5
+          type: integer
+        SnapshotInterval:
+          description: The snapshot interval for edge agent - used in edge async mode (in seconds)
+          example: 5
+          type: integer
+        TunnelServerAddress:
+          description: The address where the tunneling server can be reached by Edge agents
+          example: portainer.domain.tld
+          type: string
+      type: object
+    portaineree.CloudApiKeys:
+      properties:
+        CivoApiKey:
+          example: DgJ33kwIhnHumQFyc8ihGwWJql9cC8UJDiBhN8YImKqiX
+          type: string
+        DigitalOceanToken:
+          example: dop_v1_n9rq7dkcbg3zb3bewtk9nnvmfkyfnr94d42n28lym22vhqu23rtkllsldygqm22v
+          type: string
+        GKEApiKey:
+          example: an entire base64ed key file
+          type: string
+        LinodeToken:
+          example: 92gsh9r9u5helgs4eibcuvlo403vm45hrmc6mzbslotnrqmkwc1ovqgmolcyq0wc
+          type: string
+      type: object
+    portainer.Pair:
+      properties:
+        name:
+          example: name
+          type: string
+        value:
+          example: value
+          type: string
+      type: object
+    portaineree.AutoPatchSettings:
+      properties:
+        Enabled:
+          example: false
+          type: boolean
+        PatchCron:
+          example: 0 4 * * *
+          type: string
+        PortainerRepository:
+          example: portainer/portainer-ee
+          type: string
+        RegistryID:
+          example: 0
+          type: integer
+        UpdaterRepository:
+          example: portainer/portainer-updater
+          type: string
+      type: object
+    portaineree.AdditionalFunctionality:
+      properties:
+        Observability:
+          type: boolean
+      type: object
+    settings.mTLSPayload:
+      properties:
+        CaCert:
+          type: string
+        Cert:
+          type: string
+        Key:
+          type: string
+        UseSeparateCert:
+          type: boolean
+      type: object
+    settings.autoPatchSettingsPayload:
+      properties:
+        Enabled:
+          example: false
+          type: boolean
+        PatchCron:
+          example: 0 0 * * *
+          type: string
+        PortainerRepository:
+          example: portainer/portainer-ee
+          type: string
+        RegistryID:
+          example: 1
+          type: integer
+        UpdaterRepository:
+          example: portainer/portainer-updater
+          type: string
+      type: object
+    ssl.Name:
+      properties:
+        CommonName:
+          type: string
+        Country:
+          items:
+            type: string
+          type: array
+        Locality:
+          items:
+            type: string
+          type: array
+        Organization:
+          items:
+            type: string
+          type: array
+        OrganizationalUnit:
+          items:
+            type: string
+          type: array
+        PostalCode:
+          items:
+            type: string
+          type: array
+        Province:
+          items:
+            type: string
+          type: array
+        SerialNumber:
+          type: string
+        StreetAddress:
+          items:
+            type: string
+          type: array
+      type: object
+    ssl.PublicKey:
+      properties:
+        Algorithm:
+          type: string
+        Exponent:
+          type: string
+        Modulus:
+          type: string
+        Size:
+          type: integer
+        Value:
+          type: string
+      type: object
+    portaineree.TeamMemberships:
+      properties:
+        AdminAutoPopulate:
+          type: boolean
+        AdminGroupClaimsRegexList:
+          items:
+            type: string
+          type: array
+        OAuthClaimMappings:
+          items:
+            $ref: '#/components/schemas/portaineree.OAuthClaimMappings'
+          type: array
+        OAuthClaimName:
+          type: string
+      type: object
+    oauth2.AuthStyle:
+      enum:
+        - 0
+        - 1
+        - 2
+      type: integer
+      x-enum-varnames:
+        - AuthStyleAutoDetect
+        - AuthStyleInParams
+        - AuthStyleInHeader
+    portainer.TLSConfiguration:
+      properties:
+        TLS:
+          description: Use TLS
+          example: true
+          type: boolean
+        TLSCACert:
+          description: Path to the TLS CA certificate file
+          example: /data/tls/ca.pem
+          type: string
+        TLSCert:
+          description: Path to the TLS client certificate file
+          example: /data/tls/cert.pem
+          type: string
+        TLSKey:
+          description: Path to the TLS client key file
+          example: /data/tls/key.pem
+          type: string
+        TLSSkipVerify:
+          description: Skip the verification of the server TLS certificate
+          example: false
+          type: boolean
+      type: object
+    portaineree.LDAPServerType:
+      enum:
+        - 0
+        - 1
+        - 2
+      type: integer
+      x-enum-varnames:
+        - LDAPServerCustom
+        - LDAPServerOpenLDAP
+        - LDAPServerAD
+    portainer.LDAPSearchSettings:
+      properties:
+        BaseDN:
+          description: The distinguished name of the element from which the LDAP server will search for users
+          example: dc=ldap,dc=domain,dc=tld
+          type: string
+        Filter:
+          description: Optional LDAP search filter used to select user elements
+          example: (objectClass=account)
+          type: string
+        UserNameAttribute:
+          description: LDAP attribute which denotes the username
+          example: uid
+          type: string
+      type: object
+    portaineree.LDAPKerberosSettings:
+      properties:
+        Configuration:
+          type: string
+        Password:
+          type: string
+        Realm:
+          type: string
+        Service:
+          type: string
+        Username:
+          type: string
+      type: object
+    portainer.LDAPGroupSearchSettings:
+      properties:
+        GroupAttribute:
+          description: LDAP attribute which denotes the group membership
+          example: member
+          type: string
+        GroupBaseDN:
+          description: The distinguished name of the element from which the LDAP server will search for groups
+          example: dc=ldap,dc=domain,dc=tld
+          type: string
+        GroupFilter:
+          description: The LDAP search filter used to select group elements, optional
+          example: (objectClass=account
+          type: string
+      type: object
+    portaineree.OAuthClaimMappings:
+      properties:
+        ClaimValRegex:
+          type: string
+        Team:
+          type: integer
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

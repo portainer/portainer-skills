@@ -1,0 +1,935 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Alert configurations
+    name: observability
+    x-displayName: Observability
+servers:
+  - url: /api
+paths:
+  /observability/alerting/alerts:
+    get:
+      description: |-
+        Get a list of active or silenced alerts from the AlertManager.
+        **Access policy**: Administrator.
+      operationId: GetAlerts
+      parameters:
+        - description: 'Status of alerts to retrieve. Possible values: ''active'' or ''silenced''.'
+          in: query
+          name: status
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  type: object
+                type: array
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '500':
+          description: Server error occurred while attempting to retrieve active or silenced alerts.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get active or silenced alerts
+      tags:
+        - observability
+  /observability/alerting/connectivity:
+    get:
+      description: |-
+        Test connectivity to an AlertManager instance by retrieving its status.
+        **Access policy**: Administrator.
+      operationId: TestAlertManagerConnectivity
+      parameters:
+        - description: AlertManager URL
+          in: query
+          name: url
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+        '400':
+          description: URL query parameter is missing or invalid.
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '500':
+          description: Server error occurred while attempting to test AlertManager connectivity.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Test AlertManager connectivity
+      tags:
+        - observability
+  /observability/alerting/rules:
+    get:
+      description: |-
+        Get a list of all alert rules from the AlertManager.
+        **Access policy**: Administrator.
+      operationId: GetAllAlertRules
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  type: object
+                type: array
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '500':
+          description: Server error occurred while attempting to retrieve all alert rules.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get all alert rules
+      tags:
+        - observability
+    post:
+      description: |-
+        Create a new alert rule.
+        **Access policy**: Administrator.
+      operationId: CreateAlertRule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/observability.alertRuleCreatePayload'
+        description: Alert rule details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '404':
+          description: Referenced endpoint group not found.
+        '500':
+          description: Server error occurred while attempting to create the alert rule.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Create an alert rule
+      tags:
+        - observability
+  /observability/alerting/rules/{id}:
+    delete:
+      description: |-
+        Delete a specific alert rule by its identifier.
+        **Access policy**: Administrator.
+      operationId: DeleteAlertRule
+      parameters:
+        - description: Alert rule identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '404':
+          description: Unable to find an alert rule with the specified identifier.
+        '500':
+          description: Server error occurred while attempting to delete the alert rule.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Delete an alert rule
+      tags:
+        - observability
+    get:
+      description: |-
+        Get a specific alert rule by its identifier.
+        **Access policy**: Administrator.
+      operationId: GetAlertRule
+      parameters:
+        - description: Alert rule identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '404':
+          description: Unable to find an alert rule with the specified identifier.
+        '500':
+          description: Server error occurred while attempting to retrieve the alert rule.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get an alert rule by ID
+      tags:
+        - observability
+    put:
+      description: |-
+        Update a specific alert rule by its identifier.
+        **Access policy**: Administrator.
+      operationId: UpdateAlertRule
+      parameters:
+        - description: Alert rule identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/observability.alertRuleUpdatePayload'
+        description: Alert rule details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '404':
+          description: Unable to find an alert rule with the specified identifier, or a referenced endpoint group does not exist.
+        '500':
+          description: Server error occurred while attempting to update the alert rule.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Update an alert rule
+      tags:
+        - observability
+  /observability/alerting/rules/{id}/environments:
+    get:
+      description: |-
+        Get alert rule delivery status grouped by environment(endpoint) group.
+        **Access policy**: Administrator.
+      operationId: GetAlertRuleEnvironments
+      parameters:
+        - description: Alert rule identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/observability.alertRuleEnvironmentsResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '404':
+          description: Alert rule not found.
+        '500':
+          description: Server error occurred while attempting to retrieve alert rule environments.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get alert rule environments
+      tags:
+        - observability
+  /observability/alerting/rules/{id}/groups:
+    put:
+      description: |-
+        Replace the endpoint group attachments for an alert rule.
+        **Access policy**: Administrator.
+      operationId: UpdateAlertRuleGroups
+      parameters:
+        - description: Alert rule identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/observability.alertRuleGroupsUpdatePayload'
+        description: Alert rule group attachments
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.AlertingRule'
+        '400':
+          description: Invalid request payload, such as malformed or duplicate endpoint group IDs.
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '404':
+          description: Unable to find an alert rule with the specified identifier, or a referenced endpoint group does not exist.
+        '500':
+          description: Server error occurred while attempting to update alert rule groups.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Update alert rule endpoint groups
+      tags:
+        - observability
+  /observability/alerting/rules/{id}/tiers:
+    put:
+      description: |-
+        Update multi-severity tier configuration for an editable internal alert rule.
+        **Access policy**: Administrator.
+      operationId: UpdateAlertRuleTiers
+      parameters:
+        - description: Alert rule identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/observability.alertRuleTiersUpdatePayload'
+        description: Alert rule tier configuration
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.AlertingRule'
+        '400':
+          description: Invalid request payload, such as malformed tiers, unsupported operators, or invalid tier ordering.
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - only editable internal alert rules can be tier-configured.
+        '404':
+          description: Unable to find an alert rule with the specified identifier.
+        '500':
+          description: Server error occurred while attempting to update alert rule tiers.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Update alert rule tiers
+      tags:
+        - observability
+  /observability/alerting/settings:
+    get:
+      description: |-
+        Get a list of all alerting settings with their connection status.
+        **Access policy**: Administrator.
+      operationId: GetAllAlertingSettings
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  type: object
+                type: array
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '500':
+          description: Server error occurred while attempting to retrieve all alerting settings.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get all alerting settings
+      tags:
+        - observability
+    put:
+      description: |-
+        Update alerting settings and manage internal AlertManager lifecycle.
+        **Access policy**: Administrator.
+      operationId: UpdateAlertingSettings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/observability.alertingUpdatePayload'
+        description: Alerting settings details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '500':
+          description: Server error occurred while attempting to update the alerting settings.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Update alerting settings
+      tags:
+        - observability
+  /observability/alerting/settings/{id}:
+    get:
+      description: |-
+        Get specific alerting settings by its identifier, including connection status.
+        **Access policy**: Administrator.
+      operationId: GetAlertingSettings
+      parameters:
+        - description: Alerting settings identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '404':
+          description: Unable to find alerting settings with the specified identifier.
+        '500':
+          description: Server error occurred while attempting to retrieve the alerting settings.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get alerting settings by ID
+      tags:
+        - observability
+  /observability/alerting/silence:
+    post:
+      description: |-
+        Create a new silence for alerts in the specified AlertManager.
+        **Access policy**: Administrator.
+      operationId: CreateSilence
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/observability.createSilencePayload'
+        description: Silence details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '500':
+          description: Server error occurred while attempting to create the alert silence.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Create an alert silence
+      tags:
+        - observability
+  /observability/alerting/silence/{id}:
+    delete:
+      description: |-
+        Delete a specific alert silence by its identifier from the specified AlertManager.
+        **Access policy**: Administrator.
+      operationId: DeleteSilence
+      parameters:
+        - description: Silence identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - description: AlertManager URL
+          in: query
+          name: alertManagerURL
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+        '400':
+          description: Invalid request payload, such as missing required fields or fields not meeting validation criteria.
+        '401':
+          description: Unauthorized access - the user is not authenticated or does not have the necessary permissions. Ensure that you have provided a valid API key or JWT token, and that you have the required permissions.
+        '403':
+          description: Permission denied - the user is authenticated but does not have the necessary permissions to access the requested resource or perform the specified operation. Check your user roles and permissions.
+        '404':
+          description: Unable to find an alert silence with the specified identifier.
+        '500':
+          description: Server error occurred while attempting to delete the alert silence.
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Delete an alert silence
+      tags:
+        - observability
+components:
+  schemas:
+    observability.createSilencePayload:
+      properties:
+        alertManagerURL:
+          type: string
+        silence:
+          $ref: '#/components/schemas/models.PostableSilence'
+      required:
+        - alertManagerURL
+        - silence
+      type: object
+    observability.alertingUpdatePayload:
+      properties:
+        AlertingSettings:
+          $ref: '#/components/schemas/portaineree.AlertingSettings'
+      type: object
+    portaineree.AlertingRule:
+      properties:
+        alertManagerID:
+          type: integer
+        annotationTemplate:
+          type: string
+        category:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.AlertRuleCategory'
+          enum:
+            - portainer
+            - security
+            - environment
+        conditionOperator:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.ConditionOperator'
+          enum:
+            - '>'
+            - <
+            - '='
+            - '>='
+            - <=
+        createdAt:
+          type: string
+        createdBy:
+          type: string
+        description:
+          type: string
+        duration:
+          type: integer
+        enabled:
+          type: boolean
+        endpointGroupIds:
+          items:
+            type: integer
+          type: array
+        forDurationMinutes:
+          type: integer
+        id:
+          type: integer
+        isEditable:
+          type: boolean
+        isInternal:
+          type: boolean
+        labels:
+          additionalProperties:
+            type: string
+          type: object
+        metricType:
+          enum:
+            - percentage
+            - bytes
+            - raw
+            - days
+          type: string
+        name:
+          type: string
+        operatorFixed:
+          type: boolean
+        promqlExpr:
+          type: string
+        promqlScalarTemplate:
+          type: string
+        promqlTemplate:
+          type: string
+        severity:
+          enum:
+            - critical
+            - warning
+            - info
+          type: string
+        summary:
+          type: string
+        supportedAgentVersion:
+          type: string
+        supportedEnvironmentTypes:
+          enum:
+            - docker
+            - kubernetes
+            - podman
+            - all
+          type: string
+        tagIds:
+          items:
+            type: integer
+          type: array
+        threshold:
+          type: number
+        tiers:
+          items:
+            $ref: '#/components/schemas/portaineree.AlertingRuleTier'
+          type: array
+        updatedAt:
+          type: string
+        useDurationAsFor:
+          type: boolean
+        useTiers:
+          type: boolean
+      type: object
+    observability.alertRuleTiersUpdatePayload:
+      properties:
+        conditionOperator:
+          $ref: '#/components/schemas/portaineree.ConditionOperator'
+        description:
+          type: string
+        duration:
+          type: integer
+        enabled:
+          type: boolean
+        tiers:
+          items:
+            $ref: '#/components/schemas/portaineree.AlertingRuleTier'
+          type: array
+      type: object
+    observability.alertRuleGroupsUpdatePayload:
+      properties:
+        endpointGroupIds:
+          items:
+            type: integer
+          type: array
+      type: object
+    observability.alertRuleEnvironmentsResponse:
+      properties:
+        active:
+          type: integer
+        error:
+          type: integer
+        excluded:
+          type: integer
+        groups:
+          items:
+            $ref: '#/components/schemas/observability.alertRuleEnvironmentGroupResponse'
+          type: array
+        notSupported:
+          type: integer
+        pending:
+          type: integer
+        total:
+          type: integer
+      type: object
+    observability.alertRuleUpdatePayload:
+      properties:
+        AlertingRule:
+          $ref: '#/components/schemas/portaineree.AlertingRule'
+      type: object
+    observability.alertRuleCreatePayload:
+      properties:
+        AlertingRule:
+          $ref: '#/components/schemas/portaineree.AlertingRule'
+      type: object
+    models.PostableSilence:
+      properties:
+        comment:
+          description: |-
+            comment
+            Required: true
+          type: string
+        createdBy:
+          description: |-
+            created by
+            Required: true
+          type: string
+        endsAt:
+          description: |-
+            ends at
+            Required: true
+            Format: date-time
+          type: string
+        id:
+          description: id
+          type: string
+        matchers:
+          description: |-
+            matchers
+            Required: true
+          items:
+            $ref: '#/components/schemas/models.Matcher'
+          type: array
+        startsAt:
+          description: |-
+            starts at
+            Required: true
+            Format: date-time
+          type: string
+      type: object
+    portaineree.AlertingSettings:
+      properties:
+        createdAt:
+          type: string
+        createdBy:
+          type: string
+        enabled:
+          type: boolean
+        id:
+          type: integer
+        isInternal:
+          type: boolean
+        name:
+          type: string
+        notificationChannels:
+          items:
+            $ref: '#/components/schemas/portaineree.AlertingNotificationChannel'
+          type: array
+        portainerURL:
+          type: string
+        status:
+          enum:
+            - disabled
+            - connected
+            - disconnected
+            - error
+          type: string
+        uptime:
+          type: string
+        url:
+          type: string
+      type: object
+    portaineree.AlertingRuleTier:
+      properties:
+        enabled:
+          type: boolean
+        severity:
+          enum:
+            - critical
+            - warning
+            - info
+          type: string
+        threshold:
+          type: number
+      type: object
+    portaineree.ConditionOperator:
+      enum:
+        - '>'
+        - <
+        - '='
+        - '>='
+        - <=
+      type: string
+      x-enum-varnames:
+        - OperatorGreaterThan
+        - OperatorLessThan
+        - OperatorEqual
+        - OperatorGreaterThanOrEqual
+        - OperatorLessThanOrEqual
+    portaineree.AlertRuleCategory:
+      enum:
+        - portainer
+        - security
+        - environment
+        - backup
+      type: string
+      x-enum-varnames:
+        - AlertRuleCategoryPortainer
+        - AlertRuleCategorySecurity
+        - AlertRuleCategoryEnvironment
+        - AlertRuleCategoryBackup
+    observability.alertRuleEnvironmentGroupResponse:
+      properties:
+        endpointGroupId:
+          type: integer
+        endpointGroupName:
+          type: string
+        environments:
+          items:
+            $ref: '#/components/schemas/observability.alertRuleEnvironmentResponse'
+          type: array
+        size:
+          type: integer
+      type: object
+    models.Matcher:
+      properties:
+        isEqual:
+          description: is equal
+          type: boolean
+        isRegex:
+          description: |-
+            is regex
+            Required: true
+          type: boolean
+        name:
+          description: |-
+            name
+            Required: true
+          type: string
+        value:
+          description: |-
+            value
+            Required: true
+          type: string
+      type: object
+    portaineree.AlertingNotificationChannel:
+      properties:
+        config:
+          additionalProperties: {}
+          type: object
+        enabled:
+          type: boolean
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          enum:
+            - slack
+            - webhook
+            - teams
+            - discord
+            - email
+            - pagerduty
+            - opsgenie
+          type: string
+      type: object
+    observability.alertRuleEnvironmentResponse:
+      properties:
+        endpointId:
+          type: integer
+        message:
+          type: string
+        name:
+          type: string
+        reasonCode:
+          $ref: '#/components/schemas/portaineree.AlertRuleEnvReason'
+        status:
+          $ref: '#/components/schemas/portaineree.AlertRuleEnvStatus'
+        updatedAt:
+          type: integer
+      type: object
+    portaineree.AlertRuleEnvStatus:
+      enum:
+        - active
+        - excluded
+        - not_supported
+        - error
+        - pending
+      type: string
+      x-enum-varnames:
+        - AlertRuleEnvStatusActive
+        - AlertRuleEnvStatusExcluded
+        - AlertRuleEnvStatusNotSupported
+        - AlertRuleEnvStatusError
+        - AlertRuleEnvStatusPending
+    portaineree.AlertRuleEnvReason:
+      enum:
+        - included
+        - environment_type_mismatch
+        - agent_version_mismatch
+        - endpoint_group_mismatch
+        - tag_mismatch
+        - empty_scope
+        - retry_requested
+        - agent_last_error
+      type: string
+      x-enum-varnames:
+        - AlertRuleEnvReasonIncluded
+        - AlertRuleEnvReasonEnvironmentTypeMismatch
+        - AlertRuleEnvReasonAgentVersionMismatch
+        - AlertRuleEnvReasonEndpointGroupMismatch
+        - AlertRuleEnvReasonTagMismatch
+        - AlertRuleEnvReasonEmptyScope
+        - AlertRuleEnvReasonRetryRequested
+        - AlertRuleEnvReasonAgentLastError
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

@@ -1,0 +1,136 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage tags
+    name: tags
+    x-displayName: Tags
+servers:
+  - url: /api
+paths:
+  /tags:
+    get:
+      description: |-
+        List tags.
+        **Access policy**: authenticated
+      operationId: TagList
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/portainer.Tag'
+                type: array
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List tags
+      tags:
+        - tags
+    post:
+      description: |-
+        Create a new tag.
+        **Access policy**: administrator
+      operationId: TagCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tags.tagCreatePayload'
+        description: Tag details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portainer.Tag'
+        '409':
+          description: This name is already associated to a tag
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create a new tag
+      tags:
+        - tags
+  /tags/{id}:
+    delete:
+      description: |-
+        Remove a tag.
+        **Access policy**: administrator
+      operationId: TagDelete
+      parameters:
+        - description: Tag identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Tag not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Remove a tag
+      tags:
+        - tags
+components:
+  schemas:
+    portainer.Tag:
+      properties:
+        EndpointGroups:
+          additionalProperties:
+            type: boolean
+          description: A set of environment(endpoint) group ids that have this tag
+          type: object
+        Endpoints:
+          additionalProperties:
+            type: boolean
+          description: A set of environment(endpoint) ids that have this tag
+          type: object
+        ID:
+          description: Tag identifier
+          example: 1
+          type: integer
+        Name:
+          description: Tag name
+          example: org/acme
+          type: string
+      type: object
+    tags.tagCreatePayload:
+      properties:
+        Name:
+          example: org/acme
+          type: string
+      required:
+        - Name
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

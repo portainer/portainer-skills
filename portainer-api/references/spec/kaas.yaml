@@ -1,0 +1,1105 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage KaaS
+    name: kaas
+    x-displayName: KaaS
+servers:
+  - url: /api
+paths:
+  /cloud/{provider}/info:
+    get:
+      description: |-
+        The information returned can be used to provision a KaaS cluster.
+        **Access policy**: administrator
+      operationId: providerInfo
+      parameters:
+        - description: Provider
+          in: path
+          name: provider
+          required: true
+          schema:
+            type: string
+            enum:
+              - '"amazon"'
+              - '"azure"'
+              - '"civo"'
+              - '"digitalocean"'
+              - '"gke"'
+              - '"linode"'
+        - description: If true, get the up-to-date information (instead of cached information).
+          in: query
+          name: force
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+        '503':
+          description: Missing configuration
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get information about the provisioning options for a cloud provider.
+      tags:
+        - kaas
+  /cloud/{provider}/provision:
+    post:
+      description: |-
+        Provision a new KaaS cluster and create an environment.
+        This documentation is specifically for civo, digitial ocean and linode.
+
+        For Azure, GKE and Amazon see:
+        **/cloud/amazon/provision**
+        **/cloud/azure/provision**
+        **/cloud/gke/provision**
+
+        **Access policy**: administrator
+      operationId: provisionCluster
+      parameters:
+        - description: Provider
+          in: path
+          name: provider
+          required: true
+          schema:
+            type: string
+            enum:
+              - '"civo"'
+              - '"digitalocean"'
+              - '"linode"'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/providers.DefaultProvisionPayload'
+        description: KaaS cluster provisioning details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Endpoint'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+        '503':
+          description: Missing configuration
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Provision a new CIVO, Linode or Digital Ocean cluster and create an environment
+      tags:
+        - kaas
+  /cloud/amazon/provision:
+    post:
+      description: |-
+        Provision a new KaaS cluster and create an environment.
+        **Access policy**: administrator
+      operationId: provisionClusterAmazon
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/providers.AmazonProvisionPayload'
+        description: KaaS cluster provisioning details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Endpoint'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+        '503':
+          description: Missing configuration
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Provision a new Amazon EKS and create an environment
+      tags:
+        - kaas
+  /cloud/azure/provision:
+    post:
+      description: |-
+        Provision a new KaaS cluster and create an environment.
+        **Access policy**: administrator
+      operationId: provisionClusterAzure
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/providers.AzureProvisionPayload'
+        description: KaaS cluster provisioning details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Endpoint'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+        '503':
+          description: Missing configuration
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Provision a new Microsoft Azure cluster and create an environment
+      tags:
+        - kaas
+  /cloud/endpoints/{environmentId}/upgrade:
+    post:
+      description: |-
+        Upgrade the cluster to the next stable kubernetes version.
+        **Access policy**: authenticated
+      operationId: upgrade
+      parameters:
+        - description: Environment(Endpoint) identifier
+          in: path
+          name: environmentId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '500':
+          description: Server error
+        '503':
+          description: Missing configuration
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Upgrade the cluster to the next stable kubernetes version.
+      tags:
+        - kaas
+  /cloud/gke/provision:
+    post:
+      description: |-
+        Provision a new KaaS cluster and create an environment.
+        **Access policy**: administrator
+      operationId: provisionClusterGKE
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/providers.GKEProvisionPayload'
+        description: KaaS cluster provisioning details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Endpoint'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+        '503':
+          description: Missing configuration
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Provision a new Google Kubernetes (GKE) cluster and create an environment
+      tags:
+        - kaas
+components:
+  schemas:
+    portaineree.Endpoint:
+      properties:
+        Agent:
+          $ref: '#/components/schemas/portaineree.EnvironmentAgentData'
+        AuthorizedTeams:
+          items:
+            type: integer
+          type: array
+        AuthorizedUsers:
+          description: Deprecated in DBVersion == 18
+          items:
+            type: integer
+          type: array
+        AzureCredentials:
+          $ref: '#/components/schemas/portainer.AzureCredentials'
+        ChangeWindow:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointChangeWindow'
+          description: GitOps update change window restriction for stacks and apps
+        CloudProvider:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.CloudProvider'
+          description: |-
+            A Kubernetes as a service cloud provider. Only included if this
+            endpoint was created using KaaS provisioning.
+        ComposeSyntaxMaxVersion:
+          description: Maximum version of docker-compose
+          example: '3.8'
+          type: string
+        ContainerEngine:
+          description: ContainerEngine represents the container engine type. This can be 'docker' or 'podman' when interacting directly with these environmentes, otherwise '' for kubernetes environments.
+          example: docker
+          type: string
+        DeploymentOptions:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.DeploymentOptions'
+          description: Hide manual deployment forms for an environment
+        Edge:
+          $ref: '#/components/schemas/portainer.EnvironmentEdgeSettings'
+        EdgeCheckinInterval:
+          description: The check in interval for edge agent (in seconds)
+          example: 5
+          type: integer
+        EdgeID:
+          description: The identifier of the edge agent associated with this environment(endpoint)
+          type: string
+        EdgeKey:
+          description: The key which is used to map the agent to Portainer
+          type: string
+        EnableGPUManagement:
+          type: boolean
+        EnableImageNotification:
+          type: boolean
+        Gpus:
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        GroupId:
+          description: Environment(Endpoint) group identifier
+          example: 1
+          type: integer
+        Heartbeat:
+          description: Heartbeat indicates the heartbeat status of an edge environment
+          example: true
+          type: boolean
+        Id:
+          description: Environment(Endpoint) Identifier
+          example: 1
+          type: integer
+        IsEdgeDevice:
+          description: Deprecated v2.18
+          type: boolean
+        Kubernetes:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.KubernetesData'
+          description: Associated Kubernetes data
+        LastCheckInDate:
+          description: LastCheckInDate mark last check-in date on checkin
+          format: int64
+          type: integer
+        LocalTimeZone:
+          description: LocalTimeZone is the local time zone of the endpoint
+          type: string
+        MTLSStatus:
+          $ref: '#/components/schemas/portaineree.MTLSStatus'
+        Name:
+          description: Environment(Endpoint) name
+          example: my-environment
+          type: string
+        Policies:
+          $ref: '#/components/schemas/portaineree.EndpointPolicies'
+        PostInitMigrations:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointPostInitMigrations'
+          description: Whether we need to run any "post init migrations".
+        PublicURL:
+          description: URL or IP address where exposed containers will be reachable
+          example: docker.mydomain.tld:2375
+          type: string
+        SecuritySettings:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EndpointSecuritySettings'
+          description: Environment(Endpoint) specific security settings
+        Snapshots:
+          description: List of snapshots
+          items:
+            $ref: '#/components/schemas/portainer.DockerSnapshot'
+          type: array
+        Status:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EndpointStatus'
+          description: The status of the environment(endpoint) (1 - up, 2 - down)
+          example: 1
+        StatusMessage:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointStatusMessage'
+          description: |-
+            A message that describes the status. Should be included for Status 3
+            or 4.
+        TLS:
+          description: |-
+            Deprecated fields
+            Deprecated in DBVersion == 4
+          type: boolean
+        TLSCACert:
+          type: string
+        TLSCert:
+          type: string
+        TLSConfig:
+          $ref: '#/components/schemas/portainer.TLSConfiguration'
+        TLSKey:
+          type: string
+        TagIds:
+          description: List of tag identifiers to which this environment(endpoint) is associated
+          items:
+            type: integer
+          type: array
+        Tags:
+          description: Deprecated in DBVersion == 22
+          items:
+            type: string
+          type: array
+        TeamAccessPolicies:
+          allOf:
+            - $ref: '#/components/schemas/portainer.TeamAccessPolicies'
+          description: List of team identifiers authorized to connect to this environment(endpoint)
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EndpointType'
+          description: Environment(Endpoint) environment(endpoint) type. 1 for a Docker environment(endpoint), 2 for an agent on Docker environment(endpoint) or 3 for an Azure environment(endpoint).
+          example: 1
+        URL:
+          description: URL or IP address of the Docker host associated to this environment(endpoint)
+          example: docker.mydomain.tld:2375
+          type: string
+        UserAccessPolicies:
+          allOf:
+            - $ref: '#/components/schemas/portainer.UserAccessPolicies'
+          description: List of user identifiers authorized to connect to this environment(endpoint)
+        UserTrusted:
+          description: Whether the device has been trusted or not by the user
+          type: boolean
+      type: object
+    providers.GKEProvisionPayload:
+      properties:
+        CPU:
+          example: 2
+          type: integer
+        CredentialID:
+          example: 1
+          type: integer
+        HDD:
+          example: 100
+          type: integer
+        KubernetesVersion:
+          example: '1.23'
+          type: string
+        Name:
+          example: myDevCluster
+          type: string
+        NetworkID:
+          example: 8465fb26-632e-4fa3-bb9b-21c449629026
+          type: string
+        NodeCount:
+          example: 3
+          type: integer
+        NodeSize:
+          example: g3.small
+          type: string
+        RAM:
+          example: 4
+          type: number
+        Region:
+          example: NYC1
+          type: string
+        meta:
+          $ref: '#/components/schemas/types.EnvironmentMetadata'
+      required:
+        - CredentialID
+        - KubernetesVersion
+        - Name
+        - NodeCount
+        - NodeSize
+        - Region
+      type: object
+    providers.AzureProvisionPayload:
+      properties:
+        CredentialID:
+          example: 1
+          type: integer
+        KubernetesVersion:
+          example: '1.23'
+          type: string
+        Name:
+          example: myDevCluster
+          type: string
+        NetworkID:
+          example: 8465fb26-632e-4fa3-bb9b-21c449629026
+          type: string
+        NodeCount:
+          example: 3
+          type: integer
+        NodeSize:
+          example: g3.small
+          type: string
+        Region:
+          example: NYC1
+          type: string
+        availabilityZones:
+          items:
+            type: string
+          type: array
+        dnsPrefix:
+          type: string
+        meta:
+          $ref: '#/components/schemas/types.EnvironmentMetadata'
+        poolName:
+          type: string
+        resourceGroup:
+          description: Azure specific fields
+          type: string
+        resourceGroupName:
+          type: string
+        tier:
+          type: string
+      required:
+        - CredentialID
+        - KubernetesVersion
+        - Name
+        - NodeCount
+        - NodeSize
+        - Region
+      type: object
+    providers.AmazonProvisionPayload:
+      properties:
+        AmiType:
+          example: BOTTLEROCKET_x86_64
+          type: string
+        CredentialID:
+          example: 1
+          type: integer
+        InstanceType:
+          example: m5.large
+          type: string
+        KubernetesVersion:
+          example: '1.23'
+          type: string
+        Name:
+          example: myDevCluster
+          type: string
+        NetworkID:
+          example: 8465fb26-632e-4fa3-bb9b-21c449629026
+          type: string
+        NodeCount:
+          example: 3
+          type: integer
+        NodeSize:
+          example: g3.small
+          type: string
+        NodeVolumeSize:
+          example: 20
+          type: integer
+        Region:
+          example: NYC1
+          type: string
+        meta:
+          $ref: '#/components/schemas/types.EnvironmentMetadata'
+      required:
+        - AmiType
+        - CredentialID
+        - InstanceType
+        - KubernetesVersion
+        - Name
+        - NodeCount
+        - NodeSize
+        - Region
+      type: object
+    providers.DefaultProvisionPayload:
+      properties:
+        CredentialID:
+          example: 1
+          type: integer
+        KubernetesVersion:
+          example: '1.23'
+          type: string
+        Name:
+          example: myDevCluster
+          type: string
+        NetworkID:
+          example: 8465fb26-632e-4fa3-bb9b-21c449629026
+          type: string
+        NodeCount:
+          example: 3
+          type: integer
+        NodeSize:
+          example: g3.small
+          type: string
+        Region:
+          example: NYC1
+          type: string
+        meta:
+          $ref: '#/components/schemas/types.EnvironmentMetadata'
+      required:
+        - CredentialID
+        - KubernetesVersion
+        - Name
+        - NodeCount
+        - NodeSize
+        - Region
+      type: object
+    portainer.UserAccessPolicies:
+      additionalProperties:
+        $ref: '#/components/schemas/portainer.AccessPolicy'
+      type: object
+    portainer.EndpointType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+      type: integer
+      x-enum-varnames:
+        - _
+        - DockerEnvironment
+        - AgentOnDockerEnvironment
+        - AzureEnvironment
+        - EdgeAgentOnDockerEnvironment
+        - KubernetesLocalEnvironment
+        - AgentOnKubernetesEnvironment
+        - EdgeAgentOnKubernetesEnvironment
+    portainer.TeamAccessPolicies:
+      additionalProperties:
+        $ref: '#/components/schemas/portainer.AccessPolicy'
+      type: object
+    portainer.TLSConfiguration:
+      properties:
+        TLS:
+          description: Use TLS
+          example: true
+          type: boolean
+        TLSCACert:
+          description: Path to the TLS CA certificate file
+          example: /data/tls/ca.pem
+          type: string
+        TLSCert:
+          description: Path to the TLS client certificate file
+          example: /data/tls/cert.pem
+          type: string
+        TLSKey:
+          description: Path to the TLS client key file
+          example: /data/tls/key.pem
+          type: string
+        TLSSkipVerify:
+          description: Skip the verification of the server TLS certificate
+          example: false
+          type: boolean
+      type: object
+    portaineree.EndpointStatusMessage:
+      properties:
+        detail:
+          type: string
+        operation:
+          description: |-
+            TODO: in future versions, we should think about removing these fields and
+            create a separate bucket to store cluster operation messages instead or try to find a better way.
+            Operation/OperationStatus blank means, nothing is happening
+          type: string
+        operationStatus:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointOperationStatus'
+          description: ',processing,error'
+        summary:
+          type: string
+        warnings:
+          items:
+            type: string
+          type: array
+      type: object
+    portainer.EndpointStatus:
+      enum:
+        - 0
+        - 1
+        - 2
+      type: integer
+      x-enum-varnames:
+        - _
+        - EndpointStatusUp
+        - EndpointStatusDown
+    portainer.DockerSnapshot:
+      properties:
+        ContainerCount:
+          type: integer
+        DiagnosticsData:
+          $ref: '#/components/schemas/portainer.DiagnosticsData'
+        DockerSnapshotRaw:
+          $ref: '#/components/schemas/portainer.DockerSnapshotRaw'
+        DockerVersion:
+          type: string
+        GpuUseAll:
+          type: boolean
+        GpuUseList:
+          items:
+            type: string
+          type: array
+        HealthyContainerCount:
+          type: integer
+        ImageCount:
+          type: integer
+        IsPodman:
+          type: boolean
+        NodeCount:
+          type: integer
+        PerformanceMetrics:
+          $ref: '#/components/schemas/portainer.PerformanceMetrics'
+        RunningContainerCount:
+          type: integer
+        ServiceCount:
+          type: integer
+        StackCount:
+          type: integer
+        StoppedContainerCount:
+          type: integer
+        Swarm:
+          type: boolean
+        Time:
+          type: integer
+        TotalCPU:
+          type: integer
+        TotalMemory:
+          type: integer
+        UnhealthyContainerCount:
+          type: integer
+        VolumeCount:
+          type: integer
+      type: object
+    portainer.EndpointSecuritySettings:
+      properties:
+        allowBindMountsForRegularUsers:
+          description: Whether non-administrator should be able to use bind mounts when creating containers
+          example: false
+          type: boolean
+        allowContainerCapabilitiesForRegularUsers:
+          description: Whether non-administrator should be able to use container capabilities
+          example: true
+          type: boolean
+        allowDeviceMappingForRegularUsers:
+          description: Whether non-administrator should be able to use device mapping
+          example: true
+          type: boolean
+        allowHostNamespaceForRegularUsers:
+          description: Whether non-administrator should be able to use the host pid
+          example: true
+          type: boolean
+        allowPrivilegedModeForRegularUsers:
+          description: Whether non-administrator should be able to use privileged mode when creating containers
+          example: false
+          type: boolean
+        allowSecurityOptForRegularUsers:
+          description: Whether non-administrator should be able to use security-opt settings
+          example: true
+          type: boolean
+        allowStackManagementForRegularUsers:
+          description: Whether non-administrator should be able to manage stacks
+          example: true
+          type: boolean
+        allowSysctlSettingForRegularUsers:
+          description: Whether non-administrator should be able to use sysctl settings
+          example: true
+          type: boolean
+        allowVolumeBrowserForRegularUsers:
+          description: Whether non-administrator should be able to browse volumes
+          example: true
+          type: boolean
+        enableHostManagementFeatures:
+          description: Whether host management features are enabled
+          example: true
+          type: boolean
+      type: object
+    portaineree.EndpointPostInitMigrations:
+      properties:
+        MigrateGPUs:
+          type: boolean
+        MigrateGateKeeper:
+          type: boolean
+        MigrateIngresses:
+          type: boolean
+        MigrateRegistrySASecrets:
+          type: boolean
+        MigrateSecretOwners:
+          type: boolean
+      type: object
+    portaineree.EndpointPolicies:
+      properties:
+        changeConfirmationPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        dockerRBACPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        dockerRegistryPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        dockerSecurityPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        dockerSetupPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        k8sRBACPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        k8sRegistryPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        k8sSecurityPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        k8sSetupPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+      type: object
+    portaineree.MTLSStatus:
+      properties:
+        enabled:
+          type: boolean
+        ok:
+          type: boolean
+      type: object
+    portaineree.KubernetesData:
+      properties:
+        Configuration:
+          $ref: '#/components/schemas/portaineree.KubernetesConfiguration'
+        Flags:
+          $ref: '#/components/schemas/portainer.KubernetesFlags'
+        Snapshots:
+          items:
+            $ref: '#/components/schemas/portainer.KubernetesSnapshot'
+          type: array
+      type: object
+    portainer.Pair:
+      properties:
+        name:
+          example: name
+          type: string
+        value:
+          example: value
+          type: string
+      type: object
+    portainer.EnvironmentEdgeSettings:
+      properties:
+        AsyncMode:
+          description: Whether the device has been started in edge async mode
+          type: boolean
+        CommandInterval:
+          description: The command list interval for edge agent - used in edge async mode [seconds]
+          example: 60
+          type: integer
+        PingInterval:
+          description: The ping interval for edge agent - used in edge async mode [seconds]
+          example: 60
+          type: integer
+        SnapshotInterval:
+          description: The snapshot interval for edge agent - used in edge async mode [seconds]
+          example: 60
+          type: integer
+      type: object
+    portaineree.DeploymentOptions:
+      properties:
+        hideAddWithForm:
+          description: Hide manual deploy forms in portainer
+          example: true
+          type: boolean
+        hideFileUpload:
+          description: Hide the file upload option in the remaining visible forms
+          example: false
+          type: boolean
+        hideWebEditor:
+          description: Hide the webeditor in the remaining visible forms
+          example: false
+          type: boolean
+        overrideGlobalOptions:
+          type: boolean
+      type: object
+    portaineree.CloudProvider:
+      properties:
+        AmiType:
+          description: Amazon specific fields
+          type: string
+        CPU:
+          type: integer
+        CredentialID:
+          description: CredentialID holds an ID of the credential used to create the cluster
+          type: integer
+        DNSPrefix:
+          type: string
+        HDD:
+          type: integer
+        InstanceType:
+          type: string
+        KubernetesVersion:
+          type: string
+        Name:
+          type: string
+        NetworkID:
+          description: |-
+            Pointer will hide this field for providers other than civo which do
+            not use this field.
+          type: string
+        NodeCount:
+          type: integer
+        NodeVolumeSize:
+          type: integer
+        PoolName:
+          type: string
+        Provider:
+          type: string
+        RAM:
+          type: number
+        Region:
+          type: string
+        ResourceGroup:
+          description: Azure specific fields
+          type: string
+        Size:
+          type: string
+        Tier:
+          type: string
+        URL:
+          type: string
+      type: object
+    portaineree.EndpointChangeWindow:
+      properties:
+        Enabled:
+          example: true
+          type: boolean
+        EndTime:
+          example: '02:00'
+          type: string
+        StartTime:
+          example: '22:00'
+          type: string
+      type: object
+    portainer.AzureCredentials:
+      properties:
+        ApplicationID:
+          description: Azure application ID
+          example: eag7cdo9-o09l-9i83-9dO9-f0b23oe78db4
+          type: string
+        AuthenticationKey:
+          description: Azure authentication key
+          example: cOrXoK/1D35w8YQ8nH1/8ZGwzz45JIYD5jxHKXEQknk=
+          type: string
+        TenantID:
+          description: Azure tenant ID
+          example: 34ddc78d-4fel-2358-8cc1-df84c8o839f5
+          type: string
+      type: object
+    portaineree.EnvironmentAgentData:
+      properties:
+        PreviousVersion:
+          example: 1.0.0
+          type: string
+        Version:
+          example: 1.0.0
+          type: string
+      type: object
+    types.EnvironmentMetadata:
+      properties:
+        customTemplateContent:
+          type: string
+        customTemplateID:
+          type: integer
+        groupId:
+          type: integer
+        stackName:
+          type: string
+        tagIds:
+          items:
+            type: integer
+          type: array
+      type: object
+    portainer.AccessPolicy:
+      properties:
+        Namespaces:
+          description: Namespaces is a list of namespaces that this access policy applies to. Only used for namespaced level roles
+          items:
+            type: string
+          type: array
+        RoleId:
+          description: Role identifier. Reference the role that will be associated to this access policy
+          example: 1
+          type: integer
+      type: object
+    portaineree.EndpointOperationStatus:
+      enum:
+        - processing
+        - warning
+        - error
+        - ''
+      type: string
+      x-enum-varnames:
+        - EndpointOperationStatusProcessing
+        - EndpointOperationStatusWarning
+        - EndpointOperationStatusError
+        - EndpointOperationStatusDone
+    portainer.PerformanceMetrics:
+      properties:
+        CPUUsage:
+          type: number
+        DiskUsage:
+          type: number
+        MemoryUsage:
+          type: number
+        NetworkUsage:
+          type: number
+      type: object
+    portainer.DockerSnapshotRaw:
+      type: object
+    portainer.DiagnosticsData:
+      properties:
+        DNS:
+          additionalProperties:
+            type: string
+          type: object
+        Log:
+          type: string
+        Proxy:
+          additionalProperties:
+            type: string
+          type: object
+        Telnet:
+          additionalProperties:
+            type: string
+          type: object
+      type: object
+    portaineree.AppliedPolicy:
+      properties:
+        policyID:
+          type: integer
+        policyName:
+          type: string
+        policyStatus:
+          $ref: '#/components/schemas/portaineree.PolicyStatus'
+      type: object
+    portainer.KubernetesSnapshot:
+      properties:
+        DiagnosticsData:
+          $ref: '#/components/schemas/portainer.DiagnosticsData'
+        KubernetesVersion:
+          type: string
+        NodeCount:
+          type: integer
+        PerformanceMetrics:
+          $ref: '#/components/schemas/portainer.PerformanceMetrics'
+        Time:
+          type: integer
+        TotalCPU:
+          type: integer
+        TotalMemory:
+          type: integer
+      type: object
+    portainer.KubernetesFlags:
+      properties:
+        IsServerIngressClassDetected:
+          type: boolean
+        IsServerMetricsDetected:
+          type: boolean
+        IsServerStorageDetected:
+          type: boolean
+      type: object
+    portaineree.KubernetesConfiguration:
+      properties:
+        AllowNoneIngressClass:
+          type: boolean
+        EnableResourceOverCommit:
+          type: boolean
+        IngressAvailabilityPerNamespace:
+          type: boolean
+        IngressClasses:
+          items:
+            $ref: '#/components/schemas/portainer.KubernetesIngressClassConfig'
+          type: array
+        ResourceOverCommitPercentage:
+          type: integer
+        RestrictDefaultNamespace:
+          type: boolean
+        RestrictSecrets:
+          type: boolean
+        RestrictStandardUserIngressW:
+          type: boolean
+        StorageClasses:
+          items:
+            $ref: '#/components/schemas/portainer.KubernetesStorageClassConfig'
+          type: array
+        UseLoadBalancer:
+          type: boolean
+        UseServerMetrics:
+          type: boolean
+      type: object
+    portaineree.PolicyStatus:
+      properties:
+        LastAttemptTime:
+          description: Unix timestamp
+          type: integer
+        Message:
+          type: string
+        Status:
+          $ref: '#/components/schemas/portaineree.PolicyStatusType'
+      type: object
+    portainer.KubernetesStorageClassConfig:
+      properties:
+        AccessModes:
+          items:
+            type: string
+          type: array
+        AllowVolumeExpansion:
+          type: boolean
+        Name:
+          type: string
+        Provisioner:
+          type: string
+      type: object
+    portainer.KubernetesIngressClassConfig:
+      properties:
+        Blocked:
+          type: boolean
+        BlockedNamespaces:
+          items:
+            type: string
+          type: array
+        Name:
+          type: string
+        Type:
+          type: string
+      type: object
+    portaineree.PolicyStatusType:
+      enum:
+        - applied
+        - failed
+        - in_progress
+        - warning
+        - not_supported
+      type: string
+      x-enum-varnames:
+        - PolicyStatusTypeApplied
+        - PolicyStatusTypeFailed
+        - PolicyStatusTypeInProgress
+        - PolicyStatusTypeWarning
+        - PolicyStatusTypeNotSupported
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

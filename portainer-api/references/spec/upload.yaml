@@ -1,0 +1,71 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Upload files
+    name: upload
+    x-displayName: Upload files
+servers:
+  - url: /api
+paths:
+  /upload/tls/{certificate}:
+    post:
+      description: |-
+        Use this environment(endpoint) to upload TLS files.
+        **Access policy**: administrator
+      operationId: UploadTLS
+      parameters:
+        - description: TLS file type. Valid values are 'ca', 'cert' or 'key'.
+          in: path
+          name: certificate
+          required: true
+          schema:
+            type: string
+            enum:
+              - ca
+              - cert
+              - key
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                folder:
+                  description: Folder where the TLS file will be stored. Will be created if not existing
+                  type: string
+                file:
+                  description: The file to upload
+                  type: string
+                  format: binary
+              required:
+                - folder
+                - file
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Upload TLS files
+      tags:
+        - upload
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

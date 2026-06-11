@@ -1,0 +1,1558 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage Omni Talos clusters and machines
+    name: omni
+    x-displayName: Omni Talos
+servers:
+  - url: /api
+paths:
+  /omni/{credentialID}/cluster/{name}:
+    get:
+      description: |-
+        Retrieve details of an Omni cluster by name.
+        **Access policy**: administrator
+      operationId: OmniGetCluster
+      parameters:
+        - description: Cloud credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+        - description: Cluster name
+          in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cluster details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/omni.getClusterResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get an Omni cluster
+      tags:
+        - omni
+  /omni/{credentialID}/cluster/{name}/upgrade/status/k8s:
+    get:
+      description: |-
+        Retrieve the Kubernetes version upgrade status for the specified Omni cluster.
+        **Access policy**: administrator
+      operationId: OmniGetK8sVersionUpgradeStatus
+      parameters:
+        - description: Cloud credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+        - description: Cluster name
+          in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Kubernetes upgrade status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/omni.upgradeStatusResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get Kubernetes upgrade status for an Omni cluster
+      tags:
+        - omni
+  /omni/{credentialID}/cluster/{name}/upgrade/status/talos:
+    get:
+      description: |-
+        Retrieve the Talos version upgrade status for the specified Omni cluster.
+        **Access policy**: administrator
+      operationId: OmniGetTalosVersionUpgradeStatus
+      parameters:
+        - description: Cloud credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+        - description: Cluster name
+          in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Talos upgrade status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/omni.upgradeStatusResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get Talos upgrade status for an Omni cluster
+      tags:
+        - omni
+  /omni/{credentialID}/cluster/create:
+    post:
+      description: |-
+        Create a new Talos cluster via Omni using the provided cloud credential.
+        **Access policy**: administrator
+      operationId: OmniCreateCluster
+      parameters:
+        - description: Cloud credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/omni.createClusterPayload'
+        description: Cluster creation request
+        required: true
+      responses:
+        '200':
+          description: Created cluster environment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Endpoint'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Create an Omni cluster
+      tags:
+        - omni
+  /omni/{credentialID}/cluster/delete:
+    delete:
+      description: |-
+        Delete an Omni cluster by name.
+        **Access policy**: administrator
+      operationId: OmniDeleteCluster
+      parameters:
+        - description: Cloud credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+        - description: Cluster name
+          in: query
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Delete an Omni cluster
+      tags:
+        - omni
+  /omni/{credentialID}/cluster/update:
+    put:
+      description: |-
+        Update a cluster's Kubernetes version, Talos version, or node membership.
+        **Access policy**: administrator
+      operationId: OmniUpdateCluster
+      parameters:
+        - description: Cloud credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/omni.updateClusterPayload'
+        description: Cluster update request
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Update an Omni cluster
+      tags:
+        - omni
+  /omni/{credentialID}/cluster/version/talos:
+    get:
+      description: |-
+        Retrieve all supported Talos versions and their compatible Kubernetes versions.
+        **Access policy**: administrator
+      operationId: OmniGetSupportedTalosVersions
+      parameters:
+        - description: Cloud credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Map of Talos versions to compatible Kubernetes versions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.TalosVersions'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get supported Talos versions
+      tags:
+        - omni
+  /omni/{credentialID}/machine/{name}:
+    get:
+      description: |-
+        Retrieve details of an Omni machine by name.
+        **Access policy**: administrator
+      operationId: OmniGetMachine
+      parameters:
+        - description: Cloud credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+        - description: Machine name
+          in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Machine details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/omni.getMachineResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get an Omni machine
+      tags:
+        - omni
+  /omni/{credentialID}/machine/{name}/logs:
+    get:
+      description: |-
+        Retrieve logs from an Omni machine by name.
+        **Access policy**: administrator
+      operationId: OmniGetMachineLogs
+      parameters:
+        - description: Cloud credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+        - description: Machine name
+          in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Machine logs
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Get logs for an Omni machine
+      tags:
+        - omni
+  /omni/{credentialID}/machines:
+    get:
+      description: |-
+        List machines registered in Omni, optionally filtered by cluster or availability.
+        **Access policy**: administrator
+      operationId: OmniListMachines
+      parameters:
+        - description: Cloud credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+        - description: Filter machines by cluster name
+          in: query
+          name: clusterName
+          schema:
+            type: string
+        - description: Filter to show only available machines
+          in: query
+          name: isAvailable
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of machines
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/omni.getMachineResponse'
+                type: array
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: List Omni machines
+      tags:
+        - omni
+  /omni/{credentialID}/node/{name}:
+    post:
+      description: |-
+        Reboot a node in an Omni-managed Talos cluster.
+        **Access policy**: administrator
+      operationId: OmniRebootNode
+      parameters:
+        - description: Cloud credential identifier
+          in: path
+          name: credentialID
+          required: true
+          schema:
+            type: integer
+        - description: Node name
+          in: path
+          name: name
+          required: true
+          schema:
+            type: string
+        - description: Cluster name
+          in: query
+          name: cluster
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Reboot an Omni node
+      tags:
+        - omni
+  /omni/serviceaccount/validate:
+    get:
+      description: |-
+        Validate Omni service account credentials by testing connectivity to the Omni endpoint.
+        **Access policy**: administrator
+      operationId: OmniValidateServiceAccount
+      parameters:
+        - description: Omni endpoint URL (OMNI_ENDPOINT)
+          in: query
+          name: endpoint
+          schema:
+            type: string
+        - description: Omni service account key (OMNI_SERVICE_ACCOUNT_KEY)
+          in: query
+          name: serviceAccountKey
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+          jwt: []
+      summary: Validate an Omni service account
+      tags:
+        - omni
+components:
+  schemas:
+    omni.getMachineResponse:
+      properties:
+        labels:
+          additionalProperties:
+            type: string
+          type: object
+        machineName:
+          type: string
+        spec:
+          $ref: '#/components/schemas/omni.machineStatusSpec'
+      type: object
+    portaineree.TalosVersions:
+      additionalProperties:
+        items:
+          type: string
+        type: array
+      type: object
+    omni.updateClusterPayload:
+      properties:
+        cluster:
+          $ref: '#/components/schemas/portaineree.OmniCluster'
+        controlPlanesToAdd:
+          $ref: '#/components/schemas/portaineree.OmniControlPlane'
+        controlPlanesToRemove:
+          items:
+            type: string
+          type: array
+        workersToAdd:
+          $ref: '#/components/schemas/portaineree.OmniWorker'
+        workersToRemove:
+          items:
+            type: string
+          type: array
+      type: object
+    portaineree.Endpoint:
+      properties:
+        Agent:
+          $ref: '#/components/schemas/portaineree.EnvironmentAgentData'
+        AuthorizedTeams:
+          items:
+            type: integer
+          type: array
+        AuthorizedUsers:
+          description: Deprecated in DBVersion == 18
+          items:
+            type: integer
+          type: array
+        AzureCredentials:
+          $ref: '#/components/schemas/portainer.AzureCredentials'
+        ChangeWindow:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointChangeWindow'
+          description: GitOps update change window restriction for stacks and apps
+        CloudProvider:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.CloudProvider'
+          description: |-
+            A Kubernetes as a service cloud provider. Only included if this
+            endpoint was created using KaaS provisioning.
+        ComposeSyntaxMaxVersion:
+          description: Maximum version of docker-compose
+          example: '3.8'
+          type: string
+        ContainerEngine:
+          description: ContainerEngine represents the container engine type. This can be 'docker' or 'podman' when interacting directly with these environmentes, otherwise '' for kubernetes environments.
+          example: docker
+          type: string
+        DeploymentOptions:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.DeploymentOptions'
+          description: Hide manual deployment forms for an environment
+        Edge:
+          $ref: '#/components/schemas/portainer.EnvironmentEdgeSettings'
+        EdgeCheckinInterval:
+          description: The check in interval for edge agent (in seconds)
+          example: 5
+          type: integer
+        EdgeID:
+          description: The identifier of the edge agent associated with this environment(endpoint)
+          type: string
+        EdgeKey:
+          description: The key which is used to map the agent to Portainer
+          type: string
+        EnableGPUManagement:
+          type: boolean
+        EnableImageNotification:
+          type: boolean
+        Gpus:
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        GroupId:
+          description: Environment(Endpoint) group identifier
+          example: 1
+          type: integer
+        Heartbeat:
+          description: Heartbeat indicates the heartbeat status of an edge environment
+          example: true
+          type: boolean
+        Id:
+          description: Environment(Endpoint) Identifier
+          example: 1
+          type: integer
+        IsEdgeDevice:
+          description: Deprecated v2.18
+          type: boolean
+        Kubernetes:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.KubernetesData'
+          description: Associated Kubernetes data
+        LastCheckInDate:
+          description: LastCheckInDate mark last check-in date on checkin
+          format: int64
+          type: integer
+        LocalTimeZone:
+          description: LocalTimeZone is the local time zone of the endpoint
+          type: string
+        MTLSStatus:
+          $ref: '#/components/schemas/portaineree.MTLSStatus'
+        Name:
+          description: Environment(Endpoint) name
+          example: my-environment
+          type: string
+        Policies:
+          $ref: '#/components/schemas/portaineree.EndpointPolicies'
+        PostInitMigrations:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointPostInitMigrations'
+          description: Whether we need to run any "post init migrations".
+        PublicURL:
+          description: URL or IP address where exposed containers will be reachable
+          example: docker.mydomain.tld:2375
+          type: string
+        SecuritySettings:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EndpointSecuritySettings'
+          description: Environment(Endpoint) specific security settings
+        Snapshots:
+          description: List of snapshots
+          items:
+            $ref: '#/components/schemas/portainer.DockerSnapshot'
+          type: array
+        Status:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EndpointStatus'
+          description: The status of the environment(endpoint) (1 - up, 2 - down)
+          example: 1
+        StatusMessage:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointStatusMessage'
+          description: |-
+            A message that describes the status. Should be included for Status 3
+            or 4.
+        TLS:
+          description: |-
+            Deprecated fields
+            Deprecated in DBVersion == 4
+          type: boolean
+        TLSCACert:
+          type: string
+        TLSCert:
+          type: string
+        TLSConfig:
+          $ref: '#/components/schemas/portainer.TLSConfiguration'
+        TLSKey:
+          type: string
+        TagIds:
+          description: List of tag identifiers to which this environment(endpoint) is associated
+          items:
+            type: integer
+          type: array
+        Tags:
+          description: Deprecated in DBVersion == 22
+          items:
+            type: string
+          type: array
+        TeamAccessPolicies:
+          allOf:
+            - $ref: '#/components/schemas/portainer.TeamAccessPolicies'
+          description: List of team identifiers authorized to connect to this environment(endpoint)
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.EndpointType'
+          description: Environment(Endpoint) environment(endpoint) type. 1 for a Docker environment(endpoint), 2 for an agent on Docker environment(endpoint) or 3 for an Azure environment(endpoint).
+          example: 1
+        URL:
+          description: URL or IP address of the Docker host associated to this environment(endpoint)
+          example: docker.mydomain.tld:2375
+          type: string
+        UserAccessPolicies:
+          allOf:
+            - $ref: '#/components/schemas/portainer.UserAccessPolicies'
+          description: List of user identifiers authorized to connect to this environment(endpoint)
+        UserTrusted:
+          description: Whether the device has been trusted or not by the user
+          type: boolean
+      type: object
+    omni.createClusterPayload:
+      properties:
+        cluster:
+          $ref: '#/components/schemas/portaineree.OmniCluster'
+        clusterConfig:
+          type: string
+        controlPlane:
+          $ref: '#/components/schemas/portaineree.OmniControlPlane'
+        portainerUrl:
+          type: string
+        tunnelServerAddr:
+          type: string
+        worker:
+          $ref: '#/components/schemas/portaineree.OmniWorker'
+      type: object
+    omni.upgradeStatusResponse:
+      properties:
+        current_upgrade_version:
+          type: string
+        error:
+          type: string
+        last_upgrade_version:
+          type: string
+        phase:
+          type: integer
+        status:
+          type: string
+        step:
+          type: string
+        upgrade_versions:
+          items:
+            type: string
+          type: array
+      type: object
+    omni.getClusterResponse:
+      properties:
+        metadata:
+          $ref: '#/components/schemas/omni.clusterSpec'
+        status:
+          $ref: '#/components/schemas/omni.clusterStatusSpec'
+      type: object
+    omni.machineStatusSpec:
+      properties:
+        cluster:
+          type: string
+        connected:
+          type: boolean
+        hardware:
+          $ref: '#/components/schemas/omni.machineHardwareStatus'
+        last_error:
+          type: string
+        maintenance:
+          type: boolean
+        management_address:
+          type: string
+        network:
+          $ref: '#/components/schemas/omni.machineNetworkStatus'
+        platform_metadata:
+          $ref: '#/components/schemas/omni.machinePlatformMetadata'
+        power_state:
+          type: string
+        role:
+          type: string
+        talos_version:
+          type: string
+      type: object
+    portaineree.OmniWorker:
+      properties:
+        Kind:
+          type: string
+        Machines:
+          items:
+            $ref: '#/components/schemas/portaineree.OmniMachine'
+          type: array
+        Name:
+          type: string
+      type: object
+    portaineree.OmniControlPlane:
+      properties:
+        Kind:
+          type: string
+        Machines:
+          items:
+            $ref: '#/components/schemas/portaineree.OmniMachine'
+          type: array
+      type: object
+    portaineree.OmniCluster:
+      properties:
+        Kind:
+          type: string
+        Kubernetes:
+          properties:
+            Version:
+              type: string
+          type: object
+        Labels:
+          additionalProperties:
+            type: string
+          type: object
+        Name:
+          type: string
+        Patches:
+          items:
+            $ref: '#/components/schemas/portaineree.OmniClusterPatch'
+          type: array
+        Talos:
+          properties:
+            Version:
+              type: string
+          type: object
+      type: object
+    portainer.UserAccessPolicies:
+      additionalProperties:
+        $ref: '#/components/schemas/portainer.AccessPolicy'
+      type: object
+    portainer.EndpointType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+      type: integer
+      x-enum-varnames:
+        - _
+        - DockerEnvironment
+        - AgentOnDockerEnvironment
+        - AzureEnvironment
+        - EdgeAgentOnDockerEnvironment
+        - KubernetesLocalEnvironment
+        - AgentOnKubernetesEnvironment
+        - EdgeAgentOnKubernetesEnvironment
+    portainer.TeamAccessPolicies:
+      additionalProperties:
+        $ref: '#/components/schemas/portainer.AccessPolicy'
+      type: object
+    portainer.TLSConfiguration:
+      properties:
+        TLS:
+          description: Use TLS
+          example: true
+          type: boolean
+        TLSCACert:
+          description: Path to the TLS CA certificate file
+          example: /data/tls/ca.pem
+          type: string
+        TLSCert:
+          description: Path to the TLS client certificate file
+          example: /data/tls/cert.pem
+          type: string
+        TLSKey:
+          description: Path to the TLS client key file
+          example: /data/tls/key.pem
+          type: string
+        TLSSkipVerify:
+          description: Skip the verification of the server TLS certificate
+          example: false
+          type: boolean
+      type: object
+    portaineree.EndpointStatusMessage:
+      properties:
+        detail:
+          type: string
+        operation:
+          description: |-
+            TODO: in future versions, we should think about removing these fields and
+            create a separate bucket to store cluster operation messages instead or try to find a better way.
+            Operation/OperationStatus blank means, nothing is happening
+          type: string
+        operationStatus:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.EndpointOperationStatus'
+          description: ',processing,error'
+        summary:
+          type: string
+        warnings:
+          items:
+            type: string
+          type: array
+      type: object
+    portainer.EndpointStatus:
+      enum:
+        - 0
+        - 1
+        - 2
+      type: integer
+      x-enum-varnames:
+        - _
+        - EndpointStatusUp
+        - EndpointStatusDown
+    portainer.DockerSnapshot:
+      properties:
+        ContainerCount:
+          type: integer
+        DiagnosticsData:
+          $ref: '#/components/schemas/portainer.DiagnosticsData'
+        DockerSnapshotRaw:
+          $ref: '#/components/schemas/portainer.DockerSnapshotRaw'
+        DockerVersion:
+          type: string
+        GpuUseAll:
+          type: boolean
+        GpuUseList:
+          items:
+            type: string
+          type: array
+        HealthyContainerCount:
+          type: integer
+        ImageCount:
+          type: integer
+        IsPodman:
+          type: boolean
+        NodeCount:
+          type: integer
+        PerformanceMetrics:
+          $ref: '#/components/schemas/portainer.PerformanceMetrics'
+        RunningContainerCount:
+          type: integer
+        ServiceCount:
+          type: integer
+        StackCount:
+          type: integer
+        StoppedContainerCount:
+          type: integer
+        Swarm:
+          type: boolean
+        Time:
+          type: integer
+        TotalCPU:
+          type: integer
+        TotalMemory:
+          type: integer
+        UnhealthyContainerCount:
+          type: integer
+        VolumeCount:
+          type: integer
+      type: object
+    portainer.EndpointSecuritySettings:
+      properties:
+        allowBindMountsForRegularUsers:
+          description: Whether non-administrator should be able to use bind mounts when creating containers
+          example: false
+          type: boolean
+        allowContainerCapabilitiesForRegularUsers:
+          description: Whether non-administrator should be able to use container capabilities
+          example: true
+          type: boolean
+        allowDeviceMappingForRegularUsers:
+          description: Whether non-administrator should be able to use device mapping
+          example: true
+          type: boolean
+        allowHostNamespaceForRegularUsers:
+          description: Whether non-administrator should be able to use the host pid
+          example: true
+          type: boolean
+        allowPrivilegedModeForRegularUsers:
+          description: Whether non-administrator should be able to use privileged mode when creating containers
+          example: false
+          type: boolean
+        allowSecurityOptForRegularUsers:
+          description: Whether non-administrator should be able to use security-opt settings
+          example: true
+          type: boolean
+        allowStackManagementForRegularUsers:
+          description: Whether non-administrator should be able to manage stacks
+          example: true
+          type: boolean
+        allowSysctlSettingForRegularUsers:
+          description: Whether non-administrator should be able to use sysctl settings
+          example: true
+          type: boolean
+        allowVolumeBrowserForRegularUsers:
+          description: Whether non-administrator should be able to browse volumes
+          example: true
+          type: boolean
+        enableHostManagementFeatures:
+          description: Whether host management features are enabled
+          example: true
+          type: boolean
+      type: object
+    portaineree.EndpointPostInitMigrations:
+      properties:
+        MigrateGPUs:
+          type: boolean
+        MigrateGateKeeper:
+          type: boolean
+        MigrateIngresses:
+          type: boolean
+        MigrateRegistrySASecrets:
+          type: boolean
+        MigrateSecretOwners:
+          type: boolean
+      type: object
+    portaineree.EndpointPolicies:
+      properties:
+        changeConfirmationPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        dockerRBACPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        dockerRegistryPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        dockerSecurityPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        dockerSetupPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        k8sRBACPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        k8sRegistryPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        k8sSecurityPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+        k8sSetupPolicy:
+          $ref: '#/components/schemas/portaineree.AppliedPolicy'
+      type: object
+    portaineree.MTLSStatus:
+      properties:
+        enabled:
+          type: boolean
+        ok:
+          type: boolean
+      type: object
+    portaineree.KubernetesData:
+      properties:
+        Configuration:
+          $ref: '#/components/schemas/portaineree.KubernetesConfiguration'
+        Flags:
+          $ref: '#/components/schemas/portainer.KubernetesFlags'
+        Snapshots:
+          items:
+            $ref: '#/components/schemas/portainer.KubernetesSnapshot'
+          type: array
+      type: object
+    portainer.Pair:
+      properties:
+        name:
+          example: name
+          type: string
+        value:
+          example: value
+          type: string
+      type: object
+    portainer.EnvironmentEdgeSettings:
+      properties:
+        AsyncMode:
+          description: Whether the device has been started in edge async mode
+          type: boolean
+        CommandInterval:
+          description: The command list interval for edge agent - used in edge async mode [seconds]
+          example: 60
+          type: integer
+        PingInterval:
+          description: The ping interval for edge agent - used in edge async mode [seconds]
+          example: 60
+          type: integer
+        SnapshotInterval:
+          description: The snapshot interval for edge agent - used in edge async mode [seconds]
+          example: 60
+          type: integer
+      type: object
+    portaineree.DeploymentOptions:
+      properties:
+        hideAddWithForm:
+          description: Hide manual deploy forms in portainer
+          example: true
+          type: boolean
+        hideFileUpload:
+          description: Hide the file upload option in the remaining visible forms
+          example: false
+          type: boolean
+        hideWebEditor:
+          description: Hide the webeditor in the remaining visible forms
+          example: false
+          type: boolean
+        overrideGlobalOptions:
+          type: boolean
+      type: object
+    portaineree.CloudProvider:
+      properties:
+        AmiType:
+          description: Amazon specific fields
+          type: string
+        CPU:
+          type: integer
+        CredentialID:
+          description: CredentialID holds an ID of the credential used to create the cluster
+          type: integer
+        DNSPrefix:
+          type: string
+        HDD:
+          type: integer
+        InstanceType:
+          type: string
+        KubernetesVersion:
+          type: string
+        Name:
+          type: string
+        NetworkID:
+          description: |-
+            Pointer will hide this field for providers other than civo which do
+            not use this field.
+          type: string
+        NodeCount:
+          type: integer
+        NodeVolumeSize:
+          type: integer
+        PoolName:
+          type: string
+        Provider:
+          type: string
+        RAM:
+          type: number
+        Region:
+          type: string
+        ResourceGroup:
+          description: Azure specific fields
+          type: string
+        Size:
+          type: string
+        Tier:
+          type: string
+        URL:
+          type: string
+      type: object
+    portaineree.EndpointChangeWindow:
+      properties:
+        Enabled:
+          example: true
+          type: boolean
+        EndTime:
+          example: '02:00'
+          type: string
+        StartTime:
+          example: '22:00'
+          type: string
+      type: object
+    portainer.AzureCredentials:
+      properties:
+        ApplicationID:
+          description: Azure application ID
+          example: eag7cdo9-o09l-9i83-9dO9-f0b23oe78db4
+          type: string
+        AuthenticationKey:
+          description: Azure authentication key
+          example: cOrXoK/1D35w8YQ8nH1/8ZGwzz45JIYD5jxHKXEQknk=
+          type: string
+        TenantID:
+          description: Azure tenant ID
+          example: 34ddc78d-4fel-2358-8cc1-df84c8o839f5
+          type: string
+      type: object
+    portaineree.EnvironmentAgentData:
+      properties:
+        PreviousVersion:
+          example: 1.0.0
+          type: string
+        Version:
+          example: 1.0.0
+          type: string
+      type: object
+    omni.clusterStatusSpec:
+      properties:
+        available:
+          type: boolean
+        controlplaneReady:
+          type: boolean
+        has_connected_control_planes:
+          type: boolean
+        kubernetesAPIReady:
+          type: boolean
+        machines:
+          $ref: '#/components/schemas/omni.clusterStatusMachines'
+        phase:
+          type: integer
+        ready:
+          type: boolean
+        use_embedded_discovery_service:
+          type: boolean
+      type: object
+    omni.clusterSpec:
+      properties:
+        backup_configuration:
+          $ref: '#/components/schemas/omni.clusterSpecBackupConfiguration'
+        features:
+          $ref: '#/components/schemas/omni.clusterSpecFeatures'
+        kubernetes_version:
+          type: string
+        talos_version:
+          type: string
+      type: object
+    omni.machinePlatformMetadata:
+      properties:
+        hostname:
+          type: string
+        instance_id:
+          type: string
+        instance_type:
+          type: string
+        platform:
+          type: string
+        region:
+          type: string
+        zone:
+          type: string
+      type: object
+    omni.machineNetworkStatus:
+      properties:
+        addresses:
+          items:
+            type: string
+          type: array
+        default_gateways:
+          items:
+            type: string
+          type: array
+        domainname:
+          type: string
+        hostname:
+          type: string
+        network_links:
+          items:
+            $ref: '#/components/schemas/omni.machineNetworkLink'
+          type: array
+      type: object
+    omni.machineHardwareStatus:
+      properties:
+        arch:
+          type: string
+        blockdevices:
+          items:
+            $ref: '#/components/schemas/omni.machineHardwareBlockDevice'
+          type: array
+        memory_modules:
+          items:
+            $ref: '#/components/schemas/omni.machineHardwareMemory'
+          type: array
+        processors:
+          items:
+            $ref: '#/components/schemas/omni.machineHardwareProcessor'
+          type: array
+      type: object
+    portaineree.OmniMachine:
+      properties:
+        Hostname:
+          type: string
+        Install:
+          $ref: '#/components/schemas/portaineree.OmniMachineInstall'
+        Interfaces:
+          items:
+            $ref: '#/components/schemas/portaineree.OmniInterface'
+          type: array
+        Kind:
+          type: string
+        Name:
+          type: string
+        Nameservers:
+          items:
+            type: string
+          type: array
+        Patches:
+          items:
+            $ref: '#/components/schemas/portaineree.OmniMachinePatch'
+          type: array
+        SystemDiskSize:
+          description: in GiB; drives VolumeConfig EPHEMERAL patch generation, not serialized to YAML directly
+          type: integer
+        UserDisk:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.OmniUserDisk'
+          description: drives user VolumeConfig patch generation, not serialized to YAML directly
+      type: object
+    portaineree.OmniClusterPatch:
+      properties:
+        Annotations:
+          $ref: '#/components/schemas/portaineree.OmniClusterPatchAnnotations'
+        IDOverride:
+          type: string
+        Inline:
+          additionalProperties: {}
+          type: object
+      type: object
+    portainer.AccessPolicy:
+      properties:
+        Namespaces:
+          description: Namespaces is a list of namespaces that this access policy applies to. Only used for namespaced level roles
+          items:
+            type: string
+          type: array
+        RoleId:
+          description: Role identifier. Reference the role that will be associated to this access policy
+          example: 1
+          type: integer
+      type: object
+    portaineree.EndpointOperationStatus:
+      enum:
+        - processing
+        - warning
+        - error
+        - ''
+      type: string
+      x-enum-varnames:
+        - EndpointOperationStatusProcessing
+        - EndpointOperationStatusWarning
+        - EndpointOperationStatusError
+        - EndpointOperationStatusDone
+    portainer.PerformanceMetrics:
+      properties:
+        CPUUsage:
+          type: number
+        DiskUsage:
+          type: number
+        MemoryUsage:
+          type: number
+        NetworkUsage:
+          type: number
+      type: object
+    portainer.DockerSnapshotRaw:
+      type: object
+    portainer.DiagnosticsData:
+      properties:
+        DNS:
+          additionalProperties:
+            type: string
+          type: object
+        Log:
+          type: string
+        Proxy:
+          additionalProperties:
+            type: string
+          type: object
+        Telnet:
+          additionalProperties:
+            type: string
+          type: object
+      type: object
+    portaineree.AppliedPolicy:
+      properties:
+        policyID:
+          type: integer
+        policyName:
+          type: string
+        policyStatus:
+          $ref: '#/components/schemas/portaineree.PolicyStatus'
+      type: object
+    portainer.KubernetesSnapshot:
+      properties:
+        DiagnosticsData:
+          $ref: '#/components/schemas/portainer.DiagnosticsData'
+        KubernetesVersion:
+          type: string
+        NodeCount:
+          type: integer
+        PerformanceMetrics:
+          $ref: '#/components/schemas/portainer.PerformanceMetrics'
+        Time:
+          type: integer
+        TotalCPU:
+          type: integer
+        TotalMemory:
+          type: integer
+      type: object
+    portainer.KubernetesFlags:
+      properties:
+        IsServerIngressClassDetected:
+          type: boolean
+        IsServerMetricsDetected:
+          type: boolean
+        IsServerStorageDetected:
+          type: boolean
+      type: object
+    portaineree.KubernetesConfiguration:
+      properties:
+        AllowNoneIngressClass:
+          type: boolean
+        EnableResourceOverCommit:
+          type: boolean
+        IngressAvailabilityPerNamespace:
+          type: boolean
+        IngressClasses:
+          items:
+            $ref: '#/components/schemas/portainer.KubernetesIngressClassConfig'
+          type: array
+        ResourceOverCommitPercentage:
+          type: integer
+        RestrictDefaultNamespace:
+          type: boolean
+        RestrictSecrets:
+          type: boolean
+        RestrictStandardUserIngressW:
+          type: boolean
+        StorageClasses:
+          items:
+            $ref: '#/components/schemas/portainer.KubernetesStorageClassConfig'
+          type: array
+        UseLoadBalancer:
+          type: boolean
+        UseServerMetrics:
+          type: boolean
+      type: object
+    omni.clusterStatusMachines:
+      properties:
+        connected:
+          type: integer
+        healthy:
+          type: integer
+        requested:
+          type: integer
+        total:
+          type: integer
+      type: object
+    omni.clusterSpecFeatures:
+      properties:
+        disk_encryption:
+          type: boolean
+        enable_workload_proxy:
+          type: boolean
+        use_embedded_discovery_service:
+          type: boolean
+      type: object
+    omni.clusterSpecBackupConfiguration:
+      properties:
+        enabled:
+          type: boolean
+        interval:
+          type: string
+      type: object
+    omni.machineNetworkLink:
+      properties:
+        hardware_address:
+          type: string
+        link_up:
+          type: boolean
+        linux_name:
+          type: string
+        speed_mbps:
+          type: integer
+      type: object
+    omni.machineHardwareProcessor:
+      properties:
+        core_count:
+          type: integer
+        description:
+          type: string
+        frequency:
+          type: integer
+        manufacturer:
+          type: string
+        thread_count:
+          type: integer
+      type: object
+    omni.machineHardwareMemory:
+      properties:
+        description:
+          type: string
+        size_mb:
+          type: integer
+      type: object
+    omni.machineHardwareBlockDevice:
+      properties:
+        linux_name:
+          type: string
+        model:
+          type: string
+        size:
+          type: integer
+        system_disk:
+          type: boolean
+        type:
+          type: string
+      type: object
+    portaineree.OmniUserDisk:
+      properties:
+        size:
+          description: 'in GiB; 0 means use all remaining space (grow: true)'
+          type: integer
+        volumeName:
+          type: string
+      type: object
+    portaineree.OmniMachinePatch:
+      properties:
+        IDOverride:
+          type: string
+        Inline:
+          $ref: '#/components/schemas/portaineree.OmniMachinePatchInline'
+      type: object
+    portaineree.OmniInterface:
+      properties:
+        Addresses:
+          items:
+            type: string
+          type: array
+        DHCP:
+          type: boolean
+        Interface:
+          type: string
+        Routes:
+          items:
+            $ref: '#/components/schemas/portaineree.OmniInterfaceRoute'
+          type: array
+      type: object
+    portaineree.OmniMachineInstall:
+      properties:
+        Disk:
+          type: string
+      type: object
+    portaineree.OmniClusterPatchAnnotations:
+      properties:
+        Name:
+          type: string
+      type: object
+    portaineree.PolicyStatus:
+      properties:
+        LastAttemptTime:
+          description: Unix timestamp
+          type: integer
+        Message:
+          type: string
+        Status:
+          $ref: '#/components/schemas/portaineree.PolicyStatusType'
+      type: object
+    portainer.KubernetesStorageClassConfig:
+      properties:
+        AccessModes:
+          items:
+            type: string
+          type: array
+        AllowVolumeExpansion:
+          type: boolean
+        Name:
+          type: string
+        Provisioner:
+          type: string
+      type: object
+    portainer.KubernetesIngressClassConfig:
+      properties:
+        Blocked:
+          type: boolean
+        BlockedNamespaces:
+          items:
+            type: string
+          type: array
+        Name:
+          type: string
+        Type:
+          type: string
+      type: object
+    portaineree.OmniMachinePatchInline:
+      properties:
+        Machine:
+          $ref: '#/components/schemas/portaineree.OmniMachinePatchMachine'
+      type: object
+    portaineree.OmniInterfaceRoute:
+      properties:
+        Gateway:
+          type: string
+        Network:
+          type: string
+      type: object
+    portaineree.PolicyStatusType:
+      enum:
+        - applied
+        - failed
+        - in_progress
+        - warning
+        - not_supported
+      type: string
+      x-enum-varnames:
+        - PolicyStatusTypeApplied
+        - PolicyStatusTypeFailed
+        - PolicyStatusTypeInProgress
+        - PolicyStatusTypeWarning
+        - PolicyStatusTypeNotSupported
+    portaineree.OmniMachinePatchMachine:
+      properties:
+        Network:
+          $ref: '#/components/schemas/portaineree.OmniMachinePatchNetwork'
+      type: object
+    portaineree.OmniMachinePatchNetwork:
+      properties:
+        Hostname:
+          type: string
+        Interfaces:
+          items:
+            $ref: '#/components/schemas/portaineree.OmniMachinePatchInterface'
+          type: array
+        Nameservers:
+          items:
+            type: string
+          type: array
+      type: object
+    portaineree.OmniMachinePatchInterface:
+      properties:
+        Addresses:
+          items:
+            type: string
+          type: array
+        DHCP:
+          type: boolean
+        Interface:
+          type: string
+        Routes:
+          items:
+            $ref: '#/components/schemas/portaineree.OmniMachinePatchRoute'
+          type: array
+      type: object
+    portaineree.OmniMachinePatchRoute:
+      properties:
+        Gateway:
+          type: string
+        Network:
+          type: string
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

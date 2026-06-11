@@ -1,0 +1,532 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Create and update your policies
+    name: policies
+    x-displayName: Policies
+servers:
+  - url: /api
+paths:
+  /policies:
+    get:
+      description: |-
+        List all policies in the bucket.
+        **Access policy**: administrator
+      operationId: PolicyList
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/policies.policyListResponse'
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List policies
+      tags:
+        - policies
+    post:
+      description: |-
+        Create a new policy.
+        **Access policy**: administrator
+      operationId: PolicyCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/policies.policyCreatePayload'
+        description: Policy details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/policies.Policy'
+        '400':
+          description: Invalid request payload
+        '409':
+          description: This name is already associated to a policy
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Create a new policy
+      tags:
+        - policies
+  /policies/{id}:
+    delete:
+      description: |-
+        Delete a policy.
+        **Access policy**: administrator
+      operationId: PolicyDelete
+      parameters:
+        - description: Policy identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '404':
+          description: Policy not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Delete a policy
+      tags:
+        - policies
+    get:
+      description: |-
+        Retrieve details about a policy.
+        **Access policy**: authenticated
+      operationId: PolicyInspect
+      parameters:
+        - description: Policy identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/policies.Policy'
+        '400':
+          description: Invalid request
+        '404':
+          description: Policy not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect a policy
+      tags:
+        - policies
+    put:
+      description: |-
+        Update an existing policy.
+        **Access policy**: administrator
+      operationId: PolicyUpdate
+      parameters:
+        - description: Policy identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/policies.policyUpdatePayload'
+        description: Policy details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/policies.Policy'
+        '400':
+          description: Invalid request
+        '404':
+          description: Policy not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update a policy
+      tags:
+        - policies
+  /policies/conflicts:
+    post:
+      description: |-
+        Returns detailed information about what will be affected when creating or updating a policy with specific environment groups.
+        **Access policy**: administrator
+      operationId: PolicyConflicts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/policies.policyConflictsPayload'
+        description: Conflict check details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/policies.policyConflictsResponse'
+        '400':
+          description: Invalid request payload
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get policy conflicts preview
+      tags:
+        - policies
+  /policies/metadata:
+    get:
+      description: |-
+        Retrieve policy metadata including minimum agent versions for each policy type.
+        **Access policy**: administrator
+      operationId: PolicyMetadata
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/policies.policyMetadataResponse'
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Get policy metadata
+      tags:
+        - policies
+  /policies/templates:
+    get:
+      description: |-
+        List all built-in policy templates. Templates can be filtered by category or type.
+        **Access policy**: administrator
+      operationId: PolicyTemplateList
+      parameters:
+        - description: Filter by category (rbac, security, setup, registry)
+          in: query
+          name: category
+          schema:
+            type: string
+        - description: Filter by policy type (e.g., security-k8s, security-docker)
+          in: query
+          name: type
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/policies.templateListResponse'
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List policy templates
+      tags:
+        - policies
+  /policies/templates/{id}:
+    get:
+      description: |-
+        Retrieve a specific policy template by ID.
+        **Access policy**: administrator
+      operationId: PolicyTemplateInspect
+      parameters:
+        - description: Template ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/policies.PolicyTemplate'
+        '404':
+          description: Template not found
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect a policy template
+      tags:
+        - policies
+components:
+  schemas:
+    policies.PolicyTemplate:
+      properties:
+        category:
+          $ref: '#/components/schemas/policies.PolicyCategory'
+        data:
+          additionalProperties: {}
+          type: object
+        description:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/policies.PolicyType'
+      type: object
+    policies.templateListResponse:
+      properties:
+        templates:
+          items:
+            $ref: '#/components/schemas/policies.PolicyTemplate'
+          type: array
+      type: object
+    policies.policyMetadataResponse:
+      properties:
+        minimumAgentVersions:
+          additionalProperties:
+            type: string
+          type: object
+      type: object
+    policies.policyConflictsResponse:
+      properties:
+        conflicts:
+          items:
+            $ref: '#/components/schemas/policies.conflictInfo'
+          type: array
+        newGroups:
+          items:
+            $ref: '#/components/schemas/policies.newGroupInfo'
+          type: array
+        supportedEnvironments:
+          type: integer
+        totalEnvironments:
+          type: integer
+        unsupportedEnvironments:
+          type: integer
+      type: object
+    policies.policyConflictsPayload:
+      type: object
+    policies.Policy:
+      properties:
+        CreatedAt:
+          type: string
+        EnvironmentGroups:
+          items:
+            type: integer
+          type: array
+        EnvironmentTypes:
+          items:
+            enum:
+              - kubernetes
+              - docker
+              - podman
+              - swarm
+            type: string
+          type: array
+        Id:
+          type: integer
+        Name:
+          type: string
+        StatusBreakdown:
+          allOf:
+            - $ref: '#/components/schemas/policies.PolicyStatusBreakdown'
+          description: |-
+            StatusBreakdown is computed on-demand and returned in API responses.
+            It is not persisted to the database.
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/policies.PolicyType'
+          enum:
+            - rbac-k8s
+            - rbac-docker
+            - security-k8s
+            - security-docker
+            - setup-k8s
+            - setup-docker
+            - registry-k8s
+            - registry-docker
+            - change-confirmation
+        UpdatedAt:
+          type: string
+      type: object
+    policies.policyUpdatePayload:
+      properties:
+        AllowOverride:
+          example: false
+          type: boolean
+        Data:
+          additionalProperties: {}
+          type: object
+        EnvironmentGroups:
+          items:
+            type: integer
+          type: array
+        Name:
+          example: Updated Development Policy
+          type: string
+        Type:
+          $ref: '#/components/schemas/policies.PolicyType'
+      type: object
+    policies.policyCreatePayload:
+      type: object
+    policies.policyListResponse:
+      properties:
+        policies:
+          items:
+            $ref: '#/components/schemas/policies.GenericPolicy'
+          type: array
+      type: object
+    policies.PolicyType:
+      enum:
+        - rbac-k8s
+        - security-k8s
+        - setup-k8s
+        - registry-k8s
+        - rbac-docker
+        - security-docker
+        - setup-docker
+        - registry-docker
+        - change-confirmation
+        - rbac-k8s
+        - security-k8s
+        - setup-k8s
+        - registry-k8s
+        - rbac-docker
+        - security-docker
+        - setup-docker
+        - registry-docker
+      type: string
+      x-enum-varnames:
+        - RbacK8s
+        - SecurityK8s
+        - SetupK8s
+        - RegistryK8s
+        - RbacDocker
+        - SecurityDocker
+        - SetupDocker
+        - RegistryDocker
+    policies.PolicyCategory:
+      enum:
+        - rbac
+        - security
+        - setup
+        - registry
+      type: string
+      x-enum-varnames:
+        - CategoryRBAC
+        - CategorySecurity
+        - CategorySetup
+        - CategoryRegistry
+    policies.newGroupInfo:
+      properties:
+        environmentCount:
+          type: integer
+        environmentGroupId:
+          type: integer
+        environmentGroupName:
+          type: string
+        supportedEnvironments:
+          type: integer
+        unsupportedEnvironments:
+          type: integer
+      type: object
+    policies.conflictInfo:
+      properties:
+        environmentCount:
+          type: integer
+        environmentGroupId:
+          type: integer
+        environmentGroupName:
+          type: string
+        existingPolicyId:
+          type: integer
+        existingPolicyName:
+          type: string
+        supportedEnvironments:
+          type: integer
+        unsupportedEnvironments:
+          type: integer
+      type: object
+    policies.PolicyStatusBreakdown:
+      properties:
+        Applied:
+          type: integer
+        Failed:
+          type: integer
+        InProgress:
+          type: integer
+        NotSupported:
+          type: integer
+        Warning:
+          type: integer
+      type: object
+    policies.GenericPolicy:
+      properties:
+        CreatedAt:
+          type: string
+        Data:
+          additionalProperties: {}
+          type: object
+        EnvironmentGroups:
+          items:
+            type: integer
+          type: array
+        EnvironmentTypes:
+          items:
+            enum:
+              - kubernetes
+              - docker
+              - podman
+              - swarm
+            type: string
+          type: array
+        Id:
+          type: integer
+        Name:
+          type: string
+        StatusBreakdown:
+          allOf:
+            - $ref: '#/components/schemas/policies.PolicyStatusBreakdown'
+          description: |-
+            StatusBreakdown is computed on-demand and returned in API responses.
+            It is not persisted to the database.
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/policies.PolicyType'
+          enum:
+            - rbac-k8s
+            - rbac-docker
+            - security-k8s
+            - security-docker
+            - setup-k8s
+            - setup-docker
+            - registry-k8s
+            - registry-docker
+            - change-confirmation
+        UpdatedAt:
+          type: string
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

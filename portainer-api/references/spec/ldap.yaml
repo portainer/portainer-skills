@@ -1,0 +1,355 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage LDAP settings
+    name: ldap
+    x-displayName: LDAP
+servers:
+  - url: /api
+paths:
+  /ldap/admin-groups:
+    post:
+      description: |-
+        Fetch LDAP admin groups from LDAP server based on AdminGroupSearchSettings
+        **Access policy**: administrator
+      operationId: LDAPAdminGroups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ldap.adminGroupsPayload'
+        description: LDAPSettings
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Fetch LDAP admin groups
+      tags:
+        - ldap
+  /ldap/check:
+    post:
+      description: |-
+        Test LDAP connectivity using LDAP details
+        **Access policy**: administrator
+      operationId: LDAPCheck
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ldap.checkPayload'
+        description: details
+        required: true
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Test LDAP connectivity
+      tags:
+        - ldap
+  /ldap/groups:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: LDAPGroups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ldap.groupsPayload'
+        description: details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/portainer.LDAPUser'
+                type: array
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Search LDAP Groups
+      tags:
+        - ldap
+  /ldap/test:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: LDAPTestLogin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ldap.testLoginPayload'
+        description: details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ldap.testLoginResponse'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Test Login to ldap server
+      tags:
+        - ldap
+  /ldap/users:
+    post:
+      description: '**Access policy**: administrator'
+      operationId: LDAPUsers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ldap.usersPayload'
+        description: details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/portainer.LDAPUser'
+                type: array
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Search LDAP Users
+      tags:
+        - ldap
+components:
+  schemas:
+    portainer.LDAPUser:
+      properties:
+        Groups:
+          items:
+            type: string
+          type: array
+        Name:
+          type: string
+      type: object
+    ldap.usersPayload:
+      properties:
+        LDAPSettings:
+          $ref: '#/components/schemas/portaineree.LDAPSettings'
+      type: object
+    ldap.testLoginResponse:
+      properties:
+        valid:
+          type: boolean
+      type: object
+    ldap.testLoginPayload:
+      properties:
+        LDAPSettings:
+          $ref: '#/components/schemas/portaineree.LDAPSettings'
+        Password:
+          type: string
+        Username:
+          type: string
+      type: object
+    ldap.groupsPayload:
+      properties:
+        LDAPSettings:
+          $ref: '#/components/schemas/portaineree.LDAPSettings'
+      type: object
+    ldap.checkPayload:
+      properties:
+        LDAPSettings:
+          $ref: '#/components/schemas/portaineree.LDAPSettings'
+      type: object
+    ldap.adminGroupsPayload:
+      properties:
+        LDAPSettings:
+          $ref: '#/components/schemas/portaineree.LDAPSettings'
+      type: object
+    portaineree.LDAPSettings:
+      properties:
+        AdminAutoPopulate:
+          description: Whether auto admin population is switched on or not
+          example: true
+          type: boolean
+        AdminGroupSearchSettings:
+          items:
+            $ref: '#/components/schemas/portainer.LDAPGroupSearchSettings'
+          type: array
+        AdminGroups:
+          description: Saved admin group list, the user will be populated as an admin role if any user group matches the record in the list
+          example:
+            - '[''manager'''
+            - '''operator'']'
+          items:
+            type: string
+          type: array
+        AnonymousMode:
+          description: Enable this option if the server is configured for Anonymous access. When enabled, ReaderDN and Password will not be used
+          example: true
+          type: boolean
+        AutoCreateUsers:
+          description: Automatically provision users and assign them to matching LDAP group names
+          example: true
+          type: boolean
+        GroupSearchSettings:
+          items:
+            $ref: '#/components/schemas/portainer.LDAPGroupSearchSettings'
+          type: array
+        Kerberos:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.LDAPKerberosSettings'
+          description: Kerberos settings
+        Password:
+          description: Password of the account that will be used to search users
+          example: readonly-password
+          type: string
+        ReaderDN:
+          description: Account that will be used to search for users
+          example: cn=readonly-account,dc=ldap,dc=domain,dc=tld
+          type: string
+        SearchSettings:
+          items:
+            $ref: '#/components/schemas/portainer.LDAPSearchSettings'
+          type: array
+        ServerType:
+          allOf:
+            - $ref: '#/components/schemas/portaineree.LDAPServerType'
+          example: 1
+        StartTLS:
+          description: Whether LDAP connection should use StartTLS
+          example: true
+          type: boolean
+        TLSConfig:
+          $ref: '#/components/schemas/portainer.TLSConfiguration'
+        URL:
+          description: Deprecated
+          type: string
+        URLs:
+          description: URLs or IP addresses of the LDAP server
+          items:
+            type: string
+          type: array
+      type: object
+    portainer.TLSConfiguration:
+      properties:
+        TLS:
+          description: Use TLS
+          example: true
+          type: boolean
+        TLSCACert:
+          description: Path to the TLS CA certificate file
+          example: /data/tls/ca.pem
+          type: string
+        TLSCert:
+          description: Path to the TLS client certificate file
+          example: /data/tls/cert.pem
+          type: string
+        TLSKey:
+          description: Path to the TLS client key file
+          example: /data/tls/key.pem
+          type: string
+        TLSSkipVerify:
+          description: Skip the verification of the server TLS certificate
+          example: false
+          type: boolean
+      type: object
+    portaineree.LDAPServerType:
+      enum:
+        - 0
+        - 1
+        - 2
+      type: integer
+      x-enum-varnames:
+        - LDAPServerCustom
+        - LDAPServerOpenLDAP
+        - LDAPServerAD
+    portainer.LDAPSearchSettings:
+      properties:
+        BaseDN:
+          description: The distinguished name of the element from which the LDAP server will search for users
+          example: dc=ldap,dc=domain,dc=tld
+          type: string
+        Filter:
+          description: Optional LDAP search filter used to select user elements
+          example: (objectClass=account)
+          type: string
+        UserNameAttribute:
+          description: LDAP attribute which denotes the username
+          example: uid
+          type: string
+      type: object
+    portaineree.LDAPKerberosSettings:
+      properties:
+        Configuration:
+          type: string
+        Password:
+          type: string
+        Realm:
+          type: string
+        Service:
+          type: string
+        Username:
+          type: string
+      type: object
+    portainer.LDAPGroupSearchSettings:
+      properties:
+        GroupAttribute:
+          description: LDAP attribute which denotes the group membership
+          example: member
+          type: string
+        GroupBaseDN:
+          description: The distinguished name of the element from which the LDAP server will search for groups
+          example: dc=ldap,dc=domain,dc=tld
+          type: string
+        GroupFilter:
+          description: The LDAP search filter used to select group elements, optional
+          example: (objectClass=account
+          type: string
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey

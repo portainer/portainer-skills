@@ -1,0 +1,2015 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: info@portainer.io
+  description: Portainer API (preamble stripped — see SKILL.md)
+  title: PortainerEE API
+  version: 2.42.0
+tags:
+  - description: Manage stacks
+    name: stacks
+    x-displayName: Stacks
+servers:
+  - url: /api
+paths:
+  /edge_stacks/webhooks/{webhookID}:
+    post:
+      description: '**Access policy**: public'
+      operationId: EdgeStackWebhookInvoke
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: webhookID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '409':
+          description: Conflict
+        '500':
+          description: Server error
+      summary: Webhook for triggering edge stack updates from git
+      tags:
+        - stacks
+  /stacks:
+    get:
+      description: |-
+        List all stacks based on the current user authorizations.
+        Will return all stacks if using an administrator account otherwise it
+        will only return the list of stacks the user have access to.
+        Limited stacks will not be returned by this endpoint.
+        **Access policy**: authenticated
+      operationId: StackList
+      parameters:
+        - description: 'Filters to process on the stack list. Encoded as JSON (a map[string]string). For example, {''SwarmID'': ''jpofkc0i9uo9wtx1zesuk649w''} will only return stacks that are part of the specified Swarm cluster. Available filters: EndpointID, SwarmID.'
+          in: query
+          name: filters
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: '#/components/schemas/portaineree.Stack'
+                type: array
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: List stacks
+      tags:
+        - stacks
+  /stacks/{id}:
+    delete:
+      description: |-
+        Remove a stack.
+        **Access policy**: restricted
+      operationId: StackDelete
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Set to true to delete an external stack. Only external Swarm stacks are supported
+          in: query
+          name: external
+          schema:
+            type: boolean
+        - description: Set to true to delete named volumes declared in the stack file and anonymous volumes attached to containers. Only affects Docker Standalone stacks.
+          in: query
+          name: removeVolumes
+          schema:
+            type: boolean
+        - description: Environment identifier
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Remove a stack
+      tags:
+        - stacks
+    get:
+      description: |-
+        Retrieve details about a stack.
+        **Access policy**: restricted
+      operationId: StackInspect
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Stack not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Inspect a stack
+      tags:
+        - stacks
+    put:
+      description: |-
+        Update a stack, only for file based stacks.
+        **Access policy**: authenticated
+      operationId: StackUpdate
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Environment identifier
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stacks.updateStackPayload'
+        description: Stack details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update a stack
+      tags:
+        - stacks
+  /stacks/{id}/associate:
+    put:
+      description: '**Access policy**: administrator'
+      operationId: StackAssociate
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Environment identifier
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+        - description: Swarm identifier
+          in: query
+          name: swarmId
+          required: true
+          schema:
+            type: integer
+        - description: Indicates whether the stack is orphaned
+          in: query
+          name: orphanedRunning
+          required: true
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Stack not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Associate an orphaned stack to a new environment(endpoint)
+      tags:
+        - stacks
+  /stacks/{id}/convert:
+    post:
+      description: |-
+        Convert a Docker Compose or Docker Swarm stack to Kubernetes manifests or Helm chart and return the results for preview.
+        **Access policy**: authenticated
+      operationId: StackConvert
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stacks.stackConvertPayload'
+        description: Stack conversion details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/stacks.stackConvertResponse'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Stack not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Convert a Docker Compose stack to Kubernetes manifests or Helm chart
+      tags:
+        - stacks
+  /stacks/{id}/file:
+    get:
+      description: |-
+        Get Stack file content.
+        **Access policy**: restricted
+      operationId: StackFileInspect
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Stack file version maintained by Portainer. If both version and commitHash are provided, the commitHash will be used
+          in: query
+          name: version
+          schema:
+            type: integer
+        - description: Git repository commit hash. If both version and commitHash are provided, the commitHash will be used
+          in: query
+          name: commitHash
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/stacks.stackFileResponse'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Stack not found
+        '409':
+          description: Git settings changed, redeploy required
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Retrieve the content of the Stack file for the specified stack
+      tags:
+        - stacks
+  /stacks/{id}/git:
+    post:
+      description: |-
+        Update the Git settings in a stack, e.g., RepositoryReferenceName and AutoUpdate
+        **Access policy**: authenticated
+      operationId: StackUpdateGit
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Stacks created before version 1.18.0 might not have an associated environment(endpoint) identifier. Use this optional parameter to set the environment(endpoint) identifier used by the stack.
+          in: query
+          name: endpointId
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stacks.stackGitUpdatePayload'
+        description: Git configs for pull and redeploy a stack
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Update a stack's Git configs
+      tags:
+        - stacks
+  /stacks/{id}/git/redeploy:
+    put:
+      description: |-
+        Pull and redeploy a stack via Git
+        **Access policy**: authenticated
+      operationId: StackGitRedeploy
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Stacks created before version 1.18.0 might not have an associated environment(endpoint) identifier. Use this optional parameter to set the environment(endpoint) identifier used by the stack.
+          in: query
+          name: endpointId
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stacks.stackGitRedeployPayload'
+        description: Git configs for pull and redeploy of a stack. **StackName** may only be populated for Kuberenetes stacks, and if specified with a blank string, it will be set to blank
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Redeploy a stack
+      tags:
+        - stacks
+  /stacks/{id}/images_status:
+    get:
+      description: '**Access policy**:'
+      operationId: stackImagesStatus
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Refresh will force a refresh of the image status cache
+          in: query
+          name: refresh
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/images.StatusResponse'
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+      security:
+        - jwt: []
+      summary: Fetch image status for stack
+      tags:
+        - stacks
+  /stacks/{id}/migrate:
+    post:
+      description: |-
+        Migrate a stack from an environment(endpoint) to another environment(endpoint). It will re-create the stack inside the target environment(endpoint) before removing the original stack.
+        **Access policy**: authenticated
+      operationId: StackMigrate
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Stacks created before version 1.18.0 might not have an associated environment(endpoint) identifier. Use this optional parameter to set the environment(endpoint) identifier used by the stack.
+          in: query
+          name: endpointId
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stacks.stackMigratePayload'
+        description: Stack migration details
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Stack not found
+        '409':
+          description: A stack with the same name is already running on the target environment(endpoint)
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Migrate a stack to another environment(endpoint)
+      tags:
+        - stacks
+  /stacks/{id}/start:
+    post:
+      description: |-
+        Starts a stopped Stack.
+        **Access policy**: authenticated
+      operationId: StackStart
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Environment identifier
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Not found
+        '409':
+          description: Stack is already active, deploying, or in error state
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Starts a stopped Stack
+      tags:
+        - stacks
+  /stacks/{id}/stop:
+    post:
+      description: |-
+        Stops a stopped Stack.
+        **Access policy**: authenticated
+      operationId: StackStop
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - description: Environment identifier
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Stops a stopped Stack
+      tags:
+        - stacks
+  /stacks/create/kubernetes/repository:
+    post:
+      description: |-
+        Deploy a new stack into a Docker environment specified via the environment identifier.
+        **Access policy**: authenticated
+      operationId: StackCreateKubernetesGit
+      parameters:
+        - description: Identifier of the environment that will be used to deploy the stack
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stacks.kubernetesGitDeploymentPayload'
+        description: stack config
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '409':
+          description: Webhook ID already exists
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Deploy a new kubernetes stack from a git repository
+      tags:
+        - stacks
+  /stacks/create/kubernetes/string:
+    post:
+      description: |-
+        Deploy a new stack into a Docker environment specified via the environment identifier.
+        **Access policy**: authenticated
+      operationId: StackCreateKubernetesFile
+      parameters:
+        - description: Identifier of the environment that will be used to deploy the stack
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stacks.kubernetesStringDeploymentPayload'
+        description: stack config
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Deploy a new kubernetes stack from a file
+      tags:
+        - stacks
+  /stacks/create/kubernetes/url:
+    post:
+      description: |-
+        Deploy a new stack into a Docker environment specified via the environment identifier.
+        **Access policy**: authenticated
+      operationId: StackCreateKubernetesUrl
+      parameters:
+        - description: Identifier of the environment that will be used to deploy the stack
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stacks.kubernetesManifestURLDeploymentPayload'
+        description: stack config
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Deploy a new kubernetes stack from a url
+      tags:
+        - stacks
+  /stacks/create/standalone/file:
+    post:
+      description: |-
+        Deploy a new stack into a Docker environment specified via the environment identifier.
+        **Access policy**: authenticated
+      operationId: StackCreateDockerStandaloneFile
+      parameters:
+        - description: Identifier of the environment that will be used to deploy the stack
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                Name:
+                  description: Name of the stack
+                  type: string
+                Env:
+                  description: 'Environment variables passed during deployment, represented as a JSON array [{''name'': ''name'', ''value'': ''value''}].'
+                  type: string
+                file:
+                  description: Stack file
+                  type: string
+                  format: binary
+              required:
+                - Name
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Deploy a new compose stack from a file
+      tags:
+        - stacks
+  /stacks/create/standalone/repository:
+    post:
+      description: |-
+        Deploy a new stack into a Docker environment specified via the environment identifier.
+        **Access policy**: authenticated
+      operationId: StackCreateDockerStandaloneRepository
+      parameters:
+        - description: Identifier of the environment that will be used to deploy the stack
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stacks.composeStackFromGitRepositoryPayload'
+        description: stack config
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Deploy a new compose stack from repository
+      tags:
+        - stacks
+  /stacks/create/standalone/string:
+    post:
+      description: |-
+        Deploy a new stack into a Docker environment specified via the environment identifier.
+        **Access policy**: authenticated
+      operationId: StackCreateDockerStandaloneString
+      parameters:
+        - description: Identifier of the environment that will be used to deploy the stack
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stacks.composeStackFromFileContentPayload'
+        description: stack config
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Deploy a new compose stack from a text
+      tags:
+        - stacks
+  /stacks/create/swarm/file:
+    post:
+      description: |-
+        Deploy a new stack into a Docker environment specified via the environment identifier.
+        **Access policy**: authenticated
+      operationId: StackCreateDockerSwarmFile
+      parameters:
+        - description: Identifier of the environment that will be used to deploy the stack
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                Name:
+                  description: Name of the stack
+                  type: string
+                SwarmID:
+                  description: Swarm cluster identifier.
+                  type: string
+                Env:
+                  description: 'Environment variables passed during deployment, represented as a JSON array [{''name'': ''name'', ''value'': ''value''}]. Optional'
+                  type: string
+                file:
+                  description: Stack file
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '409':
+          description: Stack name or webhook id is not unique
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Deploy a new swarm stack from a file
+      tags:
+        - stacks
+  /stacks/create/swarm/repository:
+    post:
+      description: |-
+        Deploy a new stack into a Docker environment specified via the environment identifier.
+        **Access policy**: authenticated
+      operationId: StackCreateDockerSwarmRepository
+      parameters:
+        - description: Identifier of the environment that will be used to deploy the stack
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stacks.swarmStackFromGitRepositoryPayload'
+        description: stack config
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '409':
+          description: Stack name or webhook id is not unique
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Deploy a new swarm stack from a git repository
+      tags:
+        - stacks
+  /stacks/create/swarm/string:
+    post:
+      description: |-
+        Deploy a new stack into a Docker environment specified via the environment identifier.
+        **Access policy**: authenticated
+      operationId: StackCreateDockerSwarmString
+      parameters:
+        - description: Identifier of the environment that will be used to deploy the stack
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/stacks.swarmStackFromFileContentPayload'
+        description: stack config
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/portaineree.Stack'
+        '400':
+          description: Invalid request
+        '409':
+          description: Stack name or webhook id is not unique
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Deploy a new swarm stack from a text
+      tags:
+        - stacks
+  /stacks/name/{name}:
+    delete:
+      description: |-
+        Remove a stack.
+        **Access policy**: restricted
+      operationId: StackDeleteKubernetesByName
+      parameters:
+        - description: Stack name
+          in: path
+          name: name
+          required: true
+          schema:
+            type: string
+        - description: Set to true to delete an external stack. Only external Swarm stacks are supported
+          in: query
+          name: external
+          schema:
+            type: boolean
+        - description: Environment identifier
+          in: query
+          name: endpointId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Success
+        '400':
+          description: Invalid request
+        '403':
+          description: Permission denied
+        '404':
+          description: Not found
+        '500':
+          description: Server error
+      security:
+        - ApiKeyAuth: []
+        - jwt: []
+      summary: Remove Kubernetes stacks by name
+      tags:
+        - stacks
+  /stacks/webhooks/{webhookID}:
+    post:
+      description: '**Access policy**: public'
+      operationId: StacksWebhookInvoke
+      parameters:
+        - description: Stack identifier
+          in: path
+          name: webhookID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Invalid request
+        '409':
+          description: Autoupdate for the stack isn't available" or "Stack deployment is already in progress
+        '500':
+          description: Server error
+      summary: Webhook for triggering stack updates from git
+      tags:
+        - stacks
+components:
+  schemas:
+    portaineree.Stack:
+      properties:
+        AdditionalFiles:
+          description: Only applies when deploying stack with multiple files
+          items:
+            type: string
+          type: array
+        AutoUpdate:
+          allOf:
+            - $ref: '#/components/schemas/portainer.AutoUpdateSettings'
+          description: The GitOps update settings of a git stack
+        CreatedBy:
+          description: The username which created this stack
+          example: admin
+          type: string
+        CreatedByUserId:
+          description: The username id which created this stack
+          example: '1'
+          type: string
+        CreationDate:
+          description: The date in unix time when stack was created
+          example: 1587399600
+          type: integer
+        CurrentDeploymentInfo:
+          allOf:
+            - $ref: '#/components/schemas/portainer.StackDeploymentInfo'
+          description: CurrentDeploymentInfo records the git repository state at the time of the last actual deployment.
+        DeploymentStartStatus:
+          allOf:
+            - $ref: '#/components/schemas/portainer.StackStatus'
+          description: |-
+            DeploymentStartStatus is the stack status captured when the current
+            deployment starts. It is used by deployment logic during the current
+            deployment attempt and is cleared/replaced when a new deployment begins.
+          example: 1
+        DeploymentStatus:
+          description: |-
+            DeploymentStatus records the status progression of the current deployment.
+            Cleared when a new deployment starts.
+          items:
+            $ref: '#/components/schemas/portainer.StackDeploymentStatus'
+          type: array
+        EndpointId:
+          description: Environment(Endpoint) identifier. Reference the environment(endpoint) that will be used for deployment
+          example: 1
+          type: integer
+        EntryPoint:
+          description: |-
+            EntryPoint is the path to the config file relative to the project root.
+            NOTE: For git stacks this mirrors GitConfig.ConfigFilePath and the two are kept in sync
+            by stackUpdateGit. The deploy command builder (compose_unpacker_cmd_builder) uses this
+            field directly; Kubernetes deploy and git clone operations use GitConfig.ConfigFilePath.
+          example: docker-compose.yml
+          type: string
+        Env:
+          description: A list of environment(endpoint) variables used during stack deployment
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        FilesystemPath:
+          description: Network(Swarm) or local(Standalone) filesystem path
+          example: /tmp
+          type: string
+        FromAppTemplate:
+          description: Whether the stack is from a app template
+          example: false
+          type: boolean
+        GitConfig:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.RepoConfig'
+          description: The git config of this stack
+        HelmChartPath:
+          description: Path to a Helm chart folder for Helm git deployments
+          example: charts/my-app
+          type: string
+        HelmValuesFiles:
+          description: Array of paths to Helm values YAML files for Helm git deployments
+          example:
+            - '[''values/prod.yaml'''
+            - ' ''values/secrets.yaml'']'
+          items:
+            type: string
+          type: array
+        Id:
+          description: Stack Identifier
+          example: 1
+          type: integer
+        IsDetachedFromGit:
+          description: Whether the stack is detached from git
+          example: false
+          type: boolean
+        Name:
+          description: Stack name
+          example: myStack
+          type: string
+        Namespace:
+          description: Kubernetes namespace if stack is a kube application
+          example: default
+          type: string
+        Option:
+          allOf:
+            - $ref: '#/components/schemas/portainer.StackOption'
+          description: The stack deployment option
+        PreviousDeploymentInfo:
+          allOf:
+            - $ref: '#/components/schemas/portainer.StackDeploymentInfo'
+          description: The previous deployment info of the stack
+        ProjectPath:
+          description: Path on disk to the repository hosting the Stack file
+          example: /data/compose/myStack_jpofkc0i9uo9wtx1zesuk649w
+          type: string
+        Registries:
+          description: List of Registries to use for this stack
+          items:
+            type: integer
+          type: array
+        ResourceControl:
+          $ref: '#/components/schemas/portainer.ResourceControl'
+        StackFileVersion:
+          description: StackFileVersion indicates the stack file version, such as yaml, hcl, and manifest
+          example: 1
+          type: integer
+        Status:
+          allOf:
+            - $ref: '#/components/schemas/portainer.StackStatus'
+          description: Stack status (1 - active, 2 - inactive, 3 - deploying, 4 - error)
+          example: 1
+        SupportRelativePath:
+          description: If stack support relative path volume
+          example: false
+          type: boolean
+        SwarmId:
+          description: Cluster identifier of the Swarm cluster where the stack is deployed
+          example: jpofkc0i9uo9wtx1zesuk649w
+          type: string
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.StackType'
+          description: Stack type. 1 for a Swarm stack, 2 for a Compose stack
+          example: 2
+        UpdateDate:
+          description: The date in unix time when stack was last updated
+          example: 1587399600
+          type: integer
+        UpdatedBy:
+          description: The username which last updated this stack
+          example: bob
+          type: string
+        Webhook:
+          description: A UUID to identify a webhook. The stack will be force updated and pull the latest image when the webhook was invoked.
+          example: c11fdf23-183e-428a-9bb6-16db01032174
+          type: string
+      type: object
+    stacks.swarmStackFromFileContentPayload:
+      properties:
+        Env:
+          description: A list of environment variables used during stack deployment
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        FromAppTemplate:
+          description: Whether the stack is from a app template
+          example: false
+          type: boolean
+        Name:
+          description: Name of the stack
+          example: myStack
+          type: string
+        Registries:
+          description: List of Registries to use for this stack
+          items:
+            type: integer
+          type: array
+        StackFileContent:
+          description: Content of the Stack file
+          example: |-
+            version: 3
+             services:
+             web:
+             image:nginx
+          type: string
+        SwarmID:
+          description: Swarm cluster identifier
+          example: jpofkc0i9uo9wtx1zesuk649w
+          type: string
+        Webhook:
+          description: A UUID to identify a webhook. The stack will be force updated and pull the latest image when the webhook was invoked.
+          example: c11fdf23-183e-428a-9bb6-16db01032174
+          type: string
+      required:
+        - Name
+        - StackFileContent
+        - SwarmID
+      type: object
+    stacks.swarmStackFromGitRepositoryPayload:
+      properties:
+        AdditionalFiles:
+          description: Applicable when deploying with multiple stack files
+          example:
+            - '[nz.compose.yml'
+            - ' uat.compose.yml]'
+          items:
+            type: string
+          type: array
+        AutoUpdate:
+          allOf:
+            - $ref: '#/components/schemas/portainer.AutoUpdateSettings'
+          description: Optional GitOps update configuration
+        ComposeFile:
+          default: docker-compose.yml
+          description: Path to the Stack file inside the Git repository
+          example: docker-compose.yml
+          type: string
+        Env:
+          description: A list of environment variables used during stack deployment
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        FilesystemPath:
+          description: Network filesystem path
+          example: /tmp
+          type: string
+        FromAppTemplate:
+          description: Whether the stack is from a app template
+          example: false
+          type: boolean
+        Name:
+          description: Name of the stack
+          example: myStack
+          type: string
+        Registries:
+          description: List of Registries to use for this stack
+          items:
+            type: integer
+          type: array
+        RepositoryAuthentication:
+          description: Use basic authentication to clone the Git repository
+          example: true
+          type: boolean
+        RepositoryAuthorizationType:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+          description: RepositoryAuthorizationType is the authorization type to use
+          example: 0
+        RepositoryGitCredentialID:
+          description: |-
+            GitCredentialID used to identify the bound git credential. Required when RepositoryAuthentication
+            is true and RepositoryUsername/RepositoryPassword are not provided
+          example: 0
+          type: integer
+        RepositoryPassword:
+          description: |-
+            Password used in basic authentication. Required when RepositoryAuthentication is true
+            and RepositoryGitCredentialID is 0
+          example: myGitPassword
+          type: string
+        RepositoryProvider:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+          description: RepositoryProvider is the provider to use
+          example: 0
+        RepositoryReferenceName:
+          description: Reference name of a Git repository hosting the Stack file
+          example: refs/heads/master
+          type: string
+        RepositoryURL:
+          description: URL of a Git repository hosting the Stack file
+          example: https://github.com/openfaas/faas
+          type: string
+        RepositoryUsername:
+          description: |-
+            Username used in basic authentication. Required when RepositoryAuthentication is true
+            and RepositoryGitCredentialID is 0
+          example: myGitUsername
+          type: string
+        SupportRelativePath:
+          description: Whether the stack suppors relative path volume
+          example: false
+          type: boolean
+        SwarmID:
+          description: Swarm cluster identifier
+          example: jpofkc0i9uo9wtx1zesuk649w
+          type: string
+        TLSSkipVerify:
+          description: TLSSkipVerify skips SSL verification when cloning the Git repository
+          example: false
+          type: boolean
+      required:
+        - Name
+        - RepositoryURL
+        - SwarmID
+      type: object
+    stacks.composeStackFromFileContentPayload:
+      properties:
+        Env:
+          description: A list of environment variables used during stack deployment
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        FromAppTemplate:
+          description: Whether the stack is from a app template
+          example: false
+          type: boolean
+        Name:
+          description: Name of the stack
+          example: myStack
+          type: string
+        Registries:
+          description: List of Registries to use for this stack
+          items:
+            type: integer
+          type: array
+        StackFileContent:
+          description: Content of the Stack file
+          example: |-
+            version: 3
+             services:
+             web:
+             image:nginx
+          type: string
+        Webhook:
+          description: A UUID to identify a webhook. The stack will be force updated and pull the latest image when the webhook was invoked.
+          example: c11fdf23-183e-428a-9bb6-16db01032174
+          type: string
+      required:
+        - Name
+        - StackFileContent
+      type: object
+    stacks.composeStackFromGitRepositoryPayload:
+      properties:
+        AdditionalFiles:
+          description: Applicable when deploying with multiple stack files
+          example:
+            - '[nz.compose.yml'
+            - ' uat.compose.yml]'
+          items:
+            type: string
+          type: array
+        AutoUpdate:
+          allOf:
+            - $ref: '#/components/schemas/portainer.AutoUpdateSettings'
+          description: Optional GitOps update configuration
+        ComposeFile:
+          default: docker-compose.yml
+          description: Path to the Stack file inside the Git repository
+          example: docker-compose.yml
+          type: string
+        Env:
+          description: A list of environment variables used during stack deployment
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        FilesystemPath:
+          description: Local filesystem path
+          example: /tmp
+          type: string
+        FromAppTemplate:
+          description: Whether the stack is from a app template
+          example: false
+          type: boolean
+        Name:
+          description: Name of the stack
+          example: myStack
+          type: string
+        Registries:
+          description: List of Registries to use for this stack
+          items:
+            type: integer
+          type: array
+        RepositoryAuthentication:
+          description: Use basic authentication to clone the Git repository
+          example: true
+          type: boolean
+        RepositoryAuthorizationType:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+          description: RepositoryAuthorizationType is the authorization type to use
+          example: 0
+        RepositoryGitCredentialID:
+          description: |-
+            GitCredentialID used to identify the bound git credential. Required when RepositoryAuthentication
+            is true and RepositoryUsername/RepositoryPassword are not provided
+          example: 0
+          type: integer
+        RepositoryPassword:
+          description: |-
+            Password used in basic authentication. Required when RepositoryAuthentication is true
+            and RepositoryGitCredentialID is 0
+          example: myGitPassword
+          type: string
+        RepositoryProvider:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+          description: RepositoryProvider is the provider to use
+          example: 0
+        RepositoryReferenceName:
+          description: Reference name of a Git repository hosting the Stack file
+          example: refs/heads/master
+          type: string
+        RepositoryURL:
+          description: URL of a Git repository hosting the Stack file
+          example: https://github.com/openfaas/faas
+          type: string
+        RepositoryUsername:
+          description: |-
+            Username used in basic authentication. Required when RepositoryAuthentication is true
+            and RepositoryGitCredentialID is 0
+          example: myGitUsername
+          type: string
+        SupportRelativePath:
+          description: Whether the stack supports relative path volume
+          example: false
+          type: boolean
+        TLSSkipVerify:
+          description: TLSSkipVerify skips SSL verification when cloning the Git repository
+          example: false
+          type: boolean
+      required:
+        - Name
+        - RepositoryURL
+      type: object
+    stacks.kubernetesManifestURLDeploymentPayload:
+      properties:
+        ComposeFormat:
+          type: boolean
+        ManifestURL:
+          type: string
+        Namespace:
+          type: string
+        StackName:
+          type: string
+      type: object
+    stacks.kubernetesStringDeploymentPayload:
+      properties:
+        ComposeFormat:
+          type: boolean
+        FromAppTemplate:
+          description: Whether the stack is from a app template
+          example: false
+          type: boolean
+        Namespace:
+          type: string
+        StackFileContent:
+          type: string
+        StackName:
+          type: string
+      type: object
+    stacks.kubernetesGitDeploymentPayload:
+      properties:
+        AdditionalFiles:
+          items:
+            type: string
+          type: array
+        AutoUpdate:
+          $ref: '#/components/schemas/portainer.AutoUpdateSettings'
+        ComposeFormat:
+          type: boolean
+        HelmChartPath:
+          description: Helm-specific fields
+          type: string
+        HelmValuesFiles:
+          description: Array of paths to values YAML files in Git repo
+          items:
+            type: string
+          type: array
+        ManifestFile:
+          type: string
+        Namespace:
+          type: string
+        RepositoryAuthentication:
+          type: boolean
+        RepositoryAuthorizationType:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+        RepositoryGitCredentialID:
+          type: integer
+        RepositoryPassword:
+          type: string
+        RepositoryProvider:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+        RepositoryReferenceName:
+          type: string
+        RepositoryURL:
+          type: string
+        RepositoryUsername:
+          type: string
+        StackName:
+          type: string
+        TLSSkipVerify:
+          description: TLSSkipVerify skips SSL verification when cloning the Git repository
+          example: false
+          type: boolean
+      type: object
+    stacks.stackMigratePayload:
+      properties:
+        EndpointID:
+          example: 2
+          type: integer
+        IsHelm:
+          example: false
+          type: boolean
+        Name:
+          example: new-stack
+          type: string
+        Namespace:
+          example: default
+          type: string
+        SwarmID:
+          example: jpofkc0i9uo9wtx1zesuk649w
+          type: string
+      required:
+        - EndpointID
+      type: object
+    images.StatusResponse:
+      properties:
+        Message:
+          type: string
+        Status:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_docker_images.Status'
+      type: object
+    stacks.stackGitRedeployPayload:
+      properties:
+        Env:
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        Prune:
+          example: false
+          type: boolean
+        PullImage:
+          description: |-
+            Deprecated(2.36): use RepullImageAndRedeploy instead for cleaner responsibility
+            Force a pulling to current image with the original tag though the image is already the latest
+          example: false
+          type: boolean
+        RepositoryAuthentication:
+          type: boolean
+        RepositoryAuthorizationType:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+        RepositoryGitCredentialID:
+          type: integer
+        RepositoryPassword:
+          type: string
+        RepositoryProvider:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+        RepositoryReferenceName:
+          type: string
+        RepositoryUsername:
+          type: string
+        RepullImageAndRedeploy:
+          description: RepullImageAndRedeploy indicates whether to force repulling images and redeploying the stack
+          type: boolean
+        StackName:
+          type: string
+      type: object
+    stacks.stackGitUpdatePayload:
+      properties:
+        AdditionalFiles:
+          items:
+            type: string
+          type: array
+        Atomic:
+          description: Enable atomic rollback on failure (Helm --atomic flag)
+          type: boolean
+        AutoUpdate:
+          $ref: '#/components/schemas/portainer.AutoUpdateSettings'
+        ConfigFilePath:
+          type: string
+        Env:
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        HelmChartPath:
+          description: Helm chart folder path in Git repo (for Helm stacks)
+          type: string
+        HelmValuesFiles:
+          description: Helm values files paths in Git repo (for Helm stacks)
+          items:
+            type: string
+          type: array
+        Prune:
+          type: boolean
+        Registries:
+          items:
+            type: integer
+          type: array
+        RepositoryAuthentication:
+          type: boolean
+        RepositoryAuthorizationType:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType'
+        RepositoryGitCredentialID:
+          type: integer
+        RepositoryPassword:
+          type: string
+        RepositoryProvider:
+          $ref: '#/components/schemas/github_com_portainer_portainer-ee_api_git_types.GitProvider'
+        RepositoryReferenceName:
+          type: string
+        RepositoryURL:
+          type: string
+        RepositoryUsername:
+          type: string
+        TLSSkipVerify:
+          type: boolean
+      type: object
+    stacks.stackFileResponse:
+      properties:
+        StackFileContent:
+          description: Content of the Stack file
+          example: |-
+            version: 3
+             services:
+             web:
+             image:nginx
+          type: string
+      type: object
+    stacks.stackConvertResponse:
+      properties:
+        files:
+          additionalProperties:
+            type: string
+          description: Converted files for preview
+          type: object
+      type: object
+    stacks.stackConvertPayload:
+      properties:
+        namespace:
+          description: Namespace for the Kubernetes stack
+          example: default
+          type: string
+        targetFormat:
+          description: 'Target format: "kubernetes" for manifests or "helm" for helm chart'
+          example: kubernetes
+          type: string
+      required:
+        - targetFormat
+      type: object
+    stacks.updateStackPayload:
+      properties:
+        Env:
+          description: A list of environment(endpoint) variables used during stack deployment
+          items:
+            $ref: '#/components/schemas/portainer.Pair'
+          type: array
+        Prune:
+          description: Prune services that are no longer referenced (only available for Swarm stacks)
+          example: true
+          type: boolean
+        PullImage:
+          description: |-
+            Deprecated(2.36): use RepullImageAndRedeploy instead for cleaner responsibility
+            Force a pulling to current image with the original tag though the image is already the latest
+          example: false
+          type: boolean
+        Registries:
+          description: List of Registries to use for this stack
+          items:
+            type: integer
+          type: array
+        RepullImageAndRedeploy:
+          description: RepullImageAndRedeploy indicates whether to force repulling images and redeploying the stack
+          type: boolean
+        RollbackTo:
+          description: RollbackTo specifies the stack file version to rollback to (only support to rollback to the last version currently)
+          type: integer
+        StackFileContent:
+          description: New content of the Stack file
+          example: |-
+            version: 3
+             services:
+             web:
+             image:nginx
+          type: string
+        Webhook:
+          description: A UUID to identify a webhook. The stack will be force updated and pull the latest image when the webhook was invoked.
+          example: c11fdf23-183e-428a-9bb6-16db01032174
+          type: string
+      type: object
+    portainer.StackType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+      type: integer
+      x-enum-varnames:
+        - _
+        - DockerSwarmStack
+        - DockerComposeStack
+        - KubernetesStack
+    portainer.StackStatus:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+      type: integer
+      x-enum-comments:
+        StackStatusActive: 1 - deployed and running
+        StackStatusDeploying: 3 - deployment in progress
+        StackStatusError: 4 - deployment failed
+        StackStatusInactive: 2 - intentionally stopped
+      x-enum-descriptions:
+        - ''
+        - 1 - deployed and running
+        - 2 - intentionally stopped
+        - 3 - deployment in progress
+        - 4 - deployment failed
+      x-enum-varnames:
+        - _
+        - StackStatusActive
+        - StackStatusInactive
+        - StackStatusDeploying
+        - StackStatusError
+    portainer.ResourceControl:
+      properties:
+        AccessLevel:
+          $ref: '#/components/schemas/portainer.ResourceAccessLevel'
+        AdministratorsOnly:
+          description: Permit access to resource only to admins
+          example: true
+          type: boolean
+        Id:
+          description: ResourceControl Identifier
+          example: 1
+          type: integer
+        OwnerId:
+          description: |-
+            Deprecated fields
+            Deprecated in DBVersion == 2
+          type: integer
+        Public:
+          description: Permit access to the associated resource to any user
+          example: true
+          type: boolean
+        ResourceId:
+          description: |-
+            Docker resource identifier on which access control will be applied.\
+            In the case of a resource control applied to a stack, use the stack name as identifier
+          example: 617c5f22bb9b023d6daab7cba43a57576f83492867bc767d1c59416b065e5f08
+          type: string
+        SubResourceIds:
+          description: List of Docker resources that will inherit this access control
+          example:
+            - 617c5f22bb9b023d6daab7cba43a57576f83492867bc767d1c59416b065e5f08
+          items:
+            type: string
+          type: array
+        System:
+          type: boolean
+        TeamAccesses:
+          items:
+            $ref: '#/components/schemas/portainer.TeamResourceAccess'
+          type: array
+        Type:
+          allOf:
+            - $ref: '#/components/schemas/portainer.ResourceControlType'
+          description: |-
+            Type of Docker resource. Valid values are: 1- container, 2 -service
+            3 - volume, 4 - secret, 5 - stack, 6 - config or 7 - custom template
+          example: 1
+        UserAccesses:
+          items:
+            $ref: '#/components/schemas/portainer.UserResourceAccess'
+          type: array
+      type: object
+    portainer.StackDeploymentInfo:
+      properties:
+        AdditionalFiles:
+          description: AdditionalFiles are the additional files used for deploying the stack
+          items:
+            type: string
+          type: array
+        ConfigFilePath:
+          description: ConfigFilePath is the path to the config file in the git repository used for deploying the stack
+          type: string
+        ConfigHash:
+          description: ConfigHash is the commit hash of the git repository used for deploying the stack
+          type: string
+        FileVersion:
+          description: FileVersion is the version of the stack file, used to detect changes
+          type: integer
+        ReferenceName:
+          description: ReferenceName is the git reference (branch/tag) used for deploying the stack
+          type: string
+        RepositoryURL:
+          description: RepositoryURL is the git repository URL used for deploying the stack
+          type: string
+        Version:
+          description: Version is the version of the stack and also is the deployed version in edge agent
+          type: integer
+      type: object
+    portainer.StackOption:
+      properties:
+        HelmAtomic:
+          description: Enable atomic rollback on failure (Helm --atomic flag for Kubernetes Helm stacks)
+          example: false
+          type: boolean
+        Prune:
+          description: Prune services that are no longer referenced
+          example: false
+          type: boolean
+      type: object
+    github_com_portainer_portainer-ee_api_git_types.RepoConfig:
+      properties:
+        Authentication:
+          allOf:
+            - $ref: '#/components/schemas/github_com_portainer_portainer_api_git_types.GitAuthentication'
+          description: Git credentials
+        ConfigFilePath:
+          description: |-
+            ConfigFilePath is the path to the config file within the repository.
+            NOTE: For stacks, this mirrors Stack.EntryPoint and the two are kept in sync by stackUpdateGit.
+          example: docker-compose.yml
+          type: string
+        ConfigHash:
+          description: Repository hash
+          example: bc4c183d756879ea4d173315338110b31004b8e0
+          type: string
+        ReferenceName:
+          description: The reference name
+          example: refs/heads/branch_name
+          type: string
+        TLSSkipVerify:
+          description: TLSSkipVerify skips SSL verification when cloning the Git repository
+          example: false
+          type: boolean
+        URL:
+          description: The repo url
+          example: https://github.com/portainer/portainer.git
+          type: string
+      type: object
+    portainer.Pair:
+      properties:
+        name:
+          example: name
+          type: string
+        value:
+          example: value
+          type: string
+      type: object
+    portainer.StackDeploymentStatus:
+      properties:
+        Message:
+          description: populated on Error entries
+          type: string
+        Status:
+          $ref: '#/components/schemas/portainer.StackStatus'
+        Time:
+          type: integer
+      type: object
+    portainer.AutoUpdateSettings:
+      properties:
+        ForcePullImage:
+          description: Pull latest image
+          example: false
+          type: boolean
+        ForceUpdate:
+          description: Force update ignores repo changes
+          example: false
+          type: boolean
+        Interval:
+          description: Auto update interval
+          example: 1m30s
+          type: string
+        JobID:
+          description: Autoupdate job id
+          example: '15'
+          type: string
+        Webhook:
+          description: A UUID generated from client
+          example: 05de31a2-79fa-4644-9c12-faa67e5c49f0
+          type: string
+      type: object
+    github_com_portainer_portainer-ee_api_git_types.GitProvider:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+      type: integer
+      x-enum-varnames:
+        - GitProviderCustom
+        - GitProviderGitHub
+        - GitProviderGitLab
+        - GitProviderBitbucketCloud
+        - GitProviderBitbucketDataCenter
+        - GitProviderAzureDevOps
+        - GitProviderGiteaForgejo
+    github_com_portainer_portainer-ee_api_git_types.GitCredentialAuthType:
+      enum:
+        - 0
+        - 1
+      type: integer
+      x-enum-varnames:
+        - GitCredentialAuthType_Basic
+        - GitCredentialAuthType_Token
+    github_com_portainer_portainer-ee_api_docker_images.Status:
+      enum:
+        - processing
+        - outdated
+        - updated
+        - skipped
+        - preparing
+        - error
+      type: string
+      x-enum-varnames:
+        - Processing
+        - Outdated
+        - Updated
+        - Skipped
+        - Preparing
+        - Error
+    portainer.UserResourceAccess:
+      properties:
+        AccessLevel:
+          $ref: '#/components/schemas/portainer.ResourceAccessLevel'
+        UserId:
+          type: integer
+      type: object
+    portainer.ResourceControlType:
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+      type: integer
+      x-enum-varnames:
+        - _
+        - ContainerResourceControl
+        - ServiceResourceControl
+        - VolumeResourceControl
+        - NetworkResourceControl
+        - SecretResourceControl
+        - StackResourceControl
+        - ConfigResourceControl
+        - CustomTemplateResourceControl
+        - ContainerGroupResourceControl
+    portainer.TeamResourceAccess:
+      properties:
+        AccessLevel:
+          $ref: '#/components/schemas/portainer.ResourceAccessLevel'
+        TeamId:
+          type: integer
+      type: object
+    portainer.ResourceAccessLevel:
+      enum:
+        - 0
+        - 1
+      type: integer
+      x-enum-varnames:
+        - _
+        - ReadWriteAccessLevel
+    github_com_portainer_portainer_api_git_types.GitAuthentication:
+      properties:
+        AuthorizationType:
+          type: integer
+        GitCredentialID:
+          description: |-
+            Git credentials identifier when the value is not 0
+            When the value is 0, Username and Password are set without using saved credential
+            This is introduced since 2.15.0
+          example: 0
+          type: integer
+        Password:
+          type: string
+        Provider:
+          type: integer
+        Username:
+          type: string
+      type: object
+  securitySchemes:
+    ApiKeyAuth:
+      in: header
+      name: X-API-KEY
+      type: apiKey
+    jwt:
+      in: header
+      name: Authorization
+      type: apiKey
