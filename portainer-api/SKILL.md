@@ -118,6 +118,8 @@ Stack deployment has nine creation endpoints (3 platforms × 3 sources) with dif
 
 **Version skew also fails silently, twice.** Portainer ignores unknown JSON body fields, so on an instance older than the bundled spec a mutation can return 200 *without applying* a newer field — when versions mismatch, verify the effect with a follow-up GET instead of trusting the status code. And a `jq` projection over a field the instance doesn't have yet returns `null`, which reads as "not set" when the truth is "not supported in this version".
 
+**On the Docker/Kubernetes proxies, a 2xx means "accepted", not "done".** The proxy forwards the upstream API server's response to your *create/patch*, and for asynchronous workloads (Deployments, Jobs, Pods, containers) that response only confirms the object was admitted — the actual work runs afterward and can still fail: image pull errors (including Docker Hub's `429` anonymous rate limit), failed scheduling, CrashLoopBackOff, volume mount failures. None of those touch the create call's status code, so a green `201` on a Job whose pod never starts is normal. Confirm the *effect*, not the acceptance: poll the object's `.status`, read its pods' `containerStatuses`, and read the namespace `events` feed for the human-readable reason (see `references/kubernetes-proxy.md`). Same "verify with a follow-up GET" discipline as version skew, for a more frequent cause.
+
 ## Finding the right endpoint
 
 The spec lives in `references/spec/` as one **self-contained file per API area**: each chunk holds that area's paths plus every schema they reference, so a `$ref` never points outside the file you're reading. Two generated entry points sit alongside:
