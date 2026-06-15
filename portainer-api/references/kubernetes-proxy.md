@@ -32,12 +32,28 @@ curl -fsS -H "$H" "$K/apis/apps/v1/deployments" | jq '
 
 # Pod logs — bound them like Docker logs
 curl -fsS -H "$H" "$K/api/v1/namespaces/$NS/pods/$POD/log?tailLines=100"
+
+# Scale a workload — the safe restart for apps that must never run two pods at once
+# (stateful single-replica writers): scale 0, then back to 1.
+# QUIRK: scaling to 0 returns a body with replicas:null (the subresource omits the
+# zero value) — that is NOT "the patch failed". Confirm with a pod count, not the body.
+curl -fsS -H "$H" -X PATCH -H 'Content-Type: application/merge-patch+json' \
+  "$K/apis/apps/v1/namespaces/$NS/deployments/$NAME/scale" -d '{"spec":{"replicas":0}}'
+
+# Why a workload won't come up — events carry the real reason the create 2xx hides
+# (ImagePullBackOff, FailedScheduling, 429 pull rate limits, volume mount failures).
+curl -fsS -H "$H" "$K/api/v1/namespaces/$NS/events" | jq -r '
+  .items[] | "\(.lastTimestamp) \(.type) \(.reason) \(.involvedObject.kind)/\(.involvedObject.name): \(.message)"'
 ```
 
 The noise to project out: `metadata.managedFields` (routinely 30–70% of an object) and the
 full `status` block when you only need the spec. Mutations are standard K8s API
 (`POST`/`PUT`/`PATCH` with the right `Content-Type`; for `PATCH` that's
 `application/strategic-merge-patch+json` or `application/merge-patch+json`).
+
+A create/patch returning 2xx only means the object was admitted, not that the workload is
+healthy — for anything asynchronous, confirm the effect by polling `.status` and reading the
+`events` feed above, the same discipline `SKILL.md` calls for under *Error decoding*.
 
 ## Typed endpoints (Swagger-documented)
 
